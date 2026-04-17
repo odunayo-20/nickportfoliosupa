@@ -28,6 +28,8 @@ const LoginPage = () => {
 
     useEffect(() => {
         if (!contextLoading && isLoggedIn) {
+            console.log("User is logged in, redirecting to dashboard");
+            router.refresh();
             router.push("/admin/dashboard");
         }
         

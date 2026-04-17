@@ -30,3 +30,18 @@ export async function checkEmailExists(email: string) {
     
     return { exists: true };
 }
+
+export async function changePassword(newPassword: string) {
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+    });
+
+    if (error) {
+        return { error: error.message };
+    }
+
+    return { success: true };
+}
+

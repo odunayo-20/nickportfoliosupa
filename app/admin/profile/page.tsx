@@ -21,7 +21,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getProfile, updateProfile } from "@/actions/profile";
-import { signOut } from "@/actions/auth";
+import { signOut, changePassword } from "@/actions/auth";
+
 import { Mail, LogOut, Loader2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRef } from "react";
@@ -55,7 +56,14 @@ export default function ProfilePage() {
     const [isUploading, setIsUploading] = useState(false);
     const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
     const [pickerTarget, setPickerTarget] = useState<"avatar" | "resume">("avatar");
+    const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+    const [passwordData, setPasswordData] = useState({
+        newPassword: "",
+        confirmPassword: ""
+    });
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
 
     const handleLibrarySelect = async (ids: string[]) => {
         if (ids.length === 0) return;
@@ -214,6 +222,38 @@ export default function ProfilePage() {
             setIsSaving(false);
         }
     };
+
+    const handleChangePassword = async () => {
+        if (!passwordData.newPassword) {
+            toast.error("Please enter a new password");
+            return;
+        }
+        if (passwordData.newPassword.length < 8) {
+            toast.error("Password must be at least 8 characters");
+            return;
+        }
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            toast.error("Passwords do not match");
+            return;
+        }
+
+        try {
+            setIsChangingPassword(true);
+            const result = await changePassword(passwordData.newPassword);
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Password changed successfully");
+                setIsPasswordDialogOpen(false);
+                setPasswordData({ newPassword: "", confirmPassword: "" });
+            }
+        } catch (error: any) {
+            toast.error(error.message || "Failed to change password");
+        } finally {
+            setIsChangingPassword(false);
+        }
+    };
+
 
     const handleDiscard = () => {
         fetchProfile();
@@ -512,9 +552,13 @@ export default function ProfilePage() {
                                 Account
                             </h2>
                             <p className="text-xs text-slate-400 mb-6 font-medium leading-relaxed">Manage your password and sign out.</p>
-                            <button className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-xl transition-all border border-white/10">
+                            <button 
+                                onClick={() => setIsPasswordDialogOpen(true)}
+                                className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-xl transition-all border border-white/10"
+                            >
                                 Change password
                             </button>
+
                             <button 
                                 onClick={() => signOut()}
                                 className="mt-3 w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium rounded-xl transition-all border border-red-500/10 flex items-center justify-center gap-2"
@@ -572,6 +616,65 @@ export default function ProfilePage() {
                     </div>
                 </DialogContent>
             </Dialog>
+
+
+            {/* Change Password Dialog */}
+            <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                <DialogContent className="sm:max-w-[425px] bg-slate-900 border-slate-800 text-white rounded-3xl p-8">
+                    <DialogHeader className="space-y-4 text-center">
+                        <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mx-auto text-primary">
+                            <Lock size={24} />
+                        </div>
+                        <div className="space-y-1">
+                            <DialogTitle className="text-xl font-bold text-white">Change Password</DialogTitle>
+                            <p className="text-xs text-slate-500 font-medium">Create a strong new password for your account.</p>
+                        </div>
+                    </DialogHeader>
+                    <div className="space-y-6 pt-6">
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">New password</label>
+                            <input 
+                                className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm font-medium text-white focus:bg-white/10 focus:border-primary/50 transition-all outline-none" 
+                                type="password"
+                                placeholder="Min 8 characters"
+                                value={passwordData.newPassword}
+                                onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Confirm new password</label>
+                            <input 
+                                className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm font-medium text-white focus:bg-white/10 focus:border-primary/50 transition-all outline-none" 
+                                type="password"
+                                placeholder="Re-enter password"
+                                value={passwordData.confirmPassword}
+                                onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                            />
+                        </div>
+                        <div className="flex gap-4 pt-2">
+                            <button 
+                                onClick={() => setIsPasswordDialogOpen(false)}
+                                className="flex-1 py-4 text-slate-400 text-sm font-bold hover:bg-white/5 rounded-2xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleChangePassword}
+                                disabled={isChangingPassword}
+                                className="flex-1 py-4 bg-white text-slate-900 text-sm font-black rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {isChangingPassword ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Updating...
+                                    </>
+                                ) : "Update"}
+                            </button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
+
     )
 }
