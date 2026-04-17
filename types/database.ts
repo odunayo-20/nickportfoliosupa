@@ -224,6 +224,8 @@ export interface Database {
           bio: string | null
           skills: string[] | null
           social_links: Json
+          avatar_url: string | null
+          resume_url: string | null
         }
         Insert: {
           id: string
@@ -234,6 +236,8 @@ export interface Database {
           bio?: string | null
           skills?: string[] | null
           social_links?: Json
+          avatar_url?: string | null
+          resume_url?: string | null
         }
         Update: {
           id?: string
@@ -244,6 +248,8 @@ export interface Database {
           bio?: string | null
           skills?: string[] | null
           social_links?: Json
+          avatar_url?: string | null
+          resume_url?: string | null
         }
       }
     }

@@ -24,24 +24,42 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         // Initial session check
         const initAuth = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setSession(session);
-            setUser(session?.user ?? null);
-            setIsLoggedIn(!!session);
-            setIsLoading(false);
+            try {
+                console.log("Initializing auth...");
+                const { data: { session } } = await supabase.auth.getSession();
+                console.log("Session fetched:", !!session);
+                setSession(session);
+                setUser(session?.user ?? null);
+                setIsLoggedIn(!!session);
+            } catch (error) {
+                console.error("Error initializing auth:", error);
+            } finally {
+                setIsLoading(false);
+            }
         };
 
-        initAuth();
-
-        // Listen for changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const authSubscription = supabase.auth.onAuthStateChange((_event, session) => {
+            console.log("Auth state change:", _event, !!session);
             setSession(session);
             setUser(session?.user ?? null);
             setIsLoggedIn(!!session);
             setIsLoading(false);
         });
 
-        return () => subscription.unsubscribe();
+        initAuth();
+
+        // Safety timeout to prevent infinite loading
+        const safetyRetry = setTimeout(() => {
+            setIsLoading(false);
+            console.log("Auth safety timeout reached.");
+        }, 5000);
+
+        return () => {
+            clearTimeout(safetyRetry);
+            if (authSubscription && authSubscription.data && authSubscription.data.subscription) {
+                authSubscription.data.subscription.unsubscribe();
+            }
+        };
     }, []);
 
     const setAuthToken = (id: string | null) => {

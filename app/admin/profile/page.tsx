@@ -21,12 +21,25 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getProfile, updateProfile } from "@/actions/profile";
+import { signOut } from "@/actions/auth";
+import { Mail, LogOut, Loader2, Image as ImageIcon } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+import { useRef } from "react";
+import { MediaLibrary } from "@/components/admin/media/MediaLibrary";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { getMediaByIds } from "@/actions/media";
+import { formatDistanceToNow } from "date-fns";
 
 export default function ProfilePage() {
+    const [profileData, setProfileData] = useState<any>(null);
     const [formData, setFormData] = useState<any>({
         name: "",
+        email: "",
         title: "",
         bio: "",
+        avatar_url: "",
+        resume_url: "",
+        resume_name: "",
         skills: [],
         social_links: {
             github: "",
@@ -39,21 +52,86 @@ export default function ProfilePage() {
     const [newSkill, setNewSkill] = useState("");
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+    const [pickerTarget, setPickerTarget] = useState<"avatar" | "resume">("avatar");
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleLibrarySelect = async (ids: string[]) => {
+        if (ids.length === 0) return;
+        
+        try {
+            const mediaItems = await getMediaByIds(ids);
+            if (mediaItems && mediaItems.length > 0) {
+                const item = mediaItems[0];
+                if (pickerTarget === "avatar") {
+                    setFormData((prev: any) => ({ ...prev, avatar_url: item.url }));
+                } else {
+                    setFormData((prev: any) => ({
+                        ...prev,
+                        resume_url: item.url,
+                        resume_name: item.name || item.url.split('/').pop() || "document",
+                    }));
+                }
+                setIsMediaPickerOpen(false);
+                toast.success(`${pickerTarget === "avatar" ? "Avatar" : "Resume"} selected. Save to apply!`);
+            }
+        } catch (error) {
+            console.error("Error selecting from library:", error);
+            toast.error("Failed to fetch asset details");
+        }
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setIsUploading(true);
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${fileExt}`;
+            const filePath = `avatars/${fileName}`;
+
+            const { data, error } = await supabase.storage
+                .from("media")
+                .upload(filePath, file);
+
+            if (error) throw error;
+
+            const { data: { publicUrl } } = supabase.storage
+                .from("media")
+                .getPublicUrl(filePath);
+
+            setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+            toast.success("Image uploaded. Remember to save changes!");
+        } catch (error: any) {
+            console.error("Upload error:", error);
+            toast.error(error.message || "Upload failed");
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const fetchProfile = useCallback(async () => {
         setIsLoading(true);
         const data = await getProfile();
         if (data) {
+            setProfileData(data);
+            const sl = (data.social_links as any) || {};
             setFormData({
                 name: data.name || "",
+                email: data.email || "",
                 title: data.title || "",
                 bio: data.bio || "",
+                avatar_url: data.avatar_url || "",
+                resume_url: sl.resume_url || "",
+                resume_name: sl.resume_name || "",
                 skills: data.skills || [],
-                social_links: (data.social_links as any) || {
-                    github: "",
-                    linkedin: "",
-                    twitter: "",
-                    website: "",
+                social_links: {
+                    github: sl.github || "",
+                    linkedin: sl.linkedin || "",
+                    twitter: sl.twitter || "",
+                    website: sl.website || "",
                 }
             });
         }
@@ -102,7 +180,32 @@ export default function ProfilePage() {
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            await updateProfile(formData);
+            const { email, resume_url, resume_name, ...rest } = formData;
+            // Embed resume fields inside social_links JSONB (reliable, no schema cache issues)
+            const dataToSave = {
+                ...rest,
+                social_links: {
+                    ...rest.social_links,
+                    resume_url: resume_url || "",
+                    resume_name: resume_name || "",
+                },
+            };
+            const result = await updateProfile(dataToSave);
+            
+            if (result?.error) {
+                if (result.error === "Unauthorized") {
+                    toast.error("Session expired. Please log in again.");
+                    window.location.href = "/auth/login";
+                } else {
+                    toast.error(result.error);
+                }
+                return;
+            }
+
+            // Notify Sidebar and TopNavBar to refresh their avatar/name
+            window.dispatchEvent(new CustomEvent("profile-updated"));
+            // Refresh local profile data so avatar preview updates instantly
+            await fetchProfile();
             toast.success("Profile updated successfully");
         } catch (error: any) {
             console.error("Failed to update profile:", error);
@@ -119,7 +222,7 @@ export default function ProfilePage() {
     if (isLoading) {
         return (
             <div className="p-8 max-w-5xl mx-auto w-full flex justify-center items-center h-64">
-                <div className="animate-pulse text-slate-500 font-medium text-sm tracking-widest uppercase">Initializing Interface...</div>
+                <div className="animate-pulse text-slate-500 font-medium text-sm">Loading…</div>
             </div>
         );
     }
@@ -130,13 +233,8 @@ export default function ProfilePage() {
             <div className="p-8 max-w-5xl mx-auto w-full space-y-10 pb-32">
                 {/* <!-- Page Header --> */}
                 <section className="space-y-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-md">Identity</span>
-                        <span className="text-slate-300">/</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Brand Settings</span>
-                    </div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-900">Profile Architect</h1>
-                    <p className="text-slate-500 font-medium text-sm">Design your digital presence and professional identity.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">Profile</h1>
+                    <p className="text-slate-500 font-medium text-sm">Manage your personal info, skills, and social links.</p>
                 </section>
 
                 {/* <!-- Bento Layout Sections --> */}
@@ -149,28 +247,61 @@ export default function ProfilePage() {
                             </div>
                             
                             <div className="flex items-center justify-between mb-8 relative">
-                                <h2 className="text-sm font-black text-slate-900 uppercase tracking-tighter flex items-center gap-2">
+                                <h2 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                                    <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
                                        <User size={16} />
                                    </div>
-                                    Genesis Details
+                                    Personal Info
                                 </h2>
                             </div>
 
                             <div className="flex flex-col md:flex-row gap-10 items-start relative">
                                 <div className="relative group">
-                                    <div className="w-28 h-28 rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl shadow-slate-200/50 rotate-3 group-hover:rotate-0 transition-transform duration-500">
-                                        <img alt="Profile" className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYX9M182RG1NbmrqwYvZGz4N-dw_ybpVQPWJG-GYO7pWH7Z_1QNuOqg3814P5dElApHPunDezRgmgqAT_ntSe3Ys9fgN5he3SZaacRIxb69GjB9J9od5vxK-3bVyzb1298sXgIN55cNb--C0RrwR_xIj7AEKQt1FeXh_zHEHSy9chEvItz-Zdpv1G3hzeMwv6oy1El0X7YDfyuaPA2xV9XdiG9wvphIz91tGt7C23om1eu63YM_AxHEudijYD_c5LfNbjaaPFWqck" />
+                                    <div className="w-28 h-28 rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl shadow-slate-200/50 rotate-3 group-hover:rotate-0 transition-transform duration-500 bg-slate-100 flex items-center justify-center">
+                                        {formData.avatar_url ? (
+                                            <img alt="Profile" className="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-500" src={formData.avatar_url} />
+                                        ) : (
+                                            <User size={48} className="text-slate-300" />
+                                        )}
+                                        {isUploading && (
+                                            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center">
+                                                <Loader2 className="w-6 h-6 text-white animate-spin" />
+                                            </div>
+                                        )}
                                     </div>
-                                    <button className="absolute -bottom-2 -right-2 bg-slate-900 text-white p-2 rounded-xl shadow-xl hover:scale-110 transition-transform border-4 border-white">
-                                        <Pencil className="w-4 h-4" />
-                                    </button>
+                                    <div className="absolute -bottom-2 -right-2 flex gap-1">
+                                        <button 
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={isUploading}
+                                            title="Upload new image"
+                                            className="bg-slate-900 text-white p-2 rounded-xl shadow-xl hover:scale-110 transition-transform border-4 border-white disabled:opacity-50"
+                                        >
+                                            <Upload className="w-3 h-3" />
+                                        </button>
+                                        <button 
+                                            onClick={() => {
+                                                setPickerTarget("avatar");
+                                                setIsMediaPickerOpen(true);
+                                            }}
+                                            title="Choose from Library"
+                                            className="bg-indigo-600 text-white p-2 rounded-xl shadow-xl hover:scale-110 transition-transform border-4 border-white"
+                                        >
+                                            <ImageIcon className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        onChange={handleImageUpload} 
+                                        className="hidden" 
+                                        accept="image/*"
+                                    />
                                 </div>
 
                                 <div className="flex-1 w-full space-y-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Universal Name</label>
+                                            <label className="text-xs font-medium text-slate-500 ml-1">Full name</label>
                                             <input 
                                                 className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-sm font-bold text-slate-900 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all placeholder:text-slate-300" 
                                                 type="text" 
@@ -180,7 +311,22 @@ export default function ProfilePage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Professional Title</label>
+                                            <label className="text-xs font-medium text-slate-500 ml-1">Email</label>
+                                            <div className="relative group">
+                                                <input 
+                                                    className="w-full bg-slate-100/50 border border-slate-100 rounded-xl p-3.5 text-sm font-bold text-slate-400 cursor-not-allowed transition-all" 
+                                                    type="email" 
+                                                    disabled
+                                                    value={formData.email}
+                                                    placeholder="architect@portfolio.dev"
+                                                />
+                                                <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300">
+                                                    <Mail size={14} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-medium text-slate-500 ml-1">Title</label>
                                             <input 
                                                 className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-sm font-bold text-slate-900 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all placeholder:text-slate-300" 
                                                 type="text" 
@@ -191,7 +337,7 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Strategic Bio</label>
+                                        <label className="text-xs font-medium text-slate-500 ml-1">Bio</label>
                                         <textarea 
                                             className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-sm font-medium text-slate-600 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all resize-none leading-relaxed placeholder:text-slate-300" 
                                             rows={4}
@@ -206,11 +352,11 @@ export default function ProfilePage() {
 
                         {/* <!-- Assets & Resume Management --> */}
                         <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-                            <h2 className="text-sm font-black text-slate-900 uppercase tracking-tighter mb-8 flex items-center gap-2">
+                            <h2 className="text-sm font-semibold text-slate-900 mb-8 flex items-center gap-2">
                                  <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
                                      <FileText size={16} />
                                  </div>
-                                Verifiable Assets
+                                Resume
                             </h2>
                             <div className="group flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-white hover:border-primary/20 transition-all duration-300">
                                 <div className="flex items-center gap-4">
@@ -218,22 +364,48 @@ export default function ProfilePage() {
                                        <File className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-slate-900">resume_main_2024.pdf</p>
-                                        <p className="text-[11px] text-slate-400 font-medium">Valid PDF • 2.4 MB • Updated 12 days ago</p>
+                                        <p className="text-sm font-bold text-slate-900 truncate max-w-[200px]">
+                                            {formData.resume_name || (formData.resume_url ? formData.resume_url.split('/').pop() : "No document attached")}
+                                        </p>
+                                        <p className="text-[11px] text-slate-400 font-medium">
+                                            {formData.resume_url ? (
+                                                <>Valid Document • {profileData?.updated_at ? `Updated ${formatDistanceToNow(new Date(profileData.updated_at), { addSuffix: true })}` : "Recently updated"}</>
+                                            ) : (
+                                                "No resume attached"
+                                            )}
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
-                                    <button className="w-9 h-9 flex items-center justify-center bg-white hover:bg-slate-900 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all">
-                                        <Download size={16} />
-                                    </button>
-                                    <button className="w-9 h-9 flex items-center justify-center bg-white hover:bg-red-500 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all">
-                                         <Trash2 size={16} />
-                                    </button>
+                                    {formData.resume_url && (
+                                        <>
+                                            <a 
+                                                href={formData.resume_url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="w-9 h-9 flex items-center justify-center bg-white hover:bg-slate-900 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all"
+                                            >
+                                                <Download size={16} />
+                                            </a>
+                                            <button 
+                                                onClick={() => setFormData(prev => ({ ...prev, resume_url: "" }))}
+                                                className="w-9 h-9 flex items-center justify-center bg-white hover:bg-red-500 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all font-bold"
+                                            >
+                                                 <Trash2 size={16} />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
-                            <button className="mt-4 w-full py-4 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-xs font-black uppercase tracking-widest hover:bg-primary/5 hover:border-primary/20 hover:text-primary transition-all flex items-center justify-center gap-3 group">
-                                <Upload size={16} className="group-hover:-translate-y-1 transition-transform" />
-                                Replace Professional Record
+                            <button 
+                                onClick={() => {
+                                    setPickerTarget("resume");
+                                    setIsMediaPickerOpen(true);
+                                }}
+                                className="mt-4 w-full py-4 border-2 border-dashed border-slate-100 rounded-2xl text-slate-400 text-sm font-medium hover:bg-primary/5 hover:border-primary/20 hover:text-primary transition-all flex items-center justify-center gap-3 group"
+                            >
+                                <ImageIcon size={16} className="group-hover:-translate-y-1 transition-transform" />
+                                {formData.resume_url ? "Replace resume" : "Pick resume from library"}
                             </button>
                         </div>
                     </div>
@@ -242,15 +414,15 @@ export default function ProfilePage() {
                     <div className="space-y-8">
                         {/* <!-- Technical Skills --> */}
                         <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-                            <h2 className="text-sm font-black text-slate-900 uppercase tracking-tighter mb-6 flex items-center gap-2">
+                            <h2 className="text-sm font-semibold text-slate-900 mb-6 flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
                                     <Terminal size={16} />
                                 </div>
-                                Skill Vector
+                                Skills
                             </h2>
                             <div className="flex flex-wrap gap-2 mb-6">
                                 {formData.skills.map((skill: string, idx: number) => (
-                                    <span key={idx} className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-tight flex items-center gap-2 hover:bg-primary transition-colors cursor-default">
+                                    <span key={idx} className="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 hover:bg-primary transition-colors cursor-default">
                                         {skill}  
                                         <X 
                                           size={12}
@@ -263,7 +435,7 @@ export default function ProfilePage() {
                             <div className="relative group">
                                 <input 
                                     className="w-full bg-slate-50 border border-slate-100 rounded-xl p-3.5 text-sm font-bold text-slate-900 focus:bg-white focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all pr-12 placeholder:text-slate-300" 
-                                    placeholder="Add capability..." 
+                                    placeholder="Add a skill…" 
                                     type="text" 
                                     value={newSkill}
                                     onChange={(e) => setNewSkill(e.target.value)}
@@ -280,11 +452,11 @@ export default function ProfilePage() {
 
                         {/* <!-- Social Presence --> */}
                         <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm">
-                            <h2 className="text-sm font-black text-slate-900 uppercase tracking-tighter mb-6 flex items-center gap-2">
+                            <h2 className="text-sm font-semibold text-slate-900 mb-6 flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600">
                                     <Globe size={16} />
                                 </div>
-                                Digital Matrix
+                                Social Links
                             </h2>
                             <div className="space-y-3">
                                 <div className="flex items-center gap-4 bg-slate-50 border border-slate-50 p-3 rounded-xl focus-within:bg-white focus-within:border-slate-200 transition-all">
@@ -335,13 +507,20 @@ export default function ProfilePage() {
                             <div className="absolute -right-4 -bottom-4 opacity-10">
                                 <Lock size={120} className="text-white" />
                             </div>
-                            <h2 className="text-sm font-black text-white uppercase tracking-tighter mb-4 flex items-center gap-2">
+                            <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
                                  <Lock className="text-primary w-4 h-4" />
-                                System Access
+                                Account
                             </h2>
-                            <p className="text-[11px] text-slate-400 mb-6 font-medium leading-relaxed">Modify your core credentials and authentication protocols here.</p>
-                            <button className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all border border-white/10">
-                                Update Passkey
+                            <p className="text-xs text-slate-400 mb-6 font-medium leading-relaxed">Manage your password and sign out.</p>
+                            <button className="w-full py-3 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-xl transition-all border border-white/10">
+                                Change password
+                            </button>
+                            <button 
+                                onClick={() => signOut()}
+                                className="mt-3 w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium rounded-xl transition-all border border-red-500/10 flex items-center justify-center gap-2"
+                            >
+                                <LogOut size={14} />
+                                Log out
                             </button>
                         </div>
                     </div>
@@ -352,27 +531,47 @@ export default function ProfilePage() {
             <footer className="fixed bottom-0 right-0 left-0 lg:left-64 bg-white/80 backdrop-blur-xl px-10 py-6 z-40 border-t border-slate-100 flex items-center justify-between shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
                 <div className="hidden sm:flex items-center gap-3">
                     <div className={`w-2 h-2 rounded-full ${isSaving ? "bg-amber-500 animate-pulse" : "bg-emerald-500"}`} />
-                    <span className="text-[10px] uppercase font-black tracking-widest text-slate-400">
-                        {isSaving ? "Syncing Identity..." : "System Synchronized"}
+                    <span className="text-xs font-medium text-slate-400">
+                        {isSaving ? "Saving…" : "All changes saved"}
                     </span>
                 </div>
                 <div className="flex gap-4 w-full sm:w-auto">
                     <button 
                         onClick={handleDiscard}
                         disabled={isSaving}
-                        className="flex-1 sm:flex-none px-8 py-3 text-slate-500 text-xs font-black uppercase tracking-widest hover:bg-slate-100 rounded-xl transition-all disabled:opacity-50"
+                        className="flex-1 sm:flex-none px-8 py-3 text-slate-500 text-sm font-medium hover:bg-slate-100 rounded-xl transition-all disabled:opacity-50"
                     >
                         Discard
                     </button>
                     <button 
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="flex-1 sm:flex-none px-12 py-3 bg-slate-900 text-white text-xs font-black uppercase tracking-widest rounded-xl shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] hover:bg-primary transition-all disabled:opacity-50"
+                        className="flex-1 sm:flex-none px-10 py-3 bg-slate-900 text-white text-sm font-semibold rounded-xl shadow-xl shadow-slate-200 hover:scale-[1.02] active:scale-[0.98] hover:bg-primary transition-all disabled:opacity-50"
                     >
-                        {isSaving ? "Syncing..." : "Update Identity"}
+                        {isSaving ? "Saving…" : "Save changes"}
                     </button>
                 </div>
             </footer>
+
+            {/* Media Picker Dialog */}
+            <Dialog open={isMediaPickerOpen} onOpenChange={setIsMediaPickerOpen}>
+                <DialogContent className="!max-w-none !w-screen !h-screen !top-0 !left-0 !translate-x-0 !translate-y-0 fixed z-50 flex flex-col p-0 m-0 rounded-none border-none overflow-hidden">
+                    <DialogHeader className="px-10 pt-10 pb-4 border-b">
+                        <DialogTitle className="text-3xl font-black tracking-tighter">
+                            Select {pickerTarget === "avatar" ? "Profile Image" : "Resume Document"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="flex-1 overflow-hidden p-10 bg-slate-50/50">
+                        <MediaLibrary 
+                            selectionMode 
+                            multiple={false} 
+                            onSelect={handleLibrarySelect}
+                            confirmButtonText="Use as Profile Picture"
+                            hideHeader={true}
+                        />
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

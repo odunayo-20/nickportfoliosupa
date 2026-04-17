@@ -21,7 +21,7 @@ const DashboardPage = () => {
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
-      router.push("/auth");
+      router.push("/auth/login");
     }
   }, [isLoggedIn, authLoading, router]);
 
@@ -59,130 +59,133 @@ const DashboardPage = () => {
     );
   }
 
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || "there";
+
   return (
     <div>
-      <div className="p-8 max-w-7xl mx-auto w-full">
+      <div className="p-6 md:p-8 max-w-7xl mx-auto w-full">
         {/* Welcome Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-md">Control Center</span>
-              <span className="text-slate-300">/</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global Status</span>
-            </div>
-            <h2 className="text-3xl font-black tracking-tighter text-slate-900 leading-none">
-              Overview
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 leading-none">
+              Welcome back, {displayName}
             </h2>
             <p className="text-slate-500 mt-2 font-medium text-sm">
-              Manage your digital architecture and portfolio updates.
+              Here&apos;s what&apos;s happening with your portfolio.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <Link href="/admin/project/create">
-              <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl text-xs uppercase tracking-widest shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95">
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl text-sm shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-95">
                 <Plus className="w-4 h-4" />
-                <span>Add Project</span>
+                <span>New Project</span>
               </button>
             </Link>
 
             <Link href="/admin/blog/create">
-              <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white font-black rounded-xl text-xs uppercase tracking-widest shadow-xl shadow-slate-200 hover:bg-indigo-600 transition-all active:scale-95">
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white font-semibold rounded-xl text-sm shadow-xl shadow-slate-200 hover:bg-indigo-600 transition-all active:scale-95">
                 <Pencil className="w-4 h-4" />
-                <span>New Post</span>
+                <span>Write Post</span>
               </button>
             </Link>
           </div>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
           {/* Projects */}
-          <div className="p-8 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between h-52 group hover:border-indigo-100 hover:shadow-xl hover:shadow-indigo-500/5 transition-all">
+          <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between min-h-[180px] group hover:border-indigo-100 hover:shadow-lg transition-all">
             <div className="flex justify-between items-start">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
-                <FolderKanban className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                <FolderKanban className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-black text-indigo-600 px-3 py-1.5 bg-indigo-50 rounded-lg uppercase tracking-widest">
-                Active Project
+              <span className="text-xs font-medium text-slate-400">
+                Total
               </span>
             </div>
             <div>
-              <p className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
+              <p className="text-4xl font-bold text-slate-900 tracking-tight leading-none">
                 {stats.projects}
               </p>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-black mt-4 text-slate-400">
-                Architectural Records
+              <p className="text-sm font-medium mt-2 text-slate-500">
+                Projects
               </p>
             </div>
           </div>
 
           {/* Blog */}
-          <div className="p-8 rounded-3xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between h-52 group hover:border-purple-100 hover:shadow-xl hover:shadow-purple-500/5 transition-all">
+          <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between min-h-[180px] group hover:border-purple-100 hover:shadow-lg transition-all">
             <div className="flex justify-between items-start">
-              <div className="w-12 h-12 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
-                <FileEdit className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                <FileEdit className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-black text-purple-600 px-3 py-1.5 bg-purple-50 rounded-lg uppercase tracking-widest">
-                Published
+              <span className="text-xs font-medium text-slate-400">
+                Total
               </span>
             </div>
             <div>
-              <p className="text-5xl font-black text-slate-900 tracking-tighter leading-none">
+              <p className="text-4xl font-bold text-slate-900 tracking-tight leading-none">
                 {stats.posts}
               </p>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-black mt-4 text-slate-400">
-                Neural Transmissions
+              <p className="text-sm font-medium mt-2 text-slate-500">
+                Blog Posts
               </p>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="p-8 rounded-3xl bg-slate-900 text-white shadow-2xl flex flex-col justify-between h-52 group hover:scale-[1.02] transition-all">
+          <div className="p-6 rounded-2xl bg-slate-900 text-white shadow-xl flex flex-col justify-between min-h-[180px] group hover:scale-[1.02] transition-all">
             <div className="flex justify-between items-start">
-              <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
-                <MessageCircle className="w-6 h-6" />
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:rotate-6 transition-transform">
+                <MessageCircle className="w-5 h-5" />
               </div>
-              <span className="text-[10px] font-black text-white/50 px-3 py-1.5 bg-white/5 rounded-lg uppercase tracking-widest">
-                System Log
+              <span className="text-xs font-medium text-white/40">
+                Inbox
               </span>
             </div>
             <div>
-              <p className="text-5xl font-black text-white tracking-tighter leading-none">
+              <p className="text-4xl font-bold text-white tracking-tight leading-none">
                 {stats.messages}
               </p>
-              <p className="text-[10px] uppercase tracking-[0.2em] font-black mt-4 text-white/30">
-                Incoming Channels
+              <p className="text-sm font-medium mt-2 text-white/50">
+                Messages
               </p>
             </div>
           </div>
         </div>
 
-       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          {/* <!-- Latest Messages (Span 3) --> */}
-          <div className="lg:col-span-3 space-y-6">
+        {/* Bottom sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Recent Messages */}
+          <div className="lg:col-span-3 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                Live Inquiries
+              <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                Recent Messages
               </h3>
-              <a className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline underline-offset-4" href="#">Historical Log</a>
+              <Link href="/admin/message" className="text-xs font-medium text-indigo-600 hover:underline underline-offset-4">
+                View all
+              </Link>
             </div>
             <div className="space-y-4">
-              <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-slate-100 rounded-3xl bg-slate-50/50">
-                <MessageCircle className="w-10 h-10 text-slate-200 mb-4" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Zero transmissions detected</p>
+              <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                <MessageCircle className="w-8 h-8 text-slate-300 mb-3" />
+                <p className="text-sm font-medium text-slate-400">No messages yet</p>
+                <p className="text-xs text-slate-300 mt-1">Messages from your portfolio will appear here</p>
               </div>
             </div>
           </div>
-          {/* <!-- Recently Updated Projects (Span 2) --> */}
-          <div className="lg:col-span-2 space-y-6">
+
+          {/* Recent Activity */}
+          <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-tighter">Delta Stream Updates</h3>
+              <h3 className="text-sm font-semibold text-slate-900">Recent Activity</h3>
             </div>
             <div className="space-y-8">
-              <div className="item-center justify-center py-20 border border-slate-100 rounded-3xl text-center">
-                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Waiting for new deployments</p>
+              <div className="flex flex-col items-center justify-center py-16 border border-slate-100 rounded-2xl text-center">
+                 <p className="text-sm font-medium text-slate-400">No recent activity</p>
+                 <p className="text-xs text-slate-300 mt-1">Your latest updates will show here</p>
               </div>
             </div>
           </div>
@@ -192,4 +195,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default DashboardPage;
