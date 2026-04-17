@@ -651,6 +651,22 @@ const LoginPage = () => {
                     border-radius: 50%;
                     pointer-events: none;
                 }
+                .auth-label-row {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 0.375rem;
+                }
+                .auth-forgot-link {
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    color: #6366f1;
+                    text-decoration: none;
+                    transition: color 0.15s;
+                }
+                .auth-forgot-link:hover {
+                    color: #4f46e5;
+                }
             `}</style>
 
             {/* ── Desktop Brand Panel ── */}
@@ -754,7 +770,10 @@ const LoginPage = () => {
                         </div>
 
                         <div className="auth-field">
-                            <label className="auth-label" htmlFor="login-password">Password</label>
+                            <div className="auth-label-row">
+                                <label className="auth-label" htmlFor="login-password" style={{ marginBottom: 0 }}>Password</label>
+                                <Link href="/auth/forgot-password" id="forgot-password-link" className="auth-forgot-link">Forgot password?</Link>
+                            </div>
                             <div className="auth-input-wrap">
                                 <input
                                     className="auth-input"
