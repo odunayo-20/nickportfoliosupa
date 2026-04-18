@@ -1,5 +1,6 @@
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import "../main.css";
+import Navbar from "./_components/Navbar";
+import Footer from "./_components/Footer";
 
 export default function MainLayout({
   children,
@@ -7,12 +8,12 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="bg-background text-on-surface font-body selection:bg-primary selection:text-on-primary">
-      <Navbar />
-      <main className="flex-1 container mx-auto px-4 md:px-8 py-8 w-full flex flex-col">
-        {children}
-      </main>
-      <Footer />
+    <div className="antialiased selection:bg-brand-orange selection:text-brand-dark min-h-screen flex flex-col">
+       <Navbar />
+          <main className="flex-grow">
+            {children}
+          </main>
+        <Footer />
     </div>
   );
 }

@@ -16,8 +16,7 @@ import {
   ArrowLeft,
   Loader2,
   RefreshCcw,
-  ChevronLeft,
-  ChevronRight
+  ChevronLeft
 } from 'lucide-react'
 import { getMessages, markAsRead, deleteMessage } from '@/actions/message'
 import { sendReply } from '@/actions/email'

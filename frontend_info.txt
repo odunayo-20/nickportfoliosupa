@@ -1,0 +1,38 @@
+Project Info for Frontend Development
+
+**Tech Stack:**
+- **Framework:** Next.js 16.2.3 (App Router)
+- **UI & Styling:** Tailwind CSS 4, shadcn/ui, Radix UI primitives, Lucide React icons, tw-animate-css, next-themes (for dark mode).
+- **Backend & Auth:** Supabase (Database, Auth, Storage) via `@supabase/ssr` & `@supabase/supabase-js`.
+- **Forms & Validation:** `react-hook-form` + `zod`, `@hookform/resolvers`.
+- **Rich Text Editor:** TinyMCE (`@tinymce/tinymce-react`).
+- **Date Handling:** `date-fns`, `react-day-picker`.
+- **Notifications:** `sonner`, `react-hot-toast`.
+- **Emails:** `resend`.
+
+**App Routing Structure (`app/` directory):**
+- `(main)`: The main public-facing portfolio website (likely contains home, blog, projects, about, contact etc.).
+- `admin`: The admin dashboard for managing projects, posts, messages, user whitelist, and settings.
+- `api`: API routes (e.g., custom signup logic).
+- `auth`: Authentication pages (e.g., login, whitelisted signup flow, forgotten password).
+
+**Database Entities (from Supabase schema):**
+1. **Media & Folders:** 
+   - `media` and `folders` (for organizing and storing featured images, assets).
+2. **Portfolio Content:**
+   - `projects`: Stores portfolio projects (title, slug, tech stack, github/live URLs, featured_image).
+   - `posts`: Blog posts (title, slug, content, published_at, category, tags).
+   - `profiles`: User profiles linked to auth.
+   - `comments`: Comments on posts and projects.
+3. **Admin & Utilities:**
+   - `messages`: Portfolio inquiries sent via the contact form.
+   - `settings`: Site config (title, description, logo, SEO).
+   - `allowed_users`: Whitelist for allowed signups.
+
+**Current State & Recent Work:**
+- A whitelisted signup system was implemented.
+- Password recovery flow is in progress/completed.
+- Admin settings and project schemas have been recently modified or fixed.
+- Dynamic SEO properties on project and blog pages.
+
+This information summarizes the technical boundaries and components you'll be working with while developing the frontend parts of the application.
