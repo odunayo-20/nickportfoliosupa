@@ -6,8 +6,12 @@ import {
     Plus, 
     LayoutGrid, 
     CheckCircle2,
-    Star
+    Star,
+    ChevronLeft,
+    ChevronRight,
+    Search as SearchIcon
 } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import { ProjectTable } from "@/components/admin/project/ProjectTable";
@@ -27,6 +31,8 @@ export default function ProjectManagementPage() {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [idsToDelete, setIdsToDelete] = useState<string[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 8;
 
     const fetchProjects = useCallback(async () => {
         setIsLoading(true);
@@ -80,6 +86,17 @@ export default function ProjectManagementPage() {
 
         return result;
     }, [projects, searchQuery, statusFilter, categoryFilter, sortBy]);
+
+    // Pagination
+    const totalPages = Math.ceil(filteredProjects.length / ITEMS_PER_PAGE);
+    const paginatedProjects = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredProjects.slice(start, start + ITEMS_PER_PAGE);
+    }, [filteredProjects, currentPage]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter, categoryFilter]);
 
     // Handlers
     const handleSelectRow = (id: string) => {
@@ -222,22 +239,93 @@ export default function ProjectManagementPage() {
                     />
 
                     <ProjectTable 
-                        projects={filteredProjects}
+                        projects={paginatedProjects}
                         selectedIds={selectedIds}
                         onSelectRow={handleSelectRow}
                         onSelectAll={handleSelectAll}
                         onEdit={(id) => window.location.href = `/admin/project/edit/${id}`}
                         onView={(id) => window.location.href = `/admin/project/show/${id}`}
-                        onDelete={(id) => setIdsToDelete([id])}
+                        onDelete={(id) => {
+                            const project = projects.find(p => p.id === id);
+                            toast(`Delete "${project?.title}"?`, {
+                                description: "This will permanently remove the project.",
+                                action: {
+                                    label: "Delete",
+                                    onClick: async () => {
+                                        try {
+                                            await deleteProject(id);
+                                            toast.success("Project deleted");
+                                            fetchProjects();
+                                        } catch (error) {
+                                            toast.error("Deletion failed");
+                                        }
+                                    }
+                                }
+                            });
+                        }}
                         onToggleStatus={handleToggleStatus}
                         onToggleFeatured={handleToggleFeatured}
                     />
 
-                    {/* Footer Info */}
-                    <div className="px-6 py-3 bg-slate-50/30 flex items-center justify-end border-t border-slate-100">
-                        <p className="text-xs text-slate-400 font-medium">
-                            Showing {filteredProjects.length} of {totalProjects} projects
+                    {/* Footer with Pagination */}
+                    <div className="px-6 py-4 bg-slate-50/30 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100">
+                        <p className="text-[12px] text-slate-500 font-medium">
+                            Showing <span className="font-bold text-slate-900">{Math.min(filteredProjects.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-slate-900">{Math.min(filteredProjects.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="font-bold text-slate-900">{filteredProjects.length}</span> projects
                         </p>
+
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronLeft size={16} />
+                                </Button>
+
+                                <div className="flex items-center gap-1 mx-2">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                        const isVisible = totalPages <= 7 || 
+                                            page === 1 || 
+                                            page === totalPages || 
+                                            (page >= currentPage - 1 && page <= currentPage + 1);
+                                        
+                                        if (!isVisible) {
+                                            if (page === 2 || page === totalPages - 1) {
+                                                return <span key={page} className="text-slate-300 px-1">...</span>;
+                                            }
+                                            return null;
+                                        }
+
+                                        return (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`min-w-[32px] h-8 px-2 text-[12px] font-bold rounded-lg transition-all ${
+                                                    currentPage === page 
+                                                        ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
+                                                        : "text-slate-500 hover:bg-slate-100"
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronRight size={16} />
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

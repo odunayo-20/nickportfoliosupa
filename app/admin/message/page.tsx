@@ -15,7 +15,9 @@ import {
   X, 
   ArrowLeft,
   Loader2,
-  RefreshCcw
+  RefreshCcw,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { getMessages, markAsRead, deleteMessage } from '@/actions/message'
 import { sendReply } from '@/actions/email'
@@ -31,6 +33,8 @@ const MessagesPage = () => {
     const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
     const [replyText, setReplyText] = useState('')
     const [isSending, setIsSending] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
 
 
@@ -60,6 +64,17 @@ const MessagesPage = () => {
             return matchesSearch && matchesFilter
         })
     }, [messages, searchQuery, filter])
+
+    // Pagination
+    const totalPages = Math.ceil(filteredMessages.length / ITEMS_PER_PAGE);
+    const paginatedMessages = filteredMessages.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, filter]);
 
     const selectedMessage = messages.find(m => m.id === selectedId)
 
@@ -100,20 +115,26 @@ const MessagesPage = () => {
     const handleDelete = async (id: string, e?: React.MouseEvent) => {
         e?.stopPropagation()
 
-        if (!confirm("Are you sure you want to delete this message?")) return;
-
-        try {
-            const res = await deleteMessage(id)
-            if (res.success) {
-                setMessages(prev => prev.filter(m => m.id !== id))
-                if (selectedId === id) setSelectedId(null)
-                toast.success("Message deleted")
-            } else {
-                toast.error("Failed to delete")
+        toast("Delete inquiry?", {
+            description: "Are you sure you want to permanently delete this message?",
+            action: {
+                label: "Delete",
+                onClick: async () => {
+                    try {
+                        const res = await deleteMessage(id)
+                        if (res.success) {
+                            setMessages(prev => prev.filter(m => m.id !== id))
+                            if (selectedId === id) setSelectedId(null)
+                            toast.success("Message deleted")
+                        } else {
+                            toast.error("Failed to delete")
+                        }
+                    } catch (error) {
+                        toast.error("Error deleting message")
+                    }
+                }
             }
-        } catch (error) {
-            toast.error("Error deleting message")
-        }
+        })
     }
 
     return (
@@ -181,7 +202,9 @@ const MessagesPage = () => {
                                 <p className="text-sm font-medium text-slate-400">No messages found</p>
                             </div>
                         ) : (
-                            filteredMessages.map((msg) => (
+                            <div className="flex flex-col h-full">
+                                <div className="flex-1 overflow-y-auto scroller">
+                                    {paginatedMessages.map((msg) => (
                                 <div
                                     key={msg.id}
                                     onClick={() => handleSelect(msg.id)}
@@ -206,7 +229,34 @@ const MessagesPage = () => {
                                         {msg.message}
                                     </p>
                                 </div>
-                            ))
+                                ))}
+                                </div>
+                                
+                                {/* Pagination Footer */}
+                                {totalPages > 1 && (
+                                    <div className="p-4 border-t border-slate-50 bg-slate-50/30 flex items-center justify-between">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                                            PG {currentPage} OF {totalPages}
+                                        </p>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                disabled={currentPage === 1}
+                                                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-100 text-slate-500 disabled:opacity-30 hover:bg-slate-50 transition-colors shadow-sm"
+                                            >
+                                                <ChevronLeft size={14} />
+                                            </button>
+                                            <button
+                                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                disabled={currentPage === totalPages}
+                                                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-100 text-slate-500 disabled:opacity-30 hover:bg-slate-50 transition-colors shadow-sm"
+                                            >
+                                                <ChevronRight size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
                 </aside>

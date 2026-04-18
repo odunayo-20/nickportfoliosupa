@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Plus, Search, FileText, LayoutList, Newspaper } from 'lucide-react';
+import { Plus, Search, FileText, LayoutList, Newspaper, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,8 @@ export default function BlogManagementPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [postToDelete, setPostToDelete] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 1;
 
     const fetchPosts = useCallback(async () => {
         setIsLoading(true);
@@ -45,6 +47,17 @@ export default function BlogManagementPage() {
             return matchesSearch && matchesStatus;
         });
     }, [posts, searchQuery, statusFilter]);
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
+    const paginatedPosts = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredPosts.slice(start, start + ITEMS_PER_PAGE);
+    }, [filteredPosts, currentPage]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter]);
 
     const handleDelete = async () => {
         if (!postToDelete) return;
@@ -194,28 +207,94 @@ export default function BlogManagementPage() {
                         </div>
                     ) : (
                         <BlogTable
-                            posts={filteredPosts}
+                            posts={paginatedPosts}
                             onToggleStatus={toggleStatus}
-                            onDeleteRequest={setPostToDelete}
+                            onDeleteRequest={(id) => {
+                                const post = posts.find(p => p.id === id);
+                                toast(`Delete "${post?.title || 'this post'}"?`, {
+                                    description: "This action cannot be undone.",
+                                    action: {
+                                        label: "Delete",
+                                        onClick: async () => {
+                                            try {
+                                                await deletePost(id);
+                                                toast.success("Post deleted");
+                                                fetchPosts();
+                                            } catch (error) {
+                                                toast.error("Failed to delete post");
+                                            }
+                                        }
+                                    }
+                                });
+                            }}
                         />
                     )}
                 </div>
 
-                {/* Footer */}
-                {posts && posts.length > 0 && (
-                    <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/30 flex items-center justify-between">
-                        <p className="text-[12px] text-slate-400 font-medium">
-                            Showing {filteredPosts.length} of {totalPosts} posts
+                {/* Footer with Pagination */}
+                {filteredPosts.length > 0 && (
+                    <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <p className="text-[12px] text-slate-500 font-medium">
+                            Showing <span className="font-bold text-slate-900">{Math.min(filteredPosts.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-slate-900">{Math.min(filteredPosts.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="font-bold text-slate-900">{filteredPosts.length}</span> posts
                         </p>
+                        
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronLeft size={16} />
+                                </Button>
+                                
+                                <div className="flex items-center gap-1 mx-2">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                        // Only show first, last, and current +/- 1 or 2 pages if many pages exist
+                                        const isVisible = totalPages <= 7 || 
+                                            page === 1 || 
+                                            page === totalPages || 
+                                            (page >= currentPage - 1 && page <= currentPage + 1);
+                                        
+                                        if (!isVisible) {
+                                            if (page === 2 || page === totalPages - 1) {
+                                                return <span key={page} className="text-slate-300 px-1">...</span>;
+                                            }
+                                            return null;
+                                        }
+
+                                        return (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`min-w-[32px] h-8 px-2 text-[12px] font-bold rounded-lg transition-all ${
+                                                    currentPage === page 
+                                                        ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
+                                                        : "text-slate-500 hover:bg-slate-100"
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronRight size={16} />
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
-
-            <DeleteConfirmModal
-                isOpen={!!postToDelete}
-                onClose={() => setPostToDelete(null)}
-                onConfirm={handleDelete}
-            />
         </div>
     );
 }

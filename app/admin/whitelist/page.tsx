@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useTransition } from "react";
-import { UserPlus, Trash2, Mail, Loader2, ShieldCheck, Search, Users, Plus } from "lucide-react";
+import { UserPlus, Trash2, Mail, Loader2, ShieldCheck, Search, Users, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { myAppHook } from "@/context/AppUtils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,8 @@ const WhitelistPage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [newEmail, setNewEmail] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
 
     useEffect(() => {
         if (!authLoading && !isLoggedIn) {
@@ -58,22 +60,39 @@ const WhitelistPage = () => {
     };
 
     const handleRemoveUser = async (id: string, email: string) => {
-        if (!confirm(`Are you sure you want to remove ${email} from the whitelist?`)) return;
-
-        startTransition(async () => {
-            const result = await removeAllowedUser(id);
-            if (result.success) {
-                toast.success("User removed from whitelist");
-                fetchUsers();
-            } else {
-                toast.error(result.error || "Failed to remove user");
-            }
+        toast("Remove Authorized Email?", {
+            description: `Are you sure you want to remove ${email} from the whitelist?`,
+            action: {
+                label: "Remove",
+                onClick: () => {
+                    startTransition(async () => {
+                        const result = await removeAllowedUser(id);
+                        if (result.success) {
+                            toast.success("User removed from whitelist");
+                            fetchUsers();
+                        } else {
+                            toast.error(result.error || "Failed to remove user");
+                        }
+                    });
+                }
+            },
         });
     };
 
     const filteredUsers = users.filter(user => 
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    // Pagination
+    const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+    const paginatedUsers = filteredUsers.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm]);
 
     if (authLoading || (isLoggedIn && isLoading && users.length === 0)) {
         return (
@@ -167,8 +186,8 @@ const WhitelistPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredUsers.length > 0 ? (
-                                        filteredUsers.map((user) => (
+                                    {paginatedUsers.length > 0 ? (
+                                        paginatedUsers.map((user) => (
                                             <tr key={user.id} className="group hover:bg-slate-50 transition-colors">
                                                 <td className="px-6 py-4 border-b border-slate-50/50">
                                                     <div className="font-semibold text-slate-900">{user.email}</div>
@@ -203,6 +222,51 @@ const WhitelistPage = () => {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* Pagination Footer */}
+                        {filteredUsers.length > 0 && (
+                            <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between gap-4">
+                                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none">
+                                    {(currentPage - 1) * ITEMS_PER_PAGE + 1}-{Math.min(filteredUsers.length, currentPage * ITEMS_PER_PAGE)} OF {filteredUsers.length}
+                                </p>
+                                
+                                {totalPages > 1 && (
+                                    <div className="flex items-center gap-1">
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-500 disabled:opacity-30 hover:bg-slate-50 transition-colors"
+                                        >
+                                            <ChevronLeft size={14} />
+                                        </button>
+                                        
+                                        <div className="flex items-center gap-1 mx-1">
+                                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => setCurrentPage(page)}
+                                                    className={`w-8 h-8 text-[11px] font-black rounded-lg transition-all ${
+                                                        currentPage === page 
+                                                            ? "bg-slate-900 text-white shadow-md" 
+                                                            : "text-slate-400 hover:bg-slate-50"
+                                                    }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-100 bg-white text-slate-500 disabled:opacity-30 hover:bg-slate-50 transition-colors"
+                                        >
+                                            <ChevronRight size={14} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

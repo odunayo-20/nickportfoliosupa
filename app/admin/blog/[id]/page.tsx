@@ -167,7 +167,15 @@ export default function BlogShowPage() {
                     >
                         {isPublished ? <><CircleDashed size={14} /> Unpublish</> : <><CheckCircle size={14} /> Publish</>}
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => setShowDeleteModal(true)}>
+                    <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => {
+                        toast(`Delete "${post.title}"?`, {
+                            description: "This action cannot be undone.",
+                            action: {
+                                label: "Delete",
+                                onClick: handleDelete
+                            }
+                        });
+                    }}>
                         <Trash2 size={14} />
                     </Button>
                 </div>
@@ -326,7 +334,15 @@ export default function BlogShowPage() {
                                 variant="outline"
                                 className="w-full justify-start gap-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100 px-4 py-3 h-auto font-bold rounded-xl"
                                 size="sm"
-                                onClick={() => setShowDeleteModal(true)}
+                                onClick={() => {
+                                    toast(`Delete "${post.title}"?`, {
+                                        description: "This action cannot be undone.",
+                                        action: {
+                                            label: "Delete",
+                                            onClick: handleDelete
+                                        }
+                                    });
+                                }}
                             >
                                 <Trash2 size={14} /> Delete Post
                             </Button>
@@ -335,11 +351,6 @@ export default function BlogShowPage() {
                 </aside>
             </div>
 
-            <DeleteConfirmModal
-                isOpen={showDeleteModal}
-                onClose={() => setShowDeleteModal(false)}
-                onConfirm={handleDelete}
-            />
         </div>
     );
 }
