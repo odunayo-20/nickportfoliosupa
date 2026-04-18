@@ -136,3 +136,34 @@ export async function getAllPosts() {
 
     return posts;
 }
+
+export async function getPostBySlug(slug: string) {
+    const supabase = await createClient();
+    
+    const { data: post, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("slug", slug)
+        .eq("status", "published")
+        .single();
+
+    if (error) {
+        console.error("Error fetching post by slug:", error.message);
+        return null;
+    }
+
+    if (post && post.featured_image_id) {
+        const { data: media } = await supabase
+            .from("media")
+            .select("*")
+            .eq("id", post.featured_image_id)
+            .single();
+        if (media) {
+            (post as any).featured_image = media;
+            (post as any).imageUrl = media.url;
+            (post as any).image_url = media.url;
+        }
+    }
+
+    return post;
+}

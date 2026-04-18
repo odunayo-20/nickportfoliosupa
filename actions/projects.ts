@@ -158,3 +158,34 @@ export async function getAllProjects() {
 
     return projects;
 }
+
+export async function getProjectBySlug(slug: string) {
+    const supabase = await createClient();
+    
+    const { data: project, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("slug", slug)
+        .eq("status", "published")
+        .single();
+
+    if (error) {
+        console.error("Error fetching project by slug:", error.message);
+        return null;
+    }
+
+    if (project && project.featured_image) {
+        const { data: media } = await supabase
+            .from("media")
+            .select("*")
+            .eq("id", project.featured_image)
+            .single();
+        if (media) {
+            (project as any).featured_image_media = media;
+            (project as any).imageUrl = media.url;
+            (project as any).image_url = media.url;
+        }
+    }
+
+    return project;
+}

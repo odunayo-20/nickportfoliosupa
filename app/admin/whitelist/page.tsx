@@ -17,7 +17,7 @@ const WhitelistPage = () => {
     const [newEmail, setNewEmail] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 5;
+    const ITEMS_PER_PAGE =2;
 
     useEffect(() => {
         if (!authLoading && !isLoggedIn) {

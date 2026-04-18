@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useEffect, useState } from "react";
-import { Plus, Pencil, FolderKanban, FileEdit, MessageCircle, Loader2 } from "lucide-react";
+import { Plus, Pencil, FolderKanban, FileEdit, MessageCircle, Loader2, Clock, ChevronRight, User } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { supabase } from "@/lib/supabaseClient";
 import { myAppHook } from "@/context/AppUtils";
 import { toast } from "sonner";
@@ -17,6 +18,8 @@ const DashboardPage = () => {
     posts: 0,
     messages: 0,
   });
+  const [recentMessages, setRecentMessages] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
@@ -29,16 +32,29 @@ const DashboardPage = () => {
     const fetchStats = async () => {
       setIsLoadingStats(true);
       try {
-        const [projectsCount, postsCount] = await Promise.all([
+        const [projectsCount, postsCount, messagesCount, messagesRes, projectsRes, postsRes] = await Promise.all([
           supabase.from("projects").select("*", { count: "exact", head: true }),
           supabase.from("posts").select("*", { count: "exact", head: true }),
+          supabase.from("messages").select("*", { count: "exact", head: true }).eq("is_read", false),
+          supabase.from("messages").select("*").order("created_at", { ascending: false }).limit(3),
+          supabase.from("projects").select("id, title, created_at").order("created_at", { ascending: false }).limit(3),
+          supabase.from("posts").select("id, title, created_at").order("created_at", { ascending: false }).limit(3),
         ]);
 
         setStats({
           projects: projectsCount.count || 0,
           posts: postsCount.count || 0,
-          messages: 0, // Not implemented yet
+          messages: messagesCount.count || 0,
         });
+
+        setRecentMessages(messagesRes.data || []);
+        
+        const activity = [
+          ...(projectsRes.data || []).map(p => ({ ...p, type: 'project' as const })),
+          ...(postsRes.data || []).map(p => ({ ...p, type: 'post' as const })),
+        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4);
+
+        setRecentActivity(activity);
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
@@ -141,7 +157,7 @@ const DashboardPage = () => {
                 <MessageCircle className="w-5 h-5" />
               </div>
               <span className="text-xs font-medium text-white/40">
-                Inbox
+                Unread
               </span>
             </div>
             <div>
@@ -169,11 +185,43 @@ const DashboardPage = () => {
               </Link>
             </div>
             <div className="space-y-4">
-              <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                <MessageCircle className="w-8 h-8 text-slate-300 mb-3" />
-                <p className="text-sm font-medium text-slate-400">No messages yet</p>
-                <p className="text-xs text-slate-300 mt-1">Messages from your portfolio will appear here</p>
-              </div>
+              {recentMessages.length > 0 ? (
+                recentMessages.map((msg) => (
+                  <Link href={`/admin/message?id=${msg.id}`} key={msg.id} className="block group">
+                    <div className={`p-5 rounded-2xl border transition-all ${
+                      msg.is_read 
+                        ? 'bg-white border-slate-100 hover:border-slate-200 shadow-sm hover:shadow-md' 
+                        : 'bg-indigo-50/50 border-indigo-100 hover:border-indigo-200 shadow-sm hover:shadow-md'
+                    }`}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${msg.is_read ? 'bg-slate-100 text-slate-500' : 'bg-indigo-100 text-indigo-600'}`}>
+                            <User size={14} />
+                          </div>
+                          <div>
+                            <p className={`text-sm ${msg.is_read ? 'font-semibold text-slate-700' : 'font-bold text-slate-900'}`}>
+                              {msg.name}
+                            </p>
+                            <p className="text-[11px] font-medium text-slate-400">{msg.email}</p>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap ml-2">
+                          {formatDistanceToNow(new Date(msg.created_at))} ago
+                        </span>
+                      </div>
+                      <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed ml-10">
+                        {msg.message}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                  <MessageCircle className="w-8 h-8 text-slate-300 mb-3" />
+                  <p className="text-sm font-medium text-slate-400">No messages yet</p>
+                  <p className="text-xs text-slate-300 mt-1">Messages from your portfolio will appear here</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -182,11 +230,48 @@ const DashboardPage = () => {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-slate-900">Recent Activity</h3>
             </div>
-            <div className="space-y-8">
-              <div className="flex flex-col items-center justify-center py-16 border border-slate-100 rounded-2xl text-center">
-                 <p className="text-sm font-medium text-slate-400">No recent activity</p>
-                 <p className="text-xs text-slate-300 mt-1">Your latest updates will show here</p>
-              </div>
+            <div className="space-y-4">
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity) => (
+                  <Link 
+                    key={`${activity.type}-${activity.id}`} 
+                    href={`/admin/${activity.type === 'project' ? 'project' : 'blog'}`}
+                    className="flex flex-col p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:border-slate-200 hover:shadow-md transition-all group"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        {activity.type === 'project' ? (
+                          <div className="p-1.5 bg-indigo-50 text-indigo-500 rounded-lg">
+                            <FolderKanban size={14} />
+                          </div>
+                        ) : (
+                          <div className="p-1.5 bg-purple-50 text-purple-500 rounded-lg">
+                            <FileEdit size={14} />
+                          </div>
+                        )}
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                          {activity.type} created
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1">
+                        <Clock size={10} />
+                        {new Date(activity.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between group-hover:text-indigo-600 transition-colors">
+                      <p className="text-sm font-bold text-slate-700 truncate pr-4">
+                        {activity.title}
+                      </p>
+                      <ChevronRight size={14} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 border border-slate-100 rounded-2xl text-center">
+                   <p className="text-sm font-medium text-slate-400">No recent activity</p>
+                   <p className="text-xs text-slate-300 mt-1">Your latest updates will show here</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
