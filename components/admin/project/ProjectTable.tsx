@@ -20,6 +20,7 @@ interface ProjectTableProps {
     onSelectRow: (id: string) => void;
     onSelectAll: () => void;
     onEdit: (id: string) => void;
+    onView: (id: string) => void;
     onDelete: (id: string) => void;
     onToggleStatus: (id: string, status: string) => void;
     onToggleFeatured: (id: string, featured: boolean) => void;
@@ -31,6 +32,7 @@ export function ProjectTable({
     onSelectRow, 
     onSelectAll,
     onEdit,
+    onView,
     onDelete,
     onToggleStatus,
     onToggleFeatured
@@ -110,7 +112,7 @@ export function ProjectTable({
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <button 
-                                                    onClick={() => onEdit(project.id)}
+                                                    onClick={() => onView(project.id)}
                                                     className="text-[14px] font-bold text-slate-900 hover:text-primary transition-colors truncate block text-left"
                                                 >
                                                     {project.title}

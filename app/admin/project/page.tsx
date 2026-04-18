@@ -227,6 +227,7 @@ export default function ProjectManagementPage() {
                         onSelectRow={handleSelectRow}
                         onSelectAll={handleSelectAll}
                         onEdit={(id) => window.location.href = `/admin/project/edit/${id}`}
+                        onView={(id) => window.location.href = `/admin/project/show/${id}`}
                         onDelete={(id) => setIdsToDelete([id])}
                         onToggleStatus={handleToggleStatus}
                         onToggleFeatured={handleToggleFeatured}

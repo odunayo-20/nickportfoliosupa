@@ -55,6 +55,13 @@ export function ProjectRowActions({
                 </DropdownMenuItem>
                 
                 <DropdownMenuItem 
+                    onClick={() => window.location.href = `/admin/project/show/${project.id}`}
+                    className="gap-2 text-[13px] font-medium cursor-pointer"
+                >
+                    <Eye size={14} className="text-slate-400" /> View Details
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem 
                     onClick={() => onToggleStatus(project.id, project.status)}
                     className="gap-2 text-[13px] font-medium cursor-pointer"
                 >

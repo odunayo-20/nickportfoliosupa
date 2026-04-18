@@ -40,6 +40,7 @@ export async function updateProject(id: string, data: ProjectUpdate) {
 
     revalidatePath("/admin/project");
     revalidatePath(`/admin/project/edit/${id}`);
+    revalidatePath(`/admin/project/show/${id}`);
     return project;
 }
 
@@ -102,15 +103,14 @@ export async function getProjectById(id: string) {
     }
 
     // Manual join for featured_image to avoid PostgREST schema cache issues with relation joins
-    if (project && (project.featured_image || project.featured_image_id)) {
-        const mediaId = project.featured_image || project.featured_image_id;
+    if (project && project.featured_image) {
         const { data: media } = await supabase
             .from("media")
             .select("*")
-            .eq("id", mediaId)
+            .eq("id", project.featured_image)
             .single();
         if (media) {
-            (project as any).featured_image = media;
+            (project as any).featured_image_media = media;
             (project as any).imageUrl = media.url;
             (project as any).image_url = media.url;
         }
@@ -133,7 +133,7 @@ export async function getAllProjects() {
 
     if (projects && projects.length > 0) {
         const mediaIds = projects
-            .map(p => p.featured_image || p.featured_image_id)
+            .map(p => p.featured_image)
             .filter(id => !!id) as string[];
         
         if (mediaIds.length > 0) {
@@ -144,13 +144,12 @@ export async function getAllProjects() {
             
             if (media) {
                 return projects.map(project => {
-                    const mediaId = project.featured_image || project.featured_image_id;
-                    const featured_image = media.find(m => m.id === mediaId);
+                    const featured_image_media = media.find(m => m.id === project.featured_image);
                     return {
                         ...project,
-                        featured_image,
-                        imageUrl: featured_image?.url,
-                        image_url: featured_image?.url
+                        featured_image_media,
+                        imageUrl: featured_image_media?.url,
+                        image_url: featured_image_media?.url
                     };
                 });
             }

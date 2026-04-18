@@ -9,25 +9,39 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      allowed_users: {
+        Row: {
+          id: string
+          created_at: string
+          email: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          email: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          email?: string
+        }
+      }
       folders: {
         Row: {
           id: string
           created_at: string
-          updated_at: string
           name: string
           parent_id: string | null
         }
         Insert: {
           id?: string
           created_at?: string
-          updated_at?: string
           name: string
           parent_id?: string | null
         }
         Update: {
           id?: string
           created_at?: string
-          updated_at?: string
           name?: string
           parent_id?: string | null
         }
@@ -70,6 +84,70 @@ export interface Database {
           hash?: string | null
         }
       }
+      messages: {
+        Row: {
+          id: string
+          created_at: string
+          name: string
+          email: string
+          message: string
+          is_read: boolean
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          name: string
+          email: string
+          message: string
+          is_read?: boolean
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          name?: string
+          email?: string
+          message?: string
+          is_read?: boolean
+        }
+      }
+      profiles: {
+        Row: {
+          id: string
+          created_at: string
+          updated_at: string
+          name: string | null
+          title: string | null
+          bio: string | null
+          avatar_url: string | null
+          resume_url: string | null
+          skills: string[] | null
+          social_links: Json | null
+        }
+        Insert: {
+          id: string
+          created_at?: string
+          updated_at?: string
+          name?: string | null
+          title?: string | null
+          bio?: string | null
+          avatar_url?: string | null
+          resume_url?: string | null
+          skills?: string[] | null
+          social_links?: Json | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          updated_at?: string
+          name?: string | null
+          title?: string | null
+          bio?: string | null
+          avatar_url?: string | null
+          resume_url?: string | null
+          skills?: string[] | null
+          social_links?: Json | null
+        }
+      }
       projects: {
         Row: {
           id: string
@@ -87,7 +165,7 @@ export interface Database {
           play_store_url: string | null
           status: string
           is_featured: boolean
-          featured_image_id: string | null
+          featured_image: string | null
           media_ids: string[] | null
         }
         Insert: {
@@ -106,7 +184,7 @@ export interface Database {
           play_store_url?: string | null
           status?: string
           is_featured?: boolean
-          featured_image_id?: string | null
+          featured_image?: string | null
           media_ids?: string[] | null
         }
         Update: {
@@ -125,7 +203,7 @@ export interface Database {
           play_store_url?: string | null
           status?: string
           is_featured?: boolean
-          featured_image_id?: string | null
+          featured_image?: string | null
           media_ids?: string[] | null
         }
       }
@@ -139,12 +217,12 @@ export interface Database {
           summary: string | null
           content: string | null
           status: string
-          visibility: string
-          category: string | null
-          tags: string[] | null
           published_at: string | null
           featured_image_id: string | null
           author_id: string | null
+          visibility: string
+          category: string | null
+          tags: string[] | null
         }
         Insert: {
           id?: string
@@ -155,12 +233,12 @@ export interface Database {
           summary?: string | null
           content?: string | null
           status?: string
-          visibility?: string
-          category?: string | null
-          tags?: string[] | null
           published_at?: string | null
           featured_image_id?: string | null
           author_id?: string | null
+          visibility?: string
+          category?: string | null
+          tags?: string[] | null
         }
         Update: {
           id?: string
@@ -171,12 +249,38 @@ export interface Database {
           summary?: string | null
           content?: string | null
           status?: string
-          visibility?: string
-          category?: string | null
-          tags?: string[] | null
           published_at?: string | null
           featured_image_id?: string | null
           author_id?: string | null
+          visibility?: string
+          category?: string | null
+          tags?: string[] | null
+        }
+      }
+      settings: {
+        Row: {
+          id: string
+          updated_at: string
+          site_title: string | null
+          site_description: string | null
+          logo: string | null
+          seo: Json | null
+        }
+        Insert: {
+          id?: string
+          updated_at?: string
+          site_title?: string | null
+          site_description?: string | null
+          logo?: string | null
+          seo?: Json | null
+        }
+        Update: {
+          id?: string
+          updated_at?: string
+          site_title?: string | null
+          site_description?: string | null
+          logo?: string | null
+          seo?: Json | null
         }
       }
       comments: {
@@ -212,44 +316,6 @@ export interface Database {
           content?: string
           is_approved?: boolean
           parent_id?: string | null
-        }
-      }
-      profiles: {
-        Row: {
-          id: string
-          created_at: string
-          updated_at: string
-          name: string | null
-          title: string | null
-          bio: string | null
-          skills: string[] | null
-          social_links: Json
-          avatar_url: string | null
-          resume_url: string | null
-        }
-        Insert: {
-          id: string
-          created_at?: string
-          updated_at?: string
-          name?: string | null
-          title?: string | null
-          bio?: string | null
-          skills?: string[] | null
-          social_links?: Json
-          avatar_url?: string | null
-          resume_url?: string | null
-        }
-        Update: {
-          id?: string
-          created_at?: string
-          updated_at?: string
-          name?: string | null
-          title?: string | null
-          bio?: string | null
-          skills?: string[] | null
-          social_links?: Json
-          avatar_url?: string | null
-          resume_url?: string | null
         }
       }
     }
