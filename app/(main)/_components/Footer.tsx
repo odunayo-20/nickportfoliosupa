@@ -1,6 +1,7 @@
 import React from 'react'
 import { Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { NewsletterForm } from '@/components/NewsletterForm'
 
 const LinkedinIcon = ({ className }: { className?: string }) => (
   <svg
@@ -60,9 +61,9 @@ const Footer = () => {
     <>
      <footer className="bg-[#1e3628] text-white pt-20 pb-10 border-t-8 border-brand-orange">
         <div className="max-w-7xl mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
                 
-                <div className="lg:col-span-1">
+                <div className="lg:col-span-3">
                     <div className="flex items-center gap-2 mb-6 cursor-pointer">
                         <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center text-brand-dark font-bold italic">N</div>
                         <span className="text-xl font-extrabold tracking-tighter text-white">Nikola.</span>
@@ -70,10 +71,21 @@ const Footer = () => {
                     <p className="text-gray-400 text-sm leading-relaxed mb-6">
                         Senior App Developer based in Nigeria, specializing in high-performance native architectures and robust web systems. Building the future of scalable applications.
                     </p>
+                    <div className="flex gap-3">
+                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                            <LinkedinIcon className="w-4 h-4" />
+                        </a>
+                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                            <GithubIcon className="w-4 h-4" />
+                        </a>
+                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                            <TwitterIcon className="w-4 h-4" />
+                        </a>
+                    </div>
                 </div>
 
-                <div>
-                    <h4 className="text-white font-bold mb-6 text-lg tracking-tight">Quick Links</h4>
+                <div className="lg:col-span-2">
+                    <h4 className="text-white font-bold mb-6 text-lg tracking-tight">Navigation</h4>
                     <ul className="space-y-4 text-sm font-medium text-gray-400">
                         <li><Link href="/" className="hover:text-brand-orange transition-colors">Home</Link></li>
                         <li><Link href="/services" className="hover:text-brand-orange transition-colors">Services</Link></li>
@@ -83,8 +95,8 @@ const Footer = () => {
                     </ul>
                 </div>
 
-                <div>
-                    <h4 className="text-white font-bold mb-6 text-lg tracking-tight">Contact Information</h4>
+                <div className="lg:col-span-3">
+                    <h4 className="text-white font-bold mb-6 text-lg tracking-tight">Contact</h4>
                     <ul className="space-y-6 text-sm">
                         <li className="flex items-start gap-4">
                             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center shrink-0">
@@ -107,22 +119,8 @@ const Footer = () => {
                     </ul>
                 </div>
 
-                <div>
-                    <h4 className="text-white font-bold mb-6 text-lg tracking-tight">Follow Me</h4>
-                    <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                        Connect with me on social media to see my latest projects, technical articles, and design experiments.
-                    </p>
-                    <div className="flex gap-3">
-                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
-                            <LinkedinIcon className="w-4 h-4" />
-                        </a>
-                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
-                            <GithubIcon className="w-4 h-4" />
-                        </a>
-                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
-                            <TwitterIcon className="w-4 h-4" />
-                        </a>
-                    </div>
+                <div className="lg:col-span-4">
+                    <NewsletterForm />
                 </div>
 
             </div>
@@ -141,4 +139,4 @@ const Footer = () => {
   )
 }
 
-export default Footer
+export default Footer

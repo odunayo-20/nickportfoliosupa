@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   Image as ImageIcon,
-  ShieldCheck
+  ShieldCheck,
+  Mail
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -52,6 +53,7 @@ const Sidebar = () => {
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Projects", href: "/admin/project", icon: FolderKanban },
     { name: "Blog", href: "/admin/blog", icon: FileEdit },
+    { name: "Newsletter", href: "/admin/newsletter", icon: Mail },
     { name: "Messages", href: "/admin/message", icon: MessageCircle },
     { name: "Profile", href: "/admin/profile", icon: UserIcon },
     { name: "Invite Users", href: "/admin/whitelist", icon: ShieldCheck },
