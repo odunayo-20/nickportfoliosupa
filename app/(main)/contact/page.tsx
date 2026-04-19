@@ -3,6 +3,22 @@
 import { useState, useTransition } from 'react'
 import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { sendMessage } from '@/actions/message'
+import { motion } from 'motion/react'
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
 
 /* ── Inline SVG brand icons ─────────────────────────────────── */
 const LinkedinIcon = ({ className }: { className?: string }) => (
@@ -21,7 +37,7 @@ const GithubIcon = ({ className }: { className?: string }) => (
 
 const TwitterIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5 2.8 12.5 3 11c-1.2.6-2.5.5-3.5-.5 1-1.3 2.8-1.5 4-1.5-1-1.5-1.5-3.5-.5-5 1.5 2 3.5 3.5 6 4-.5-3.5 4-5.5 6.5-3 1.5-.5 3-1.5 4-2.5-1 1.5-2.5 3-4 3.5z"></path>
+    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5 2.8 12.5 3 11c-1.2.6-2.5.5-3.5-.5 1-1.3 2.8-1.5 4-1.5-1-1.5-3.5-.5-5 1.5 2 3.5 3.5 6 4-.5-3.5 4-5.5 6.5-3 1.5-.5 3-1.5 4-2.5-1 1.5-2.5 3-4 3.5z"></path>
   </svg>
 )
 
@@ -70,13 +86,38 @@ const Contact = () => {
 
   return (
     <>
+
+       <motion.header
+       initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+       className="bg-brand-offwhite pt-24 pb-16 border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 text-center reveal">
+            <span className="text-brand-orange font-semibold flex items-center justify-center gap-2 text-sm mb-6">
+                <span className="w-4 h-[2px] bg-brand-orange"></span> Get In Touch
+            </span>
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-brand-dark mb-6">
+                Let's build something <br/> <span className="text-brand-orange italic font-normal">phenomenal.</span>
+            </h1>
+            <p className="text-brand-muted text-lg max-w-2xl mx-auto leading-relaxed">
+                Whether you need a massive architectural overhaul, a high-performance native app, or just want to discuss the finer points of Kotlin coroutines, my inbox is open.
+            </p>
+        </div>
+    </motion.header>
+
       {/* ── CONTACT DETAILS + FORM ───────────────────────────────── */}
-      <section className="py-16 sm:py-24 bg-brand-light">
+      <motion.section 
+        className="py-16 sm:py-24 bg-brand-light"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
 
             {/* LEFT — Contact Details */}
-            <div className="lg:col-span-5 reveal">
+            <motion.div variants={fadeInUp} className="lg:col-span-5 reveal">
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-brand-dark mb-6 sm:mb-8">
                 Contact Details
               </h1>
@@ -160,10 +201,10 @@ const Contact = () => {
                   </a>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* RIGHT — Form card */}
-            <div className="lg:col-span-7 reveal delay-100">
+            <motion.div variants={fadeInUp} className="lg:col-span-7 reveal delay-100">
               <div className="bg-white p-6 sm:p-8 md:p-12 border border-gray-200 rounded-sharp shadow-xl shadow-gray-100/50 relative overflow-hidden">
                 {/* Decorative blob */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -306,36 +347,42 @@ const Contact = () => {
                   </>
                 )}
               </div>
-            </div>
+            </motion.div>
 
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* ── FAQ ──────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-24 bg-brand-offwhite border-t border-gray-200">
+      <motion.section 
+        className="py-16 sm:py-24 bg-brand-offwhite border-t border-gray-200"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 reveal">
-          <div className="text-center mb-10 sm:mb-16">
+          <motion.div variants={fadeInUp} className="text-center mb-10 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-brand-dark mb-3 sm:mb-4">Client FAQ</h2>
             <p className="text-brand-muted text-base sm:text-lg">Common questions regarding my workflow and availability.</p>
-          </div>
+          </motion.div>
 
           <div className="space-y-4 sm:space-y-6">
-            <div className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
+            <motion.div variants={fadeInUp} className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
               <h4 className="text-base sm:text-lg font-bold text-brand-dark mb-2 sm:mb-3">What is your typical project timeline?</h4>
               <p className="text-brand-muted leading-relaxed text-sm sm:text-base">Depending on the scope, an enterprise mobile application architecture can take anywhere from 3 to 6 months. I prioritize clean, scalable code over rushed MVPs, ensuring your foundation is built for millions of users.</p>
-            </div>
-            <div className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
+            </motion.div>
+            <motion.div variants={fadeInUp} className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
               <h4 className="text-base sm:text-lg font-bold text-brand-dark mb-2 sm:mb-3">Do you work with startups for equity?</h4>
               <p className="text-brand-muted leading-relaxed text-sm sm:text-base">I generally operate on a milestone-based flat fee or a retained consulting rate. However, I am open to hybrid compensation (cash + equity) for highly compelling products with strong founding teams.</p>
-            </div>
-            <div className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
+            </motion.div>
+            <motion.div variants={fadeInUp} className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
               <h4 className="text-base sm:text-lg font-bold text-brand-dark mb-2 sm:mb-3">Do you handle UI/UX design as well?</h4>
               <p className="text-brand-muted leading-relaxed text-sm sm:text-base">While my primary expertise is software architecture and engineering (Kotlin/Java/React), I have deep experience implementing complex design systems and can bridge the gap flawlessly between your design team and the codebase.</p>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
+      </motion.section>
     </>
   )
 }

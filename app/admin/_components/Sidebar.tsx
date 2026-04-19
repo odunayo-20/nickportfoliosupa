@@ -55,6 +55,7 @@ const Sidebar = () => {
     { name: "Blog", href: "/admin/blog", icon: FileEdit },
     { name: "Newsletter", href: "/admin/newsletter", icon: Mail },
     { name: "Messages", href: "/admin/message", icon: MessageCircle },
+    { name: "Comments", href: "/admin/comments", icon: MessageCircle },
     { name: "Profile", href: "/admin/profile", icon: UserIcon },
     { name: "Invite Users", href: "/admin/whitelist", icon: ShieldCheck },
     { name: "Media", href: "/admin/media", icon: ImageIcon },

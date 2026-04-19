@@ -137,6 +137,47 @@ export async function getAllPosts() {
     return posts;
 }
 
+export async function getPublishedPosts() {
+    const supabase = await createClient();
+    const { data: posts, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("status", "published")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("Error fetching published posts:", error);
+        return [];
+    }
+
+    if (posts && posts.length > 0) {
+        const mediaIds = posts
+            .map(p => p.featured_image_id)
+            .filter(id => !!id);
+        
+        if (mediaIds.length > 0) {
+            const { data: media } = await supabase
+                .from("media")
+                .select("*")
+                .in("id", mediaIds);
+            
+            if (media) {
+                return posts.map(post => {
+                    const featured_image = media.find(m => m.id === post.featured_image_id);
+                    return {
+                        ...post,
+                        featured_image,
+                        imageUrl: featured_image?.url,
+                        image_url: featured_image?.url
+                    };
+                });
+            }
+        }
+    }
+
+    return posts;
+}
+
 export async function getPostBySlug(slug: string) {
     const supabase = await createClient();
     
