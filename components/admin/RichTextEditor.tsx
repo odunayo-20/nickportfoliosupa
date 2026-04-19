@@ -25,6 +25,11 @@ export function RichTextEditor({
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
     const [pendingMediaId, setPendingMediaId] = useState<string | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleMediaSelect = (mediaId: string | string[]) => {
         setIsMediaModalOpen(false);
@@ -53,120 +58,126 @@ export function RichTextEditor({
                 </div>
             )}
 
-            <div className={isLoaded ? "opacity-100 transition-opacity duration-500" : "opacity-0"}>
-                <Editor
-                    tinymceScriptSrc="/tinymce/tinymce.min.js"
-                    licenseKey="gpl"
-                    onInit={(_evt, editor) => {
-                        editorRef.current = editor;
-                        setIsLoaded(true);
-                    }}
-                    value={value}
-                    onEditorChange={(content) => onChange(content)}
-                    init={{
-                        height: height,
-                        placeholder: placeholder,
-                        menubar: false,
-                        plugins: [
-                            "advlist", "autolink", "lists", "link", "image", "charmap",
-                            "preview", "anchor", "searchreplace", "visualblocks", "code",
-                            "fullscreen", "insertdatetime", "media", "table", "help",
-                            "wordcount", "codesample", "emoticons", "accordion"
-                        ],
-                        toolbar:
-                            "undo redo | blocks | " +
-                            "bold italic underline strikethrough | " +
-                            "forecolor backcolor | alignleft aligncenter alignright alignjustify | " +
-                            "bullist numlist outdent indent | link image medialibrary | " +
-                            "table codesample emoticons accordion | removeformat fullscreen code",
-                        content_style: `
-                            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-                            body {
-                                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                                font-size: 16px;
-                                line-height: 1.8;
-                                color: #334155;
-                                padding: 40px;
-                                max-width: 800px;
-                                margin: 0 auto;
-                                background-color: #ffffff;
-                            }
-                            h1, h2, h3, h4, h5, h6 {
-                                color: #0f172a;
-                                font-weight: 700;
-                                margin-top: 1.5em;
-                                margin-bottom: 0.5em;
-                            }
-                            h1 { font-size: 2.25rem; }
-                            h2 { font-size: 1.875rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; }
-                            h3 { font-size: 1.5rem; }
-                            p { margin-bottom: 1.25rem; }
-                            img { 
-                                max-width: 100%; 
-                                height: auto; 
-                                border-radius: 12px; 
-                                margin: 2rem 0;
-                                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                            }
-                            pre { 
-                                background: #1e293b; 
-                                color: #f8fafc;
-                                padding: 24px; 
-                                border-radius: 12px; 
-                                overflow-x: auto; 
-                                font-size: 14px;
-                                margin: 2rem 0;
-                            }
-                            code {
-                                background: #f1f5f9;
-                                color: #ef4444;
-                                padding: 0.2rem 0.4rem;
-                                border-radius: 4px;
-                                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-                            }
-                            blockquote { 
-                                border-left: 4px solid #6366f1; 
-                                padding: 1rem 2rem;
-                                color: #475569; 
-                                font-style: italic; 
-                                background: #f8fafc;
-                                border-radius: 0 12px 12px 0;
-                                margin: 2rem 0;
-                            }
-                            a { color: #6366f1; text-decoration: none; font-weight: 500; }
-                            a:hover { text-decoration: underline; }
-                            table { 
-                                border-collapse: separate; 
-                                border-spacing: 0;
-                                width: 100%; 
-                                margin: 2rem 0;
-                                border: 1px solid #e2e8f0;
-                                border-radius: 8px;
-                                overflow: hidden;
-                            }
-                            th { background: #f8fafc; font-weight: 600; text-align: left; }
-                            td, th { border: 1px solid #e2e8f0; padding: 12px 16px; }
-                        `,
-                        skin: "oxide",
-                        content_css: false,
-                        branding: false,
-                        promotion: false,
-                        resize: true,
-                        statusbar: true,
-                        elementpath: false,
-                        // Custom Media Library button
-                        setup: (editor: any) => {
-                            editor.ui.registry.addButton("medialibrary", {
-                                icon: "gallery",
-                                tooltip: "Insert from Media Library",
-                                onAction: () => {
-                                    setIsMediaModalOpen(true);
-                                },
-                            });
-                        },
-                    }}
-                />
-            </div>
+            {isMounted ? (
+                <div className={isLoaded ? "opacity-100 transition-opacity duration-500" : "opacity-0"}>
+                    <Editor
+                        tinymceScriptSrc="/tinymce/tinymce.min.js"
+                        licenseKey="gpl"
+                        onInit={(_evt, editor) => {
+                            editorRef.current = editor;
+                            setIsLoaded(true);
+                        }}
+                        value={value}
+                        onEditorChange={(content) => onChange(content)}
+                        init={{
+                            height: height,
+                            placeholder: placeholder,
+                            menubar: false,
+                            plugins: [
+                                "advlist", "autolink", "lists", "link", "image", "charmap",
+                                "preview", "anchor", "searchreplace", "visualblocks", "code",
+                                "fullscreen", "insertdatetime", "media", "table", "help",
+                                "wordcount", "codesample", "emoticons", "accordion"
+                            ],
+                            toolbar:
+                                "undo redo | blocks | " +
+                                "bold italic underline strikethrough | " +
+                                "forecolor backcolor | alignleft aligncenter alignright alignjustify | " +
+                                "bullist numlist outdent indent | link image medialibrary | " +
+                                "table codesample emoticons accordion | removeformat fullscreen code",
+                            content_style: `
+                                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+                                body {
+                                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                                    font-size: 16px;
+                                    line-height: 1.8;
+                                    color: #334155;
+                                    padding: 40px;
+                                    max-width: 800px;
+                                    margin: 0 auto;
+                                    background-color: #ffffff;
+                                }
+                                h1, h2, h3, h4, h5, h6 {
+                                    color: #0f172a;
+                                    font-weight: 700;
+                                    margin-top: 1.5em;
+                                    margin-bottom: 0.5em;
+                                }
+                                h1 { font-size: 2.25rem; }
+                                h2 { font-size: 1.875rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; }
+                                h3 { font-size: 1.5rem; }
+                                p { margin-bottom: 1.25rem; }
+                                img { 
+                                    max-width: 100%; 
+                                    height: auto; 
+                                    border-radius: 12px; 
+                                    margin: 2rem 0;
+                                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                                }
+                                pre { 
+                                    background: #1e293b; 
+                                    color: #f8fafc;
+                                    padding: 24px; 
+                                    border-radius: 12px; 
+                                    overflow-x: auto; 
+                                    font-size: 14px;
+                                    margin: 2rem 0;
+                                }
+                                code {
+                                    background: #f1f5f9;
+                                    color: #ef4444;
+                                    padding: 0.2rem 0.4rem;
+                                    border-radius: 4px;
+                                    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+                                }
+                                blockquote { 
+                                    border-left: 4px solid #6366f1; 
+                                    padding: 1rem 2rem;
+                                    color: #475569; 
+                                    font-style: italic; 
+                                    background: #f8fafc;
+                                    border-radius: 0 12px 12px 0;
+                                    margin: 2rem 0;
+                                }
+                                a { color: #6366f1; text-decoration: none; font-weight: 500; }
+                                a:hover { text-decoration: underline; }
+                                table { 
+                                    border-collapse: separate; 
+                                    border-spacing: 0;
+                                    width: 100%; 
+                                    margin: 2rem 0;
+                                    border: 1px solid #e2e8f0;
+                                    border-radius: 8px;
+                                    overflow: hidden;
+                                }
+                                th { background: #f8fafc; font-weight: 600; text-align: left; }
+                                td, th { border: 1px solid #e2e8f0; padding: 12px 16px; }
+                            `,
+                            skin: "oxide",
+                            content_css: false,
+                            branding: false,
+                            promotion: false,
+                            resize: true,
+                            statusbar: true,
+                            elementpath: false,
+                            // Custom Media Library button
+                            setup: (editor: any) => {
+                                editor.ui.registry.addButton("medialibrary", {
+                                    icon: "gallery",
+                                    tooltip: "Insert from Media Library",
+                                    onAction: () => {
+                                        setIsMediaModalOpen(true);
+                                    },
+                                });
+                            },
+                        }}
+                    />
+                </div>
+            ) : (
+                <div style={{ height }} className="bg-slate-50 flex items-center justify-center">
+                    <p className="text-xs font-bold text-slate-300">PREPARING EDITOR...</p>
+                </div>
+            )}
 
             {/* Media Modal */}
             <MediaModal

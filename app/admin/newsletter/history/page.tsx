@@ -37,6 +37,11 @@ export default function NewsletterHistoryPage() {
     const [campaigns, setCampaigns] = useState<NewsletterCampaign[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const fetchCampaigns = async () => {
         setIsLoading(true);
@@ -121,7 +126,7 @@ export default function NewsletterHistoryPage() {
                                     <div className="flex items-center gap-4 text-sm text-slate-500">
                                         <div className="flex items-center gap-1">
                                             <Calendar size={14} className="text-slate-400" />
-                                            {format(new Date(campaign.created_at), "PPP")}
+                                            {isMounted ? format(new Date(campaign.created_at), "PPP") : "Loading date..."}
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Users size={14} className="text-slate-400" />
@@ -140,7 +145,7 @@ export default function NewsletterHistoryPage() {
                                             <DialogHeader>
                                                 <DialogTitle className="text-2xl font-bold">{campaign.subject}</DialogTitle>
                                                 <DialogDescription className="flex items-center gap-2">
-                                                    Sent on {format(new Date(campaign.created_at), "MMMM d, yyyy")} to {campaign.recipient_count} users.
+                                                    Sent on {isMounted ? format(new Date(campaign.created_at), "MMMM d, yyyy") : "..."} to {campaign.recipient_count} users.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="mt-6 border rounded-xl p-8 bg-white prose prose-slate max-w-none shadow-inner">
