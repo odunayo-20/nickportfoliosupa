@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChevronLeft, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { sendNewsletter } from "../actions";
+import { sendNewsletter, sendTestNewsletter } from "../actions";
 
 export default function ComposeNewsletterPage() {
     const router = useRouter();
@@ -42,6 +42,29 @@ export default function ComposeNewsletterPage() {
         }
     };
 
+    const handleSendTest = async () => {
+        if (!subject.trim()) {
+            toast.error("Please enter a subject.");
+            return;
+        }
+        const testEmail = prompt("Enter email address for the test:");
+        if (!testEmail) return;
+
+        setIsSending(true);
+        try {
+            const result = await sendTestNewsletter({ subject, content, email: testEmail });
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Test email sent!");
+            }
+        } catch (error) {
+            toast.error("Failed to send test email.");
+        } finally {
+            setIsSending(false);
+        }
+    };
+
     return (
         <div className="p-6 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center justify-between">
@@ -60,18 +83,27 @@ export default function ComposeNewsletterPage() {
                     </div>
                 </div>
 
-                <Button 
-                    onClick={handleSend} 
-                    disabled={isSending}
-                    className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
-                >
-                    {isSending ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                        <Send className="mr-2 h-4 w-4" />
-                    )}
-                    Send to All
-                </Button>
+                <div className="flex items-center gap-3">
+                    <Button 
+                        variant="outline"
+                        onClick={handleSendTest} 
+                        disabled={isSending}
+                    >
+                        Send Test
+                    </Button>
+                    <Button 
+                        onClick={handleSend} 
+                        disabled={isSending}
+                        className="bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200"
+                    >
+                        {isSending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <Send className="mr-2 h-4 w-4" />
+                        )}
+                        Send to All
+                    </Button>
+                </div>
             </div>
 
             <div className="grid gap-6 bg-white p-8 rounded-2xl border border-slate-100 shadow-sm">

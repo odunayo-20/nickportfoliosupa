@@ -40,7 +40,7 @@ export async function sendNewsletter(payload: {
         // Note: For large lists, you might want to batch this or use a queue.
         // For a typical portfolio, this should be fine for a few hundred recipients.
         const { data, error: mailError } = await resend.emails.send({
-            from: "Newsletter <newsletter@yourdomain.com>", // User should update this
+            from: "Newsletter <onboarding@resend.dev>", // Transition to your verified domain when ready
             to: recipientEmails,
             subject: payload.subject,
             html: payload.content,
@@ -60,7 +60,8 @@ export async function sendNewsletter(payload: {
             });
 
         if (historyError) {
-            console.error("Error saving campaign history:", historyError);
+            console.error("CRITICAL: Email sent but database insert failed:", historyError);
+            return { error: `Success sending email, but record could not be saved to history. Error: ${historyError.message}. Check if 'newsletter_campaigns' table exists.` };
         }
 
         revalidatePath("/admin/newsletter/history");
@@ -82,6 +83,26 @@ export async function getNewsletterCampaigns(): Promise<NewsletterCampaign[]> {
         return [];
     }
     return data as NewsletterCampaign[];
+}
+
+export async function sendTestNewsletter(payload: {
+    subject: string;
+    content: string;
+    email: string;
+}) {
+    try {
+        const { error: mailError } = await resend.emails.send({
+            from: "Newsletter <onboarding@resend.dev>",
+            to: [payload.email],
+            subject: `[TEST] ${payload.subject}`,
+            html: payload.content,
+        });
+
+        if (mailError) return { error: mailError.message };
+        return { success: true };
+    } catch (err: any) {
+        return { error: err.message || "An unexpected error occurred." };
+    }
 }
 
 export async function deleteNewsletterCampaign(id: string) {
