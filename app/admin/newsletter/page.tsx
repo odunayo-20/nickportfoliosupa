@@ -1,7 +1,9 @@
 import { getNewsletterSubscribers } from "@/actions/newsletter";
 import { NewsletterTable } from "./_components/NewsletterTable";
-import { Mail, Users, UserCheck, UserMinus } from "lucide-react";
+import { Mail, Users, UserCheck, UserMinus, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export const metadata = {
   title: "Newsletter — Admin",
@@ -15,9 +17,25 @@ export default async function NewsletterPage() {
 
   return (
     <div className="p-6 space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Newsletter</h1>
-        <p className="text-slate-500 dark:text-slate-400">Manage your audience and track subscriptions.</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Newsletter</h1>
+          <p className="text-slate-500 dark:text-slate-400">Manage your audience and track subscriptions.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link href="/admin/newsletter/history">
+            <Button variant="outline" className="font-bold gap-2">
+              <Mail className="w-4 h-4" />
+              History
+            </Button>
+          </Link>
+          <Link href="/admin/newsletter/compose">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 font-bold gap-2 shadow-lg shadow-indigo-200">
+              <Send className="w-4 h-4" />
+              Compose
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
