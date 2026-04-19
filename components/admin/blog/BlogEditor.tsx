@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { MediaModal } from "@/components/admin/media/MediaModal";
-import { ClassicEditor } from "./ClassicEditor";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { cn } from "@/lib/utils";
 import { createPost, updatePost } from "@/actions/blog";
 import { supabase } from "@/lib/supabaseClient";
@@ -223,7 +223,7 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                             name="content"
                             control={control}
                             render={({ field }) => (
-                                <ClassicEditor 
+                                <RichTextEditor 
                                     value={field.value} 
                                     onChange={field.onChange} 
                                     placeholder="Start writing your masterpiece..."

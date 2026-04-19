@@ -35,7 +35,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { MediaModal } from "@/components/admin/media/MediaModal";
 import Link from "next/link";
-import { Editor } from "@tinymce/tinymce-react";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -383,33 +383,12 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                             </div>
                             <div className="min-h-[600px] tinymce-custom-container relative">
                                 {isMounted ? (
-                                    <Editor
-                                        tinymceScriptSrc="/tinymce/tinymce.min.js"
-                                        licenseKey="gpl"
-                                        initialValue={initialData?.content || ""}
-                                        onInit={(evt, editor) => {
-                                            // Ready handled by isMounted in this context
-                                        }}
-                                        init={{
-                                            height: 600,
-                                            menubar: false,
-                                            plugins: [
-                                                "advlist", "autolink", "lists", "link", "image", "charmap", "preview",
-                                                "anchor", "searchreplace", "visualblocks", "code", "fullscreen",
-                                                "insertdatetime", "media", "table", "help", "wordcount"
-                                            ],
-                                            toolbar: "undo redo | blocks | " +
-                                                "bold italic forecolor | alignleft aligncenter " +
-                                                "alignright alignjustify | bullist numlist outdent indent | " +
-                                                "removeformat | link image table | code fullscreen",
-                                            content_style: "body { font-family:Inter,system-ui,sans-serif; font-size:16px; color:#1e293b; line-height:1.6; padding: 2rem; }",
-                                            skin: "oxide",
-                                            promotion: false,
-                                            branding: false,
-                                            statusbar: true,
-                                        }}
-                                        onEditorChange={(content) => setValue("content", content, { shouldDirty: true })}
-                                    />
+                                <RichTextEditor
+                                    value={values.content || ""}
+                                    onChange={(content) => setValue("content", content, { shouldDirty: true })}
+                                    placeholder="Enter full project description and technical details..."
+                                    height={600}
+                                />
                                 ) : (
                                     <div className="h-[600px] bg-slate-50 flex items-center justify-center">
                                         <div className="flex flex-col items-center gap-3">
@@ -753,21 +732,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                 }
             />
 
-            <style jsx global>{`
-                .tinymce-custom-container .tox-tinymce {
-                    border: none !important;
-                    border-radius: 0 !important;
-                }
-                .tinymce-custom-container .tox-editor-header {
-                    box-shadow: none !important;
-                    border-bottom: 1px solid #f1f5f9 !important;
-                    padding: 4px 16px !important;
-                    background: transparent !important;
-                }
-                .tinymce-custom-container .tox-statusbar {
-                    border-top: 1px solid #f1f5f9 !important;
-                }
-            `}</style>
+
         </form>
     );
 }
