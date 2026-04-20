@@ -40,7 +40,7 @@ export default function NewsletterHistoryPage() {
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 1;
+    const ITEMS_PER_PAGE = 10;
 
     useEffect(() => {
         setIsMounted(true);
@@ -63,26 +63,35 @@ export default function NewsletterHistoryPage() {
         fetchCampaigns();
     }, []);
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this campaign record? This will not undo the actual email delivery.")) return;
-        
-        setIsDeleting(id);
-        const result = await deleteNewsletterCampaign(id);
-        if (result.success) {
-            toast.success("Campaign record deleted.");
-            setCampaigns(campaigns.filter(c => c.id !== id));
-            // Adjust page if we delete the last item on the current page
-            if (paginatedCampaigns.length === 1 && currentPage > 1) {
-                setCurrentPage(currentPage - 1);
+    const handleDelete = (id: string) => {
+        toast("Delete Campaign Record?", {
+            description: "This will remove the analytics record but won't undo actual email delivery.",
+            action: {
+                label: "Delete",
+                onClick: async () => {
+                    setIsDeleting(id);
+                    const result = await deleteNewsletterCampaign(id);
+                    if (result.success) {
+                        toast.success("Campaign record deleted.");
+                        setCampaigns(prev => prev.filter(c => c.id !== id));
+                        if (paginatedCampaigns.length === 1 && currentPage > 1) {
+                            setCurrentPage(currentPage - 1);
+                        }
+                    } else {
+                        toast.error(result.error || "Failed to delete.");
+                    }
+                    setIsDeleting(null);
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                onClick: () => {}
             }
-        } else {
-            toast.error(result.error || "Failed to delete.");
-        }
-        setIsDeleting(null);
+        });
     };
 
     return (
-        <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+        <div className="p-6 md:p-8 w-full space-y-8 animate-in fade-in duration-500">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button 
@@ -154,7 +163,7 @@ export default function NewsletterHistoryPage() {
                                                 <Eye size={18} />
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                                        <DialogContent className="max-w-[80vw] max-h-[90vh] overflow-y-auto">
                                             <DialogHeader>
                                                 <DialogTitle className="text-2xl font-bold">{campaign.subject}</DialogTitle>
                                                 <DialogDescription className="flex items-center gap-2">

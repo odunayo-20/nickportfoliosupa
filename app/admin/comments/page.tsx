@@ -62,19 +62,30 @@ export default function CommentsManagementPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to permanently delete this comment?")) return;
-        try {
-            const res = await deleteComment(id);
-            if (res.success) {
-                toast.success("Comment deleted");
-                fetchComments();
-            } else {
-                toast.error(res.error || "Failed to delete comment");
+    const handleDelete = (id: string) => {
+        toast("Delete Comment?", {
+            description: "Are you sure you want to permanently delete this comment?",
+            action: {
+                label: "Delete",
+                onClick: async () => {
+                    try {
+                        const res = await deleteComment(id);
+                        if (res.success) {
+                            toast.success("Comment deleted");
+                            fetchComments();
+                        } else {
+                            toast.error(res.error || "Failed to delete comment");
+                        }
+                    } catch (error) {
+                        toast.error("An error occurred");
+                    }
+                }
+            },
+            cancel: {
+                label: "Cancel",
+                onClick: () => {}
             }
-        } catch (error) {
-            toast.error("An error occurred");
-        }
+        });
     };
 
     const pendingCount = comments.filter(c => !c.is_approved).length;

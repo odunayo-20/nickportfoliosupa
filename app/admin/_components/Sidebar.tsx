@@ -12,7 +12,8 @@ import {
   Image as ImageIcon,
   ShieldCheck,
   Mail,
-  Tag
+  Tag,
+  BarChart3
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -55,6 +56,7 @@ const Sidebar = () => {
     { name: "Projects", href: "/admin/project", icon: FolderKanban },
     { name: "Blog", href: "/admin/blog", icon: FileEdit },
     { name: "Categories", href: "/admin/categories", icon: Tag },
+    { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
     { name: "Newsletter", href: "/admin/newsletter", icon: Mail },
     { name: "Messages", href: "/admin/message", icon: MessageCircle },
     { name: "Comments", href: "/admin/comments", icon: MessageCircle },

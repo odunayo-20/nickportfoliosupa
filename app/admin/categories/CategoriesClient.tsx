@@ -71,7 +71,7 @@ export function CategoriesClient({ initialCategories }: { initialCategories: Cat
     }
 
     return (
-        <div className="max-w-2xl mx-auto px-6 py-10 space-y-8">
+        <div className="w-full px-6 md:px-8 py-10 space-y-8">
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold tracking-tight text-slate-800 flex items-center gap-2">
