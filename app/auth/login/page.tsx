@@ -677,7 +677,7 @@ const LoginPage = () => {
 
                 <div className="auth-brand-logo">
                     <div className="auth-brand-logo-mark">N</div>
-                    <div className="auth-brand-logo-text">Architect</div>
+                    <div className="auth-brand-logo-text">Nikola</div>
                 </div>
 
                 <div className="auth-brand-content">

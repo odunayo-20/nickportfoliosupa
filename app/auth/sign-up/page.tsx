@@ -415,7 +415,7 @@ const SignUpPage = () => {
                 <div className="auth-grid-pattern" />
                 <div className="auth-brand-logo">
                     <div className="auth-brand-logo-mark">N</div>
-                    <div className="auth-brand-logo-text">Architect</div>
+                    <div className="auth-brand-logo-text">Nikola</div>
                 </div>
                 <div className="auth-brand-content">
                     <h1 className="auth-brand-headline">
@@ -438,7 +438,7 @@ const SignUpPage = () => {
             <div className="auth-mobile-header">
                 <div className="auth-brand-logo">
                     <div className="auth-brand-logo-mark">N</div>
-                    <div className="auth-brand-logo-text">Architect</div>
+                    <div className="auth-brand-logo-text">Nikola</div>
                 </div>
                 <h1 className="auth-brand-headline" style={{ fontSize: '1.75rem', margin: '0.5rem 0 0' }}>
                     Create account.<br /><span>Own your work.</span>

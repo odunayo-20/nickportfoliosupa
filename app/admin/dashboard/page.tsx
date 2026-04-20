@@ -67,7 +67,7 @@ const DashboardPage = () => {
 
   return (
     <div>
-      <div className="p-6 md:p-8 max-w-7xl mx-auto w-full">
+      <div className="p-6 md:p-8 max-w-7xl mx-auto w-full pb-24">
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>

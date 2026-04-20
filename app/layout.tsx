@@ -25,11 +25,11 @@ export async function generateMetadata(): Promise<Metadata> {
     description: settings?.meta_description || "Manage your portfolio, blog, and professional presence.",
     keywords: settings?.keywords || [],
     icons: {
-      icon: settings?.logo || "/favicon.ico",
-      apple: settings?.logo || "/apple-touch-icon.png",
+      icon: settings?.logo || "/logo.png",
+      apple: settings?.logo || "/logo.png",
     },
     openGraph: {
-      images: settings?.og_image_url ? [settings.og_image_url] : [],
+      images: settings?.og_image_url ? [settings.og_image_url] : ["/logo.png"],
       title: settings?.site_title || "Architect Portfolio",
       description: settings?.meta_description || "Manage your professional presence.",
     },
