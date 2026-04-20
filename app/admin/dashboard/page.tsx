@@ -1,9 +1,9 @@
 "use client"
 
 import React, { useEffect, useState } from "react";
-import { Plus, Pencil, FolderKanban, FileEdit, MessageCircle, Loader2, Clock, ChevronRight, User } from "lucide-react";
+import { Plus, Pencil, FolderKanban, FileEdit, MessageCircle, Loader2, Clock, ChevronRight, User, Users, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { supabase } from "@/lib/supabaseClient";
+import { getDashboardStats } from "@/actions/dashboard";
 import { myAppHook } from "@/context/AppUtils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,8 @@ const DashboardPage = () => {
     projects: 0,
     posts: 0,
     messages: 0,
+    subscribers: 0,
+    pendingComments: 0,
   });
   const [recentMessages, setRecentMessages] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
@@ -32,29 +34,15 @@ const DashboardPage = () => {
     const fetchStats = async () => {
       setIsLoadingStats(true);
       try {
-        const [projectsCount, postsCount, messagesCount, messagesRes, projectsRes, postsRes] = await Promise.all([
-          supabase.from("projects").select("*", { count: "exact", head: true }),
-          supabase.from("posts").select("*", { count: "exact", head: true }),
-          supabase.from("messages").select("*", { count: "exact", head: true }).eq("is_read", false),
-          supabase.from("messages").select("*").order("created_at", { ascending: false }).limit(3),
-          supabase.from("projects").select("id, title, created_at").order("created_at", { ascending: false }).limit(3),
-          supabase.from("posts").select("id, title, created_at").order("created_at", { ascending: false }).limit(3),
-        ]);
+        const result = await getDashboardStats();
 
-        setStats({
-          projects: projectsCount.count || 0,
-          posts: postsCount.count || 0,
-          messages: messagesCount.count || 0,
-        });
-
-        setRecentMessages(messagesRes.data || []);
-        
-        const activity = [
-          ...(projectsRes.data || []).map(p => ({ ...p, type: 'project' as const })),
-          ...(postsRes.data || []).map(p => ({ ...p, type: 'post' as const })),
-        ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4);
-
-        setRecentActivity(activity);
+        if (result.success && result.stats) {
+            setStats(result.stats);
+            setRecentMessages(result.recentMessages || []);
+            setRecentActivity(result.recentActivity || []);
+        } else {
+            console.error(result.error);
+        }
       } catch (error) {
         console.error("Error fetching stats:", error);
       } finally {
@@ -109,7 +97,7 @@ const DashboardPage = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-10">
           {/* Projects */}
           <div className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between min-h-[180px] group hover:border-indigo-100 hover:shadow-lg transition-all">
             <div className="flex justify-between items-start">
@@ -151,24 +139,64 @@ const DashboardPage = () => {
           </div>
 
           {/* Messages */}
-          <div className="p-6 rounded-2xl bg-slate-900 text-white shadow-xl flex flex-col justify-between min-h-[180px] group hover:scale-[1.02] transition-all">
+          <Link href="/admin/message" className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between min-h-[180px] group hover:border-blue-100 hover:shadow-lg transition-all">
             <div className="flex justify-between items-start">
-              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:rotate-6 transition-transform">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
                 <MessageCircle className="w-5 h-5" />
               </div>
-              <span className="text-xs font-medium text-white/40">
+              <span className="text-xs font-medium text-slate-400">
                 Unread
               </span>
             </div>
             <div>
-              <p className="text-4xl font-bold text-white tracking-tight leading-none">
+              <p className="text-4xl font-bold text-slate-900 tracking-tight leading-none">
                 {stats.messages}
               </p>
-              <p className="text-sm font-medium mt-2 text-white/50">
+              <p className="text-sm font-medium mt-2 text-slate-500">
                 Messages
               </p>
             </div>
-          </div>
+          </Link>
+
+          {/* Subscribers */}
+          <Link href="/admin/newsletter" className="p-6 rounded-2xl bg-white border border-slate-100 shadow-sm flex flex-col justify-between min-h-[180px] group hover:border-emerald-100 hover:shadow-lg transition-all">
+            <div className="flex justify-between items-start">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                <Users className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-medium text-slate-400">
+                Active
+              </span>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-slate-900 tracking-tight leading-none">
+                {stats.subscribers}
+              </p>
+              <p className="text-sm font-medium mt-2 text-slate-500">
+                Subscribers
+              </p>
+            </div>
+          </Link>
+
+          {/* Pending Comments */}
+          <Link href="/admin/comments" className="p-6 rounded-2xl bg-slate-900 text-white shadow-xl flex flex-col justify-between min-h-[180px] group hover:scale-[1.02] transition-all">
+            <div className="flex justify-between items-start">
+              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center text-white group-hover:rotate-6 transition-transform">
+                <MessageSquare className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-medium text-white/40">
+                Pending
+              </span>
+            </div>
+            <div>
+              <p className="text-4xl font-bold text-white tracking-tight leading-none">
+                {stats.pendingComments}
+              </p>
+              <p className="text-sm font-medium mt-2 text-white/50">
+                Comments
+              </p>
+            </div>
+          </Link>
         </div>
 
         {/* Bottom sections */}

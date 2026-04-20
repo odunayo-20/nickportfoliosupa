@@ -32,9 +32,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Trash2, UserX, UserCheck, Mail, Calendar, AlertTriangle, Loader2 } from "lucide-react";
+import { MoreHorizontal, Trash2, UserX, UserCheck, Mail, Calendar, AlertTriangle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import React, { useMemo } from "react";
 
 interface NewsletterTableProps {
   initialSubscribers: NewsletterSubscriber[];
@@ -45,6 +46,14 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [subscriberToDelete, setSubscriberToDelete] = useState<NewsletterSubscriber | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  const totalPages = Math.ceil(subscribers.length / ITEMS_PER_PAGE);
+  const paginatedSubscribers = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return subscribers.slice(start, start + ITEMS_PER_PAGE);
+  }, [subscribers, currentPage]);
 
   async function handleDelete() {
     if (!subscriberToDelete) return;
@@ -54,6 +63,9 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
       const result = await deleteNewsletterSubscriber(subscriberToDelete.id);
       if (result.success) {
         setSubscribers(subscribers.filter(s => s.id !== subscriberToDelete.id));
+        if (paginatedSubscribers.length === 1 && currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
         toast.success("Subscriber deleted successfully");
         setIsDeleteDialogOpen(false);
       } else {
@@ -89,7 +101,7 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
     <div className="w-full">
       <Table>
         <TableHeader>
-          <TableRow className="border-slate-100 dark:border-slate-800 hover:bg-transparent">
+          <TableRow className="border-slate-100 border dark:border-slate-800 hover:bg-transparent">
             <TableHead className="w-[300px]">Subscriber</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Subscribed On</TableHead>
@@ -104,8 +116,8 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
               </TableCell>
             </TableRow>
           ) : (
-            subscribers.map((subscriber) => (
-              <TableRow key={subscriber.id} className="border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+            paginatedSubscribers.map((subscriber) => (
+              <TableRow key={subscriber.id} className="border-slate-100 border dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                 <TableCell>
                   <div className="flex flex-col gap-0.5">
                     <span className="font-medium text-slate-900 dark:text-slate-100">
@@ -183,6 +195,69 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
         </TableBody>
       </Table>
 
+      {/* Pagination Controls */}
+      {subscribers.length > 0 && (
+          <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30">
+              <p className="text-[12px] text-slate-500 font-medium">
+                  Showing <span className="font-bold text-slate-900">{Math.min(subscribers.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-slate-900">{Math.min(subscribers.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="font-bold text-slate-900">{subscribers.length}</span> subscribers
+              </p>
+
+              {totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                      <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                          disabled={currentPage === 1}
+                          className="h-8 w-8 p-0"
+                      >
+                          <ChevronLeft size={16} />
+                      </Button>
+
+                      <div className="flex items-center gap-1 mx-2">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                              const isVisible = totalPages <= 7 || 
+                                  page === 1 || 
+                                  page === totalPages || 
+                                  (page >= currentPage - 1 && page <= currentPage + 1);
+                              
+                              if (!isVisible) {
+                                  if (page === 2 || page === totalPages - 1) {
+                                      return <span key={page} className="text-slate-300 px-1">...</span>;
+                                  }
+                                  return null;
+                              }
+
+                              return (
+                                  <button
+                                      key={page}
+                                      onClick={() => setCurrentPage(page)}
+                                      className={`min-w-[32px] h-8 px-2 text-[12px] font-bold rounded-lg transition-all ${
+                                          currentPage === page 
+                                              ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
+                                              : "text-slate-500 hover:bg-slate-100"
+                                      }`}
+                                  >
+                                      {page}
+                                  </button>
+                              );
+                          })}
+                      </div>
+
+                      <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                          disabled={currentPage === totalPages}
+                          className="h-8 w-8 p-0"
+                      >
+                          <ChevronRight size={16} />
+                      </Button>
+                  </div>
+              )}
+          </div>
+      )}
+
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[425px] border-none shadow-2xl bg-white dark:bg-slate-900">
           <DialogHeader className="pt-4 px-2">
@@ -199,7 +274,7 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
             <Button 
               variant="outline" 
               onClick={() => setIsDeleteDialogOpen(false)}
-              className="rounded-xl border-slate-200 dark:border-slate-800"
+              className="rounded-xl border-slate-200 border dark:border-slate-800"
               disabled={isDeleting}
             >
               No, keep them

@@ -20,7 +20,7 @@ export default function BlogManagementPage() {
     const [statusFilter, setStatusFilter] = useState("all");
     const [postToDelete, setPostToDelete] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 1;
+    const ITEMS_PER_PAGE = 10;
 
     const fetchPosts = useCallback(async () => {
         setIsLoading(true);

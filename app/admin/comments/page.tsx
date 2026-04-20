@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, Check, X, Trash2 } from 'lucide-react';
+import { MessageSquare, Check, X, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,6 +11,8 @@ export default function CommentsManagementPage() {
     const [comments, setComments] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [statusFilter, setStatusFilter] = useState("pending");
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
 
     const fetchComments = useCallback(async () => {
         setIsLoading(true);
@@ -34,6 +36,17 @@ export default function CommentsManagementPage() {
         if (statusFilter === "approved") return comment.is_approved;
         return true; // "all"
     });
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredComments.length / ITEMS_PER_PAGE);
+    const paginatedComments = React.useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredComments.slice(start, start + ITEMS_PER_PAGE);
+    }, [filteredComments, currentPage]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter]);
 
     const handleToggleStatus = async (id: string, currentStatus: boolean) => {
         try {
@@ -148,7 +161,7 @@ export default function CommentsManagementPage() {
                         </div>
                     ) : (
                         <div className="divide-y divide-slate-100">
-                            {filteredComments.map(comment => (
+                            {paginatedComments.map(comment => (
                                 <div key={comment.id} className="p-6 flex flex-col md:flex-row gap-6 hover:bg-slate-50/50 transition-colors">
                                     {/* Author Info */}
                                     <div className="flex gap-4 md:w-1/4 shrink-0">
@@ -209,6 +222,69 @@ export default function CommentsManagementPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Footer with Pagination */}
+                {filteredComments.length > 0 && (
+                    <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/30 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-b-xl">
+                        <p className="text-[12px] text-slate-500 font-medium">
+                            Showing <span className="font-bold text-slate-900">{Math.min(filteredComments.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-slate-900">{Math.min(filteredComments.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="font-bold text-slate-900">{filteredComments.length}</span> comments
+                        </p>
+                        
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronLeft size={16} />
+                                </Button>
+                                
+                                <div className="flex items-center gap-1 mx-2">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                        const isVisible = totalPages <= 7 || 
+                                            page === 1 || 
+                                            page === totalPages || 
+                                            (page >= currentPage - 1 && page <= currentPage + 1);
+                                        
+                                        if (!isVisible) {
+                                            if (page === 2 || page === totalPages - 1) {
+                                                return <span key={page} className="text-slate-300 px-1">...</span>;
+                                            }
+                                            return null;
+                                        }
+
+                                        return (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`min-w-[32px] h-8 px-2 text-[12px] font-bold rounded-lg transition-all ${
+                                                    currentPage === page 
+                                                        ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
+                                                        : "text-slate-500 hover:bg-slate-100"
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronRight size={16} />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

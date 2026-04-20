@@ -34,7 +34,7 @@ export default function ProjectManagementPage() {
     const [idsToDelete, setIdsToDelete] = useState<string[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 8;
+    const ITEMS_PER_PAGE = 10;
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -350,4 +350,4 @@ export default function ProjectManagementPage() {
             />
         </section>
     );
-}
+}

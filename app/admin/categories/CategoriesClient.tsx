@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Check, X, Tag } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, Tag, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createCategory, updateCategory, deleteCategory } from "@/actions/categories";
@@ -16,6 +16,14 @@ export function CategoriesClient({ initialCategories }: { initialCategories: Cat
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState("");
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
+    const totalPages = Math.ceil(categories.length / ITEMS_PER_PAGE);
+    const paginatedCategories = categories.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     async function handleCreate() {
         if (!newName.trim()) return;
@@ -51,6 +59,9 @@ export function CategoriesClient({ initialCategories }: { initialCategories: Cat
         try {
             await deleteCategory(id);
             setCategories((prev) => prev.filter((c) => c.id !== id));
+            if (paginatedCategories.length === 1 && currentPage > 1) {
+                setCurrentPage((prev) => prev - 1);
+            }
             toast.success("Category deleted");
         } catch (e: any) {
             toast.error(e.message || "Failed to delete category");
@@ -78,7 +89,7 @@ export function CategoriesClient({ initialCategories }: { initialCategories: Cat
                         onChange={(e) => setNewName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleCreate()}
                         placeholder="e.g. UI Design"
-                        className="bg-slate-50 border-slate-200 h-10"
+                        className="bg-slate-50 border-slate-200 border h-10"
                     />
                     <Button
                         onClick={handleCreate}
@@ -105,7 +116,7 @@ export function CategoriesClient({ initialCategories }: { initialCategories: Cat
                     </div>
                 ) : (
                     <ul className="divide-y divide-slate-100">
-                        {categories.map((cat) => (
+                        {paginatedCategories.map((cat) => (
                             <li key={cat.id} className="flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors group">
                                 {editingId === cat.id ? (
                                     <>
@@ -116,7 +127,7 @@ export function CategoriesClient({ initialCategories }: { initialCategories: Cat
                                                 if (e.key === "Enter") handleUpdate(cat.id);
                                                 if (e.key === "Escape") setEditingId(null);
                                             }}
-                                            className="flex-1 h-8 text-sm bg-slate-50 border-indigo-300 focus:border-indigo-500"
+                                            className="flex-1 h-8 text-sm bg-slate-50 border-indigo-300 border focus:border-indigo-500"
                                             autoFocus
                                         />
                                         <button
@@ -162,6 +173,69 @@ export function CategoriesClient({ initialCategories }: { initialCategories: Cat
                             </li>
                         ))}
                     </ul>
+                )}
+                
+                {/* Pagination Controls */}
+                {categories.length > 0 && (
+                    <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30">
+                        <p className="text-[12px] text-slate-500 font-medium">
+                            Showing <span className="font-bold text-slate-900">{Math.min(categories.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-slate-900">{Math.min(categories.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="font-bold text-slate-900">{categories.length}</span> categories
+                        </p>
+
+                        {totalPages > 1 && (
+                            <div className="flex items-center gap-1">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronLeft size={16} />
+                                </Button>
+
+                                <div className="flex items-center gap-1 mx-2">
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                        const isVisible = totalPages <= 7 || 
+                                            page === 1 || 
+                                            page === totalPages || 
+                                            (page >= currentPage - 1 && page <= currentPage + 1);
+                                        
+                                        if (!isVisible) {
+                                            if (page === 2 || page === totalPages - 1) {
+                                                return <span key={page} className="text-slate-300 px-1">...</span>;
+                                            }
+                                            return null;
+                                        }
+
+                                        return (
+                                            <button
+                                                key={page}
+                                                onClick={() => setCurrentPage(page)}
+                                                className={`min-w-[32px] h-8 px-2 text-[12px] font-bold rounded-lg transition-all ${
+                                                    currentPage === page 
+                                                        ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
+                                                        : "text-slate-500 hover:bg-slate-100"
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <ChevronRight size={16} />
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
         </div>

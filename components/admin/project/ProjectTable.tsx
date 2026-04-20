@@ -67,7 +67,7 @@ export function ProjectTable({
                             />
                         </th>
                         <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Project</th>
-                        <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell">Details</th>
+                        {/* <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell">Details</th> */}
                         <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Tech Stack</th>
                         <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
                         <th className="px-6 py-4 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">Actions</th>
@@ -135,14 +135,15 @@ export function ProjectTable({
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 hidden md:table-cell">
+                                {/* <td className="px-6 py-4 hidden md:table-cell">
                                     <p className="text-[13px] text-slate-500 line-clamp-1 max-w-[200px]">
                                         {project.description}
                                     </p>
-                                </td>
+                                </td> */}
                                 <td className="px-6 py-4 hidden lg:table-cell">
                                     <div className="flex flex-wrap gap-1">
-                                        {project.techStack?.slice(0, 3).map((tech: string) => (
+                                        {console.log(project.tech_stack)}
+                                        {project.tech_stack?.slice(0, 3).map((tech: string) => (
                                             <span 
                                                 key={tech} 
                                                 className="px-2 py-0.5 bg-slate-100 text-slate-600 text-[10px] font-bold rounded-md uppercase tracking-tight"

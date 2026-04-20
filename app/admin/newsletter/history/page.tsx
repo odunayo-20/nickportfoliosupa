@@ -12,7 +12,8 @@ import {
     Eye,
     Mail,
     Loader2,
-    RefreshCw
+    RefreshCw,
+    ChevronRight
 } from "lucide-react";
 import { 
     Card, 
@@ -38,10 +39,18 @@ export default function NewsletterHistoryPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [isMounted, setIsMounted] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 1;
 
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    const totalPages = Math.ceil(campaigns.length / ITEMS_PER_PAGE);
+    const paginatedCampaigns = React.useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return campaigns.slice(start, start + ITEMS_PER_PAGE);
+    }, [campaigns, currentPage]);
 
     const fetchCampaigns = async () => {
         setIsLoading(true);
@@ -62,6 +71,10 @@ export default function NewsletterHistoryPage() {
         if (result.success) {
             toast.success("Campaign record deleted.");
             setCampaigns(campaigns.filter(c => c.id !== id));
+            // Adjust page if we delete the last item on the current page
+            if (paginatedCampaigns.length === 1 && currentPage > 1) {
+                setCurrentPage(currentPage - 1);
+            }
         } else {
             toast.error(result.error || "Failed to delete.");
         }
@@ -111,8 +124,8 @@ export default function NewsletterHistoryPage() {
                 </div>
             ) : (
                 <div className="grid gap-6">
-                    {campaigns.map((campaign) => (
-                        <Card key={campaign.id} className="overflow-hidden border-slate-200 group hover:border-indigo-200 transition-all hover:shadow-lg hover:shadow-indigo-50/50">
+                    {paginatedCampaigns.map((campaign) => (
+                        <Card key={campaign.id} className="overflow-hidden border-slate-200 border group hover:border-indigo-200 transition-all hover:shadow-lg hover:shadow-indigo-50/50">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <div className="space-y-1 flex-1">
                                     <div className="flex items-center gap-2">
@@ -171,6 +184,69 @@ export default function NewsletterHistoryPage() {
                             </CardHeader>
                         </Card>
                     ))}
+                </div>
+            )}
+
+            {/* Pagination Controls */}
+            {!isLoading && campaigns.length > 0 && (
+                <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30 rounded-xl mt-6">
+                    <p className="text-[12px] text-slate-500 font-medium">
+                        Showing <span className="font-bold text-slate-900">{Math.min(campaigns.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-slate-900">{Math.min(campaigns.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="font-bold text-slate-900">{campaigns.length}</span> campaigns
+                    </p>
+
+                    {totalPages > 1 && (
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="h-8 w-8 p-0"
+                            >
+                                <ChevronLeft size={16} />
+                            </Button>
+
+                            <div className="flex items-center gap-1 mx-2">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                    const isVisible = totalPages <= 7 || 
+                                        page === 1 || 
+                                        page === totalPages || 
+                                        (page >= currentPage - 1 && page <= currentPage + 1);
+                                    
+                                    if (!isVisible) {
+                                        if (page === 2 || page === totalPages - 1) {
+                                            return <span key={page} className="text-slate-300 px-1">...</span>;
+                                        }
+                                        return null;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`min-w-[32px] h-8 px-2 text-[12px] font-bold rounded-lg transition-all ${
+                                                currentPage === page 
+                                                    ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
+                                                    : "text-slate-500 hover:bg-slate-100"
+                                            }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="h-8 w-8 p-0"
+                            >
+                                <ChevronRight size={16} />
+                            </Button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
