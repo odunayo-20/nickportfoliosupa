@@ -17,6 +17,8 @@ const staggerContainer: Variants = {
   }
 };
 
+
+
 const About = () => {
   return (
     <>
@@ -154,3 +156,5 @@ const About = () => {
 }
 
 export default About
+
+
