@@ -137,50 +137,58 @@ const MessagesPage = () => {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-theme(spacing.20))] overflow-hidden bg-[#fafafa]">
+        <div className="flex flex-col h-[calc(100vh-theme(spacing.16))] sm:h-[calc(100vh-theme(spacing.20))] overflow-hidden bg-[#fafafa]">
             {/* Header */}
-            <header className="px-8 py-6 bg-white border-b border-slate-200 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                            <MessageCircle size={20} />
+            <header className="px-4 sm:px-8 py-4 sm:py-6 bg-white border-b border-slate-100 flex flex-col xs:flex-row items-center justify-between gap-4">
+                <div className="flex items-center justify-between w-full xs:w-auto">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 shadow-sm shadow-indigo-100/50">
+                            <MessageCircle size={18} className="sm:w-5 sm:h-5" />
                         </div>
                         Inquiries
                     </h1>
-                </div>
-                <div className="flex items-center gap-3">
-                   <button 
+                    <button 
                         onClick={fetchMessages}
-                        className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all rounded-xl"
+                        className="xs:hidden p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all rounded-xl border border-transparent"
                         title="Refresh"
                     >
                         <RefreshCcw size={18} className={loading ? "animate-spin" : ""} />
                     </button>
-                    <div className="relative group">
+                </div>
+                
+                <div className="flex items-center gap-2 sm:gap-3 w-full xs:w-auto">
+                    <div className="relative group flex-1 xs:flex-none">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 group-focus-within:text-indigo-500 transition-colors" />
                         <input
-                            className="pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-medium focus:ring-4 focus:ring-indigo-500/5 transition-all w-48 lg:w-72 placeholder:text-slate-400 border border-slate-100 focus:bg-white focus:border-indigo-100"
-                            placeholder="Find inquiry..."
+                            className="w-full xs:w-48 lg:w-72 pl-10 pr-4 py-2 sm:py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-xs sm:text-sm font-medium focus:ring-4 focus:ring-indigo-500/10 transition-all focus:bg-white focus:border-indigo-100 placeholder:text-slate-400"
+                            placeholder="Search in history..."
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
+                    <button 
+                        onClick={fetchMessages}
+                        className="hidden xs:flex p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 transition-all rounded-xl border border-slate-100"
+                        title="Refresh"
+                    >
+                        <RefreshCcw size={18} className={loading ? "animate-spin" : ""} />
+                    </button>
                 </div>
             </header>
 
             <div className="flex flex-1 overflow-hidden relative">
                 {/* Sidebar List */}
-                <aside className={`absolute inset-0 z-20 bg-white md:relative md:flex md:flex-col md:w-96 border-r border-slate-100 transition-transform duration-300 ${selectedId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
-                    <div className="p-4 border-b border-slate-50 flex items-center gap-2 overflow-x-auto scroller-hide">
+                <aside className={`absolute inset-0 z-20 bg-white md:relative md:flex md:flex-col md:w-[320px] lg:w-96 border-r border-slate-100 transition-transform duration-300 ${selectedId ? '-translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
+                    <div className="p-3.5 border-b border-slate-50 flex items-center gap-2 overflow-x-auto no-scrollbar bg-slate-50/20">
                         {(['all', 'unread', 'read'] as const).map((f) => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-4 py-1.5 rounded-full text-xs font-bold capitalize transition-all whitespace-nowrap ${
+                                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap shadow-sm border ${
                                     filter === f 
-                                    ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
-                                    : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                                    ? "bg-slate-900 border-slate-900 text-white shadow-slate-200" 
+                                    : "bg-white border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-50"
                                 }`}
                             >
                                 {f}
@@ -191,40 +199,40 @@ const MessagesPage = () => {
                     <div className="flex-1 overflow-y-auto scroller">
                         {loading && messages.length === 0 ? (
                             <div className="flex items-center justify-center py-12">
-                                <Loader2 className="w-6 h-6 animate-spin text-slate-300" />
+                                <Loader2 className="w-6 h-6 animate-spin text-indigo-400" />
                             </div>
                         ) : filteredMessages.length === 0 ? (
                             <div className="p-12 text-center">
-                                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-300">
-                                    <MessageCircle size={22} />
+                                <div className="w-16 h-16 bg-slate-50 rounded-[1.5rem] flex items-center justify-center mx-auto mb-4 text-slate-200 border border-slate-100">
+                                    <MessageCircle size={28} />
                                 </div>
-                                <p className="text-sm font-medium text-slate-400">No messages found</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No results found</p>
                             </div>
                         ) : (
-                            <div className="flex flex-col h-full">
-                                <div className="flex-1 overflow-y-auto scroller">
+                            <div className="flex flex-col min-h-full">
+                                <div className="flex-1 overflow-y-auto scroller divide-y divide-slate-50">
                                     {paginatedMessages.map((msg) => (
                                 <div
                                     key={msg.id}
                                     onClick={() => handleSelect(msg.id)}
-                                    className={`group p-5 cursor-pointer border-b border-slate-50 transition-all ${
+                                    className={`group p-5 cursor-pointer transition-all border-l-4 ${
                                         selectedId === msg.id 
-                                        ? "bg-indigo-50/50 border-l-4 border-l-indigo-600" 
-                                        : "hover:bg-slate-50/50"
+                                        ? "bg-indigo-50/30 border-l-indigo-600 shadow-inner" 
+                                        : "hover:bg-slate-50/40 border-l-transparent"
                                     }`}
                                 >
-                                    <div className="flex items-start justify-between mb-1.5">
+                                    <div className="flex items-start justify-between mb-2">
                                         <div className="flex items-center gap-2 min-w-0">
-                                            {!msg.is_read && <div className="w-2 h-2 rounded-full bg-indigo-600 shrink-0" />}
-                                            <h3 className={`text-sm tracking-tight truncate ${msg.is_read ? 'font-semibold text-slate-600' : 'font-black text-slate-900'}`}>
+                                            {!msg.is_read && <div className="w-2.5 h-2.5 rounded-full bg-indigo-600 shadow-[0_0_8px_rgba(79,70,229,0.4)] shrink-0" />}
+                                            <h3 className={`text-[13px] tracking-tight truncate ${msg.is_read ? 'font-bold text-slate-500' : 'font-black text-slate-900'}`}>
                                                 {msg.name}
                                             </h3>
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-400 shrink-0 uppercase tracking-wider">
+                                        <span className="text-[9px] font-black text-slate-300 shrink-0 uppercase tracking-widest bg-slate-50 px-1.5 py-0.5 rounded-md border border-slate-100">
                                             {formatDistanceToNow(new Date(msg.created_at), { addSuffix: false })}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed">
+                                    <p className={`text-[12px] font-medium leading-relaxed line-clamp-2 ${msg.is_read ? 'text-slate-400' : 'text-slate-600'}`}>
                                         {msg.message}
                                     </p>
                                 </div>
@@ -233,22 +241,22 @@ const MessagesPage = () => {
                                 
                                 {/* Pagination Footer */}
                                 {totalPages > 1 && (
-                                    <div className="p-4 border-t border-slate-50 bg-slate-50/30 flex items-center justify-between">
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">
-                                            PG {currentPage} OF {totalPages}
+                                    <div className="p-4 border-t border-slate-50 bg-slate-50/30 flex items-center justify-between mt-auto">
+                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest leading-none">
+                                            {currentPage} <span className="opacity-30">/</span> {totalPages}
                                         </p>
                                         <div className="flex items-center gap-1">
                                             <button
                                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                                 disabled={currentPage === 1}
-                                                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-100 text-slate-500 disabled:opacity-30 hover:bg-slate-50 transition-colors shadow-sm"
+                                                className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-500 disabled:opacity-30 hover:bg-slate-50 hover:shadow-sm transition-all active:scale-90"
                                             >
                                                 <ChevronLeft size={14} />
                                             </button>
                                             <button
                                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                                 disabled={currentPage === totalPages}
-                                                className="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-slate-100 text-slate-500 disabled:opacity-30 hover:bg-slate-50 transition-colors shadow-sm"
+                                                className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-500 disabled:opacity-30 hover:bg-slate-50 hover:shadow-sm transition-all active:scale-90"
                                             >
                                                 <ChevronRight size={14} />
                                             </button>
@@ -261,29 +269,29 @@ const MessagesPage = () => {
                 </aside>
 
                 {/* Content Panel */}
-                <main className={`flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 ${!selectedId ? 'translate-x-full md:translate-x-0' : 'translate-x-0'}`}>
+                <main className={`flex-1 flex flex-col bg-white overflow-hidden transition-all duration-300 shadow-2xl md:shadow-none ${!selectedId ? 'translate-x-full md:translate-x-0' : 'translate-x-0 group'}`}>
                     {selectedMessage ? (
                         <div className="flex flex-col h-full">
-                            <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between">
-                                <button 
-                                    onClick={() => setSelectedId(null)}
-                                    className="md:hidden p-2 -ml-2 text-slate-400 hover:text-indigo-600"
-                                >
-                                    <ArrowLeft size={18} />
-                                </button>
+                            <div className="px-4 sm:px-8 py-3.5 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md sticky top-0 z-10">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                                    <button 
+                                        onClick={() => setSelectedId(null)}
+                                        className="md:hidden p-2 -ml-2 text-slate-400 hover:text-indigo-600 transition-colors"
+                                    >
+                                        <ArrowLeft size={20} />
+                                    </button>
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-indigo-400 shadow-inner">
                                         <User size={18} />
                                     </div>
-                                    <div>
-                                        <h2 className="text-sm font-black text-slate-900">{selectedMessage.name}</h2>
-                                        <p className="text-xs text-slate-400 font-medium">{selectedMessage.email}</p>
+                                    <div className="min-w-0">
+                                        <h2 className="text-[13px] sm:text-[14px] font-black text-slate-900 truncate leading-tight">{selectedMessage.name}</h2>
+                                        <p className="text-[10px] sm:text-[11px] text-slate-400 font-bold truncate tracking-tight">{selectedMessage.email}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-1 sm:gap-2">
                                     <button 
                                         onClick={() => handleDelete(selectedMessage.id)}
-                                        className="p-2.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all rounded-xl"
+                                        className="p-2.5 text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all rounded-xl"
                                         title="Delete inquiry"
                                     >
                                         <Trash2 size={18} />
@@ -291,68 +299,68 @@ const MessagesPage = () => {
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-8 lg:p-12">
-                                <div className="max-w-2xl mx-auto space-y-8">
-                                    <div className="bg-slate-50 rounded-3xl p-8 border border-slate-100 shadow-sm relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                                            <MessageCircle size={100} />
+                            <div className="flex-1 overflow-y-auto p-5 sm:p-8 lg:p-12 scroller">
+                                <div className="max-w-2xl mx-auto space-y-10">
+                                    <div className="bg-slate-50/50 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 border border-slate-100 shadow-sm relative overflow-hidden group/message">
+                                        <div className="absolute -top-4 -right-4 p-8 opacity-[0.03] pointer-events-none group-hover/message:scale-110 transition-transform duration-700">
+                                            <MessageCircle size={150} />
                                         </div>
-                                        <div className="flex items-center gap-4 mb-6">
-                                            <div className="px-3 py-1 bg-white rounded-full border border-slate-100 flex items-center gap-2 shadow-sm">
+                                        <div className="flex flex-wrap items-center gap-3 mb-8">
+                                            <div className="px-3.5 py-1.5 bg-white rounded-full border border-slate-100 flex items-center gap-2 shadow-sm italic">
                                                 <Clock size={12} className="text-indigo-500" />
-                                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">
-                                                    Sent {new Date(selectedMessage.created_at).toLocaleString()}
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">
+                                                    {new Date(selectedMessage.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                                                 </span>
                                             </div>
                                             {selectedMessage.is_read && (
-                                                <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full flex items-center gap-2">
-                                                    <CheckCircle2 size={12} />
-                                                    <span className="text-[10px] font-black uppercase tracking-widest leading-none">Read</span>
+                                                <div className="px-3.5 py-1.5 bg-emerald-50 text-emerald-600 rounded-full flex items-center gap-2 shadow-sm shadow-emerald-500/5">
+                                                    <CheckCircle2 size={12} strokeWidth={3} />
+                                                    <span className="text-[9px] font-black uppercase tracking-widest leading-none">Read Receipts</span>
                                                 </div>
                                             )}
                                         </div>
-                                        <p className="text-slate-700 text-sm md:text-base font-medium leading-[1.8] whitespace-pre-wrap selection:bg-indigo-100">
+                                        <p className="text-slate-700 text-[15px] sm:text-[17px] font-medium leading-[1.8] whitespace-pre-wrap selection:bg-indigo-100 tracking-tight">
                                             {selectedMessage.message}
                                         </p>
                                     </div>
 
                                     {/* Reply Area */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Response</h3>
+                                    <div className="space-y-6 pb-20 md:pb-10">
+                                        <div className="flex items-center gap-2 mb-2 px-2">
+                                            <h3 className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] text-slate-300">Quick Response</h3>
                                             <div className="flex-1 h-px bg-slate-100" />
                                         </div>
-                                        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm focus-within:ring-4 focus-within:ring-indigo-500/5 focus-within:border-indigo-200 transition-all overflow-hidden">
+                                        <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/20 focus-within:ring-4 focus-within:ring-indigo-500/5 focus-within:border-indigo-200 transition-all overflow-hidden group/reply">
                                             <textarea 
-                                                className="w-full p-6 text-sm font-medium text-slate-700 bg-transparent border-none focus:ring-0 resize-none leading-relaxed placeholder:text-slate-300 min-h-[160px]"
-                                                placeholder={`Type your response to ${selectedMessage.name}...`}
+                                                className="w-full p-6 sm:p-8 text-[14px] sm:text-[15px] font-bold text-slate-700 bg-transparent border-none focus:ring-0 resize-none leading-relaxed placeholder:text-slate-200 min-h-[200px]"
+                                                placeholder={`Draft your message to ${selectedMessage.name}...`}
                                                 value={replyText}
                                                 onChange={(e) => setReplyText(e.target.value)}
                                             />
-                                            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                                                    Replying as {selectedMessage.email}
-                                                </p>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={handleSendReply}
-                                                        disabled={isSending || !replyText.trim()}
-                                                        className={`px-6 py-2.5 bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest rounded-xl flex items-center gap-2 shadow-lg transition-all ${isSending || !replyText.trim() ? 'opacity-50 grayscale cursor-not-allowed' : 'hover:scale-105 active:scale-95'}`}
-                                                    >
-                                                        {isSending ? (
-                                                            <>
-                                                                <Loader2 size={14} className="animate-spin" />
-                                                                Sending...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Mail size={14} />
-                                                                Send Response
-                                                            </>
-                                                        )}
-                                                    </button>
+                                            <div className="px-6 sm:px-8 py-5 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-300 italic text-[10px] font-bold">@</div>
+                                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                         {selectedMessage.email}
+                                                    </p>
                                                 </div>
-
+                                                <button
+                                                    onClick={handleSendReply}
+                                                    disabled={isSending || !replyText.trim()}
+                                                    className={`w-full sm:w-auto px-8 py-3 bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2.5 shadow-2xl shadow-slate-900/10 transition-all ${isSending || !replyText.trim() ? 'opacity-30 grayscale cursor-not-allowed' : 'hover:bg-indigo-600 hover:scale-[1.03] active:scale-95'}`}
+                                                >
+                                                    {isSending ? (
+                                                        <>
+                                                            <Loader2 size={16} className="animate-spin" />
+                                                            Processing...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Mail size={16} />
+                                                            Send Email
+                                                        </>
+                                                    )}
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -362,12 +370,12 @@ const MessagesPage = () => {
 
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#fafafa]">
-                            <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-slate-200/50 text-slate-100 group">
-                                <MessageCircle size={32} className="text-slate-200 group-hover:scale-110 transition-transform" />
+                            <div className="w-24 h-24 bg-white rounded-[2.5rem] flex items-center justify-center mb-8 shadow-2xl shadow-slate-200/50 text-slate-50 group hover:shadow-indigo-500/10 transition-all">
+                                <MessageCircle size={40} className="text-slate-100 group-hover:text-indigo-100 transition-colors duration-500" />
                             </div>
-                            <h2 className="text-lg font-black text-slate-900 tracking-tight">Select an inquiry to read</h2>
-                            <p className="text-xs text-slate-400 font-medium mt-2 max-w-xs leading-relaxed">
-                                Pick a message from the list to view the full content and respond to your visitors.
+                            <h2 className="text-xl font-black text-slate-900 tracking-tight">Zero inquiry selected</h2>
+                            <p className="text-[13px] text-slate-400 font-medium mt-3 max-w-xs leading-relaxed italic">
+                                Sift through your visitor inquiries and keep your discussions organized by picking a message from the list.
                             </p>
                         </div>
                     )}
@@ -387,6 +395,13 @@ const MessagesPage = () => {
                 }
                 .scroller-hide::-webkit-scrollbar {
                     display: none;
+                }
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
                 }
             `}</style>
         </div>

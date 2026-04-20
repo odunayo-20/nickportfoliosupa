@@ -15,10 +15,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Architect — Portfolio Manager",
-  description: "Manage your portfolio, blog, and professional presence.",
-};
+import { getSettings } from "@/actions/settings";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  
+  return {
+    title: settings?.site_title || "Architect — Portfolio Manager",
+    description: settings?.meta_description || "Manage your portfolio, blog, and professional presence.",
+    keywords: settings?.keywords || [],
+    icons: {
+      icon: settings?.logo || "/favicon.ico",
+      apple: settings?.logo || "/apple-touch-icon.png",
+    },
+    openGraph: {
+      images: settings?.og_image_url ? [settings.og_image_url] : [],
+      title: settings?.site_title || "Architect Portfolio",
+      description: settings?.meta_description || "Manage your professional presence.",
+    },
+  };
+
+}
+
 
 export default function RootLayout({
   children,

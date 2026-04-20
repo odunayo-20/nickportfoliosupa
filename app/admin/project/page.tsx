@@ -176,10 +176,10 @@ export default function ProjectManagementPage() {
     const featuredCount = projects?.filter(p => p.is_featured || p.isFeatured).length || 0;
 
     return (
-        <section className="flex-1 overflow-y-auto bg-slate-50/30">
-            <div className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
+        <section className="flex-1 overflow-y-auto bg-slate-50/10">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6 md:p-8 space-y-6 md:space-y-8">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 md:gap-6">
                     <div className="space-y-1">
                         <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
                             Projects
@@ -187,8 +187,8 @@ export default function ProjectManagementPage() {
                         <p className="text-slate-500 font-medium text-sm">Manage your portfolio projects.</p>
                     </div>
                     
-                    <Link href="/admin/project/create">
-                        <button className="inline-flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-xl shadow-lg transition-all hover:-translate-y-0.5 active:scale-95">
+                    <Link href="/admin/project/create" className="w-full sm:w-auto">
+                        <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-slate-900 text-white font-semibold rounded-xl shadow-lg transition-all hover:-translate-y-0.5 active:scale-95">
                             <Plus size={16} strokeWidth={2.5} />
                             New Project
                         </button>
@@ -196,8 +196,8 @@ export default function ProjectManagementPage() {
                 </div>
 
                 {/* Bento Metrics */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-2 group hover:border-primary/20 transition-colors">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                    <div className="col-span-2 lg:col-span-1 bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm space-y-2 group hover:border-primary/20 transition-colors">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-medium text-slate-400">All Projects</span>
                             <div className="p-2 rounded-lg bg-slate-50 text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
@@ -207,24 +207,24 @@ export default function ProjectManagementPage() {
                         <p className="text-3xl font-bold text-slate-900">{totalProjects}</p>
                     </div>
                     
-                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-2 group hover:border-emerald-200 transition-colors">
+                    <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm space-y-2 group hover:border-emerald-200 transition-colors">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-medium text-slate-400">Published</span>
                             <div className="p-2 rounded-lg bg-slate-50 text-slate-400 group-hover:bg-emerald-50 group-hover:text-emerald-500 transition-colors">
                                 <CheckCircle2 size={16} />
                             </div>
                         </div>
-                        <p className="text-3xl font-bold text-emerald-600">{publishedCount}</p>
+                        <p className="text-2xl md:text-3xl font-bold text-emerald-600">{publishedCount}</p>
                     </div>
 
-                    <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-2 group hover:border-amber-200 transition-colors">
+                    <div className="bg-white p-4 md:p-5 rounded-2xl border border-slate-100 shadow-sm space-y-2 group hover:border-amber-200 transition-colors">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-medium text-slate-400">Featured</span>
                             <div className="p-2 rounded-lg bg-slate-50 text-slate-400 group-hover:bg-amber-50 group-hover:text-amber-500 transition-colors">
                                 <Star size={16} />
                             </div>
                         </div>
-                        <p className="text-3xl font-bold text-amber-600">{featuredCount}</p>
+                        <p className="text-2xl md:text-3xl font-bold text-amber-600">{featuredCount}</p>
                     </div>
                 </div>
 
@@ -289,9 +289,9 @@ export default function ProjectManagementPage() {
                                     <ChevronLeft size={16} />
                                 </Button>
 
-                                <div className="flex items-center gap-1 mx-2">
+                                <div className="flex items-center gap-1 mx-1 sm:mx-2 overflow-x-auto no-scrollbar max-w-[150px] sm:max-w-none">
                                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                                        const isVisible = totalPages <= 7 || 
+                                        const isVisible = totalPages <= 5 || 
                                             page === 1 || 
                                             page === totalPages || 
                                             (page >= currentPage - 1 && page <= currentPage + 1);

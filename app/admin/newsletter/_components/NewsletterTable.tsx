@@ -99,131 +99,136 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
 
   return (
     <div className="w-full">
-      <Table>
-        <TableHeader>
-          <TableRow className="border-slate-100 border dark:border-slate-800 hover:bg-transparent">
-            <TableHead className="w-[300px]">Subscriber</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Subscribed On</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {subscribers.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={4} className="h-24 text-center text-slate-400">
-                No subscribers found.
-              </TableCell>
+      <div className="overflow-x-auto scroller">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-slate-50 dark:border-slate-800 hover:bg-transparent">
+              <TableHead className="w-[300px] py-6 px-10 text-[10px] font-black uppercase tracking-widest text-slate-400">Subscriber</TableHead>
+              <TableHead className="py-6 text-[10px] font-black uppercase tracking-widest text-slate-400">Status</TableHead>
+              <TableHead className="py-6 text-[10px] font-black uppercase tracking-widest text-slate-400 hidden sm:table-cell">Subscribed On</TableHead>
+              <TableHead className="text-right py-6 px-10 text-[10px] font-black uppercase tracking-widest text-slate-400">Actions</TableHead>
             </TableRow>
-          ) : (
-            paginatedSubscribers.map((subscriber) => (
-              <TableRow key={subscriber.id} className="border-slate-100 border dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                <TableCell>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-medium text-slate-900 dark:text-slate-100">
-                      {subscriber.name || "Anonymous Subscriber"}
-                    </span>
-                    <span className="text-xs text-slate-400 flex items-center gap-1">
-                      <Mail className="w-3 h-3" />
-                      {subscriber.email}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge 
-                    variant={subscriber.status === 'active' ? 'default' : 'secondary'}
-                    className={
-                      subscriber.status === 'active' 
-                        ? "bg-green-100 text-green-700 hover:bg-green-100 border-none px-2.5 py-0.5 capitalize flex items-center w-fit gap-1"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-100 border-none px-2.5 py-0.5 capitalize flex items-center w-fit gap-1"
-                    }
-                  >
-                    {subscriber.status === 'active' ? (
-                      <UserCheck className="w-3 h-3" />
-                    ) : (
-                      <UserX className="w-3 h-3" />
-                    )}
-                    {subscriber.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                    {format(new Date(subscriber.created_at), "MMM d, yyyy")}
-                  </span>
-                </TableCell>
-                <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-800">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={() => handleStatusUpdate(subscriber.id, subscriber.status)}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        {subscriber.status === 'active' ? (
-                          <>
-                            <UserX className="w-4 h-4 text-slate-400" />
-                            <span>Mark as Unsubscribed</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="w-4 h-4 text-green-500" />
-                            <span>Mark as Active</span>
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => openDeleteDialog(subscriber)}
-                        className="text-red-600 focus:text-red-700 focus:bg-red-50 flex items-center gap-2 cursor-pointer"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span>Delete Subscriber</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+          </TableHeader>
+          <TableBody>
+            {subscribers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-32 text-center text-slate-400 font-medium italic">
+                  No subscribers found.
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              paginatedSubscribers.map((subscriber) => (
+                <TableRow key={subscriber.id} className="border-slate-50 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors group">
+                  <TableCell className="py-6 px-10">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-bold text-[15px] text-slate-900 dark:text-slate-100 group-hover:text-indigo-600 transition-colors">
+                        {subscriber.name || "Anonymous Subscriber"}
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-bold flex items-center gap-1.5 uppercase tracking-tight">
+                        <Mail className="w-3 h-3 text-slate-300" />
+                        {subscriber.email}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="py-6">
+                    <Badge 
+                      variant={subscriber.status === 'active' ? 'default' : 'secondary'}
+                      className={
+                        subscriber.status === 'active' 
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 rounded-lg capitalize flex items-center w-fit gap-1.5 text-[10px] font-black shadow-sm"
+                          : "bg-slate-50 text-slate-500 border border-slate-100 px-3 py-1 rounded-lg capitalize flex items-center w-fit gap-1.5 text-[10px] font-black"
+                      }
+                    >
+                      {subscriber.status === 'active' ? (
+                        <UserCheck className="w-3 h-3" />
+                      ) : (
+                        <UserX className="w-3 h-3" />
+                      )}
+                      {subscriber.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="py-6 hidden sm:table-cell">
+                    <span className="text-[12px] text-slate-500 font-bold flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-slate-300" />
+                      {format(new Date(subscriber.created_at), "MMM d, yyyy")}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right py-6 px-10">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-10 w-10 p-0 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all active:scale-90">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-5 w-5 text-slate-400" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl shadow-2xl border-slate-100">
+                        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-3 py-2">Quick Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator className="bg-slate-50" />
+                        <DropdownMenuItem 
+                          onClick={() => handleStatusUpdate(subscriber.id, subscriber.status)}
+                          className="flex items-center gap-3 cursor-pointer py-3 px-3 rounded-xl focus:bg-slate-50 transition-colors font-bold text-[13px]"
+                        >
+                          {subscriber.status === 'active' ? (
+                            <>
+                              <UserX className="w-4 h-4 text-slate-400" />
+                              <span>Suspend Subscription</span>
+                            </>
+                          ) : (
+                            <>
+                              <UserCheck className="w-4 h-4 text-emerald-500" />
+                              <span>Reactivate Subscriber</span>
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => openDeleteDialog(subscriber)}
+                          className="text-rose-600 focus:text-rose-700 focus:bg-rose-50 flex items-center gap-3 cursor-pointer py-3 px-3 rounded-xl transition-colors font-bold text-[13px]"
+                        >
+                          <Trash2 className="w-4 h-4 text-rose-400" />
+                          <span>Permanent Delete</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-      {/* Pagination Controls */}
+      {/* Pagination Footer */}
       {subscribers.length > 0 && (
-          <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30">
-              <p className="text-[12px] text-slate-500 font-medium">
-                  Showing <span className="font-bold text-slate-900">{Math.min(subscribers.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-slate-900">{Math.min(subscribers.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="font-bold text-slate-900">{subscribers.length}</span> subscribers
-              </p>
+          <div className="px-6 sm:px-10 py-6 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-slate-50 bg-slate-50/20">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-100 shadow-sm text-slate-900 leading-none">
+                    {Math.min(subscribers.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}—{Math.min(subscribers.length, currentPage * ITEMS_PER_PAGE)}
+                </span>
+                OF {subscribers.length} MEMBERS
+              </div>
 
               {totalPages > 1 && (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                       <Button
                           variant="outline"
                           size="sm"
                           onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                           disabled={currentPage === 1}
-                          className="h-8 w-8 p-0"
+                          className="h-10 w-10 p-0 rounded-xl shadow-sm border-slate-200 hover:bg-white active:scale-90 transition-all"
                       >
-                          <ChevronLeft size={16} />
+                          <ChevronLeft size={18} />
                       </Button>
 
-                      <div className="flex items-center gap-1 mx-2">
+                      <div className="flex items-center gap-1.5 mx-1 overflow-x-auto no-scrollbar max-w-[140px] xs:max-w-none px-1">
                           {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                              const isVisible = totalPages <= 7 || 
+                              const isVisible = totalPages <= 5 || 
                                   page === 1 || 
                                   page === totalPages || 
                                   (page >= currentPage - 1 && page <= currentPage + 1);
                               
                               if (!isVisible) {
                                   if (page === 2 || page === totalPages - 1) {
-                                      return <span key={page} className="text-slate-300 px-1">...</span>;
+                                      return <span key={page} className="text-slate-300 mx-0.5">.</span>;
                                   }
                                   return null;
                               }
@@ -232,10 +237,10 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
                                   <button
                                       key={page}
                                       onClick={() => setCurrentPage(page)}
-                                      className={`min-w-[32px] h-8 px-2 text-[12px] font-bold rounded-lg transition-all ${
+                                      className={`min-w-[36px] h-10 px-3 text-[11px] font-black rounded-xl transition-all shadow-sm ${
                                           currentPage === page 
-                                              ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
-                                              : "text-slate-500 hover:bg-slate-100"
+                                              ? "bg-slate-900 text-white shadow-slate-200 border-transparent" 
+                                              : "bg-white text-slate-500 hover:bg-slate-50 border border-slate-100"
                                       }`}
                                   >
                                       {page}
@@ -249,9 +254,9 @@ export function NewsletterTable({ initialSubscribers }: NewsletterTableProps) {
                           size="sm"
                           onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                           disabled={currentPage === totalPages}
-                          className="h-8 w-8 p-0"
+                          className="h-10 w-10 p-0 rounded-xl shadow-sm border-slate-200 hover:bg-white active:scale-90 transition-all"
                       >
-                          <ChevronRight size={16} />
+                          <ChevronRight size={18} />
                       </Button>
                   </div>
               )}

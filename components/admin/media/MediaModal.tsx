@@ -68,7 +68,7 @@ export function MediaModal({ open, onClose, onSelect, initialSelection, multiple
     if (!mounted || !open) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 lg:p-8">
             {/* Backdrop */}
             <div
                 className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
@@ -77,32 +77,32 @@ export function MediaModal({ open, onClose, onSelect, initialSelection, multiple
 
             {/* Modal Panel */}
             <div
-                className={`absolute inset-4 sm:inset-6 lg:inset-8 bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
+                className={`relative w-full h-full max-w-7xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
                     visible 
                         ? "opacity-100 scale-100 translate-y-0" 
                         : "opacity-0 scale-[0.97] translate-y-2"
                 }`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
-                    <div>
-                        <h2 className="text-lg font-bold tracking-tight">Media Library</h2>
-                        <p className="text-xs text-muted-foreground">
+                <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b bg-white">
+                    <div className="min-w-0 pr-4">
+                        <h2 className="text-base sm:text-lg font-bold tracking-tight truncate">Media Library</h2>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                             {multiple 
-                                ? "Select one or more items from your library."
-                                : "Select an image from your library or upload a new one."}
+                                ? "Select one or more items."
+                                : "Select an image or upload one."}
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-800"
+                        className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-800"
                     >
                         <X size={18} />
                     </button>
                 </div>
 
                 {/* Media Library Content */}
-                <div className="flex-1 overflow-auto p-6 bg-slate-50/50">
+                <div className="flex-1 overflow-hidden p-3 sm:p-6 bg-slate-50/30">
                     <MediaLibrary
                         selectionMode={true}
                         multiple={multiple}
@@ -114,26 +114,26 @@ export function MediaModal({ open, onClose, onSelect, initialSelection, multiple
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-between px-6 py-4 border-t bg-white">
-                    <div className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t bg-white gap-3 sm:gap-6">
+                    <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
                         {selectedIds.length > 0 ? (
-                            <span className="flex items-center gap-1.5 text-primary font-medium">
-                                <CheckCircle size={14} /> {selectedIds.length} {selectedIds.length > 1 ? "items" : "item"} selected
+                            <span className="flex items-center gap-1.5 text-primary font-bold">
+                                <CheckCircle size={14} className="fill-primary/10" /> {selectedIds.length} {selectedIds.length > 1 ? "items" : "item"} selected
                             </span>
                         ) : (
-                            "Click on an image to select it"
+                            <span className="hidden sm:inline">Click to select an asset</span>
                         )}
                     </div>
-                    <div className="flex gap-3">
-                        <Button variant="outline" onClick={onClose} className="px-6">
+                    <div className="flex w-full sm:w-auto gap-2 sm:gap-3 order-1 sm:order-2">
+                        <Button variant="outline" onClick={onClose} className="flex-1 sm:px-6 h-9 sm:h-10 text-xs font-bold rounded-xl transition-all active:scale-95">
                             Cancel
                         </Button>
                         <Button
                             disabled={selectedIds.length === 0}
                             onClick={handleConfirm}
-                            className="px-8 font-semibold shadow-sm"
+                            className="flex-[1.5] sm:px-8 h-9 sm:h-10 text-xs font-bold rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95"
                         >
-                            Select Media
+                            Confirm Selection
                         </Button>
                     </div>
                 </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
+import { myAppHook } from '@/context/AppUtils'
 
 const NAV_LINKS = [
   { name: 'Home',     path: '/' },
@@ -16,6 +17,7 @@ const NAV_LINKS = [
 const Navbar = () => {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const { siteSettings } = myAppHook()
 
   // Close drawer whenever the route changes (link was tapped)
   useEffect(() => {
@@ -39,14 +41,19 @@ const Navbar = () => {
 
           {/* Logo */}
           <div className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-brand-orange rounded-full flex items-center justify-center text-brand-dark font-black italic shadow-md shadow-brand-orange/20 group-hover:-translate-y-0.5 transition-transform duration-300">
-              N
+            <div className="w-10 h-10 bg-brand-orange rounded-full flex items-center justify-center text-brand-dark font-black italic shadow-md shadow-brand-orange/20 group-hover:-translate-y-0.5 transition-transform duration-300 overflow-hidden">
+              {siteSettings?.logo ? (
+                <img src={siteSettings.logo} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                siteSettings?.site_title?.[0] || 'N'
+              )}
             </div>
+
             <Link
               href="/"
               className="text-2xl font-extrabold tracking-tighter text-brand-dark group-hover:text-brand-green transition-colors duration-300"
             >
-              Nikola<span className="text-brand-orange">.</span>
+              {siteSettings?.site_title || 'Nikola'}<span className="text-brand-orange">.</span>
             </Link>
           </div>
 
@@ -124,7 +131,7 @@ const Navbar = () => {
         {/* Drawer header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
           <span className="text-lg font-extrabold tracking-tighter text-brand-dark">
-            Nikola<span className="text-brand-orange">.</span>
+            {siteSettings?.site_title || 'Nikola'}<span className="text-brand-orange">.</span>
           </span>
           <button
             aria-label="Close menu"

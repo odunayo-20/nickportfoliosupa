@@ -54,11 +54,11 @@ export function ProjectTable({
     const allSelected = projects.length > 0 && selectedIds.size === projects.length;
 
     return (
-        <div className="w-full overflow-hidden">
-            <table className="w-full border-separate border-spacing-0">
+        <div className="w-full overflow-x-auto scrollbar-hide">
+            <table className="w-full border-separate border-spacing-0 min-w-[600px] md:min-w-full">
                 <thead>
                     <tr className="bg-slate-50/50 border-b border-slate-100">
-                        <th className="w-12 px-6 py-4 text-left">
+                        <th className="w-12 px-4 md:px-6 py-4 text-left">
                             <input 
                                 type="checkbox" 
                                 checked={allSelected}
@@ -66,11 +66,10 @@ export function ProjectTable({
                                 className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 cursor-pointer"
                             />
                         </th>
-                        <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Project</th>
-                        {/* <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden md:table-cell">Details</th> */}
-                        <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Tech Stack</th>
-                        <th className="px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-4 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">Actions</th>
+                        <th className="px-4 md:px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Project</th>
+                        <th className="px-4 md:px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Tech Stack</th>
+                        <th className="px-4 md:px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                        <th className="px-4 md:px-6 py-4 text-right text-[11px] font-bold text-slate-400 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -87,7 +86,7 @@ export function ProjectTable({
                                 key={project.id} 
                                 className={`group hover:bg-slate-50/50 transition-all duration-200 ${isSelected ? 'bg-primary/5' : ''}`}
                             >
-                                <td className="px-6 py-4">
+                                <td className="px-4 md:px-6 py-4">
                                     <input 
                                         type="checkbox" 
                                         checked={isSelected}
@@ -95,13 +94,13 @@ export function ProjectTable({
                                         className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 cursor-pointer"
                                     />
                                 </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative w-12 h-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                                <td className="px-4 md:px-6 py-4">
+                                    <div className="flex items-center gap-3 md:gap-4">
+                                        <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
                                             {project.imageUrl ? (
                                                 <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover" />
                                             ) : (
-                                                <ImageIcon size={20} className="text-slate-300" />
+                                                <ImageIcon size={18} className="text-slate-300" />
                                             )}
                                             {isFeatured && (
                                                 <div className="absolute -top-1 -right-1 bg-amber-400 p-0.5 rounded-full border-2 border-white shadow-sm">
@@ -109,11 +108,11 @@ export function ProjectTable({
                                                 </div>
                                             )}
                                         </div>
-                                        <div className="min-w-0">
+                                        <div className="min-w-0 max-w-[120px] sm:max-w-none">
                                             <div className="flex items-center gap-2">
                                                 <button 
                                                     onClick={() => onView(project.id)}
-                                                    className="text-[14px] font-bold text-slate-900 hover:text-primary transition-colors truncate block text-left"
+                                                    className="text-[13px] md:text-[14px] font-bold text-slate-900 hover:text-primary transition-colors truncate block text-left"
                                                 >
                                                     {project.title}
                                                 </button>
@@ -123,26 +122,20 @@ export function ProjectTable({
                                                     </span>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                                            <div className="flex items-center gap-1.5 md:gap-2 mt-1">
+                                                <span className="text-[10px] md:text-[11px] text-slate-400 font-medium flex items-center gap-1 truncate">
                                                     <Layers size={10} /> {project.category || "General"}
                                                 </span>
                                                 <span className="text-slate-200">|</span>
-                                                <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
+                                                <span className="text-[10px] md:text-[11px] text-slate-400 font-medium flex items-center gap-1">
                                                     <Clock size={10} /> {dateStr}
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
                                 </td>
-                                {/* <td className="px-6 py-4 hidden md:table-cell">
-                                    <p className="text-[13px] text-slate-500 line-clamp-1 max-w-[200px]">
-                                        {project.description}
-                                    </p>
-                                </td> */}
-                                <td className="px-6 py-4 hidden lg:table-cell">
+                                <td className="px-4 md:px-6 py-4 hidden lg:table-cell">
                                     <div className="flex flex-wrap gap-1">
-                                        {console.log(project.tech_stack)}
                                         {project.tech_stack?.slice(0, 3).map((tech: string) => (
                                             <span 
                                                 key={tech} 
@@ -156,10 +149,10 @@ export function ProjectTable({
                                         )}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-4 md:px-6 py-4">
                                     <button
                                         onClick={() => onToggleStatus(project.id, project.status)}
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
+                                        className={`inline-flex items-center gap-1.5 px-2.5 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold transition-all ${
                                             isPublished
                                                 ? "bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                                                 : "bg-amber-50 text-amber-700 hover:bg-amber-100"
@@ -169,7 +162,7 @@ export function ProjectTable({
                                         {isPublished ? "Published" : "Draft"}
                                     </button>
                                 </td>
-                                <td className="px-6 py-4 text-right">
+                                <td className="px-4 md:px-6 py-4 text-right">
                                     <ProjectRowActions 
                                         project={project}
                                         onEdit={onEdit}

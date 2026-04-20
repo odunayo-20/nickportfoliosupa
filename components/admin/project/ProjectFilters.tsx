@@ -35,24 +35,26 @@ export function ProjectFilters({
     setSortBy
 }: ProjectFiltersProps) {
     return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 py-6 px-6 bg-white border-b border-slate-100">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 p-4 md:p-6 bg-white border-b border-slate-100">
             {/* Search */}
-            <div className="relative flex-1 max-w-md group">
+            <div className="relative w-full xl:max-w-md group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={16} />
                 <Input
                     placeholder="Search titles, descriptions, stack..."
-                    className="pl-10 h-10 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ring-offset-0 focus:ring-2 focus:ring-primary/10"
+                    className="pl-10 h-10 bg-slate-50/50 border-slate-200 focus:bg-white transition-all ring-offset-0 focus:ring-2 focus:ring-primary/10 w-full"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                 />
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2">
-                    <Filter size={14} className="text-slate-400" />
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-2 flex-grow sm:flex-grow-0">
+                    <div className="p-2 bg-slate-50 rounded-lg text-slate-400 hidden sm:block">
+                        <Filter size={14} />
+                    </div>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="h-10 w-[130px] bg-white border-slate-200 text-xs font-bold text-slate-600">
+                        <SelectTrigger className="h-10 w-full sm:w-[130px] bg-white border-slate-200 text-xs font-bold text-slate-600">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -63,24 +65,28 @@ export function ProjectFilters({
                     </Select>
                 </div>
 
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger className="h-10 w-[140px] bg-white border-slate-200 text-xs font-bold text-slate-600">
-                        <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all" className="text-xs font-semibold">All Categories</SelectItem>
-                        {categories.map(cat => (
-                            <SelectItem key={cat} value={cat} className="text-xs font-semibold">{cat}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+                <div className="flex-grow sm:flex-grow-0">
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="h-10 w-full sm:w-[140px] bg-white border-slate-200 text-xs font-bold text-slate-600">
+                            <SelectValue placeholder="Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all" className="text-xs font-semibold">All Categories</SelectItem>
+                            {categories.map(cat => (
+                                <SelectItem key={cat} value={cat} className="text-xs font-semibold">{cat}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
 
-                <div className="w-px h-6 bg-slate-200 mx-1 hidden sm:block" />
+                <div className="w-px h-6 bg-slate-200 mx-1 hidden lg:block" />
 
-                <div className="flex items-center gap-2">
-                    <ArrowUpDown size={14} className="text-slate-400" />
+                <div className="flex items-center gap-2 flex-grow sm:flex-grow-0">
+                    <div className="p-2 bg-slate-50 rounded-lg text-slate-400 hidden sm:block">
+                        <ArrowUpDown size={14} />
+                    </div>
                     <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger className="h-10 w-[150px] bg-white border-slate-200 text-xs font-bold text-slate-600">
+                        <SelectTrigger className="h-10 w-full sm:w-[150px] bg-white border-slate-200 text-xs font-bold text-slate-600">
                             <SelectValue placeholder="Sort By" />
                         </SelectTrigger>
                         <SelectContent>

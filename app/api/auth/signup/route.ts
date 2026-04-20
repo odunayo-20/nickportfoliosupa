@@ -14,35 +14,12 @@ export async function POST(request: Request) {
 
     const admin = createAdminClient();
 
-    // 1. Check local whitelist file (optional convenience)
-    let isWhitelisted = false;
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const filePath = path.join(process.cwd(), 'whitelisted_emails.json');
-      if (fs.existsSync(filePath)) {
-        const fileContent = fs.readFileSync(filePath, 'utf8');
-        const localWhitelist = JSON.parse(fileContent);
-        if (Array.isArray(localWhitelist) && localWhitelist.includes(email)) {
-          isWhitelisted = true;
-        }
-      }
-    } catch (e) {
-      console.error('Error reading local whitelist:', e);
-    }
-
-    // 2. Check if email is in the database whitelist table (if not already found in file)
-    if (!isWhitelisted) {
-      const { data: allowed, error: whitelistError } = await admin
-        .from('allowed_users')
-        .select('email')
-        .eq('email', email)
-        .single();
-      
-      if (allowed) isWhitelisted = true;
-    }
+    // 1. Check if email is whitelisted (local file or DB)
+    const { isEmailWhitelisted } = await import('@/lib/whitelist');
+    const isWhitelisted = await isEmailWhitelisted(email);
 
     if (!isWhitelisted) {
+
       return NextResponse.json(
         { error: 'Signup is restricted to pre-approved users only.' },
         { status: 403 }

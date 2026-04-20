@@ -16,21 +16,21 @@ export default async function NewsletterPage() {
   const unsubscribedCount = subscribers.filter(s => s.status === 'unsubscribed').length;
 
   return (
-    <div className="p-6 space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Newsletter</h1>
-          <p className="text-slate-500 dark:text-slate-400">Manage your audience and track subscriptions.</p>
+    <div className="p-4 sm:p-6 md:p-8 space-y-8 animate-in fade-in duration-500 pb-24 max-w-7xl mx-auto w-full">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Newsletter</h1>
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 font-medium">Manage your audience and track subscriptions.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Link href="/admin/newsletter/history">
-            <Button variant="outline" className="font-bold gap-2">
-              <Mail className="w-4 h-4" />
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Link href="/admin/newsletter/history" className="flex-1 sm:flex-none">
+            <Button variant="outline" className="w-full font-bold gap-2 rounded-xl h-11 border-slate-200 shadow-sm hover:bg-slate-50 transition-all active:scale-95">
+              <Mail className="w-4 h-4 text-slate-400" />
               History
             </Button>
           </Link>
-          <Link href="/admin/newsletter/compose">
-            <Button className="bg-indigo-600 hover:bg-indigo-700 font-bold gap-2 shadow-lg shadow-indigo-200">
+          <Link href="/admin/newsletter/compose" className="flex-1 sm:flex-none">
+            <Button className="w-full bg-slate-900 hover:bg-slate-800 font-bold gap-2 shadow-lg shadow-slate-200 rounded-xl h-11 transition-all active:scale-95">
               <Send className="w-4 h-4" />
               Compose
             </Button>
@@ -38,50 +38,63 @@ export default async function NewsletterPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-md bg-white dark:bg-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Subscribers</CardTitle>
-            <Users className="w-4 h-4 text-indigo-500" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Card className="border-none shadow-sm bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden group hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 p-6 sm:p-8">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Total Audience</CardTitle>
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform">
+                <Users className="w-5 h-5" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white">{subscribers.length}</div>
-            <p className="text-xs text-slate-400 mt-1">Growth: +0% this week</p>
+          <CardContent className="px-6 sm:px-8 pb-6 sm:pb-8">
+            <div className="text-3xl font-black text-slate-900 dark:text-white">{subscribers.length}</div>
+            <p className="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-tight">Active list members</p>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-md bg-white dark:bg-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">Active</CardTitle>
-            <UserCheck className="w-4 h-4 text-green-500" />
+        <Card className="border-none shadow-sm bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden group hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 p-6 sm:p-8">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Healthy Status</CardTitle>
+             <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                <UserCheck className="w-5 h-5" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white">{activeCount}</div>
-            <p className="text-xs text-slate-400 mt-1">Validating emails...</p>
+          <CardContent className="px-6 sm:px-8 pb-6 sm:pb-8">
+            <div className="text-3xl font-black text-slate-900 dark:text-white">{activeCount}</div>
+            <div className="text-[11px] font-bold text-emerald-500 mt-2 uppercase tracking-tight flex items-center gap-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live and delivering
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-md bg-white dark:bg-slate-900">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">Unsubscribed</CardTitle>
-            <UserMinus className="w-4 h-4 text-red-500" />
+        <Card className="border-none shadow-sm bg-white dark:bg-slate-900 rounded-[2rem] overflow-hidden group hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 sm:col-span-2 lg:col-span-1">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0 p-6 sm:p-8">
+            <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Churn Rate</CardTitle>
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                <UserMinus className="w-5 h-5" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-slate-900 dark:text-white">{unsubscribedCount}</div>
-            <p className="text-xs text-slate-400 mt-1">Retention rate: 0%</p>
+          <CardContent className="px-6 sm:px-8 pb-6 sm:pb-8">
+            <div className="text-3xl font-black text-slate-900 dark:text-white">{unsubscribedCount}</div>
+            <p className="text-[11px] font-bold text-slate-400 mt-2 uppercase tracking-tight">Inactive subscribers</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-none shadow-md bg-white dark:bg-slate-900 overflow-hidden">
-        <CardHeader className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 py-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Mail className="w-4 h-4 text-indigo-500" />
-              Subscribers List
+      <Card className="border border-slate-100 shadow-xl shadow-slate-200/20 bg-white dark:bg-slate-900 overflow-hidden rounded-[2.5rem]">
+        <CardHeader className="border-b border-slate-50 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/50 py-6 sm:py-8 px-6 sm:px-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <CardTitle className="text-xl font-black flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-lg">
+                <Mail className="w-4 h-4" />
+              </div>
+              Audience Manager
             </CardTitle>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Showing {subscribers.length} records</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-3 py-1.5 rounded-full">
+                {subscribers.length} TOTAL RECORDS
+              </span>
             </div>
           </div>
         </CardHeader>

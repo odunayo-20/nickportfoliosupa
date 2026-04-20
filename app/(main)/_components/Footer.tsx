@@ -1,7 +1,10 @@
+'use client'
+
 import React from 'react'
 import { Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { NewsletterForm } from '@/components/NewsletterForm'
+import { myAppHook } from '@/context/AppUtils'
 
 const LinkedinIcon = ({ className }: { className?: string }) => (
   <svg
@@ -57,6 +60,8 @@ const TwitterIcon = ({ className }: { className?: string }) => (
 )
 
 const Footer = () => {
+  const { siteSettings } = myAppHook()
+
   return (
     <>
      <footer className="bg-[#1e3628] text-white pt-20 pb-10 border-t-8 border-brand-orange">
@@ -65,11 +70,20 @@ const Footer = () => {
                 
                 <div className="lg:col-span-3">
                     <div className="flex items-center gap-2 mb-6 cursor-pointer">
-                        <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center text-brand-dark font-bold italic">N</div>
-                        <span className="text-xl font-extrabold tracking-tighter text-white">Nikola.</span>
+                        <div className="w-8 h-8 bg-brand-orange rounded-full flex items-center justify-center text-brand-dark font-bold italic overflow-hidden">
+                            {siteSettings?.logo ? (
+                                <img src={siteSettings.logo} alt="Logo" className="w-full h-full object-cover" />
+                            ) : (
+                                siteSettings?.site_title?.[0] || 'N'
+                            )}
+                        </div>
+
+                        <span className="text-xl font-extrabold tracking-tighter text-white">
+                            {siteSettings?.site_title || 'Nikola'}.
+                        </span>
                     </div>
                     <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                        Senior App Developer based in Nigeria, specializing in high-performance native architectures and robust web systems. Building the future of scalable applications.
+                        {siteSettings?.meta_description || 'Senior App Developer based in Nigeria, specializing in high-performance native architectures and robust web systems.'}
                     </p>
                     <div className="flex gap-3">
                         <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
@@ -104,7 +118,7 @@ const Footer = () => {
                             </div>
                             <div>
                                 <span className="block text-gray-400 text-xs uppercase tracking-wider mb-1">Email Me</span>
-                                <span className="font-medium">hello@Nikola.dev</span>
+                                <span className="font-medium">hello@{siteSettings?.site_title?.toLowerCase().replace(/\s+/g, '') || 'nikola'}.dev</span>
                             </div>
                         </li>
                         <li className="flex items-start gap-4">
@@ -126,7 +140,7 @@ const Footer = () => {
             </div>
 
             <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-medium">
-                <p>© 2026 Nikola Portfolio. All Rights Reserved.</p>
+                <p>© 2026 {siteSettings?.site_title || 'Nikola'} Portfolio. All Rights Reserved.</p>
                 <div className="flex gap-6">
                     <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
                     <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
@@ -139,4 +153,4 @@ const Footer = () => {
   )
 }
 
-export default Footer
+export default Footer

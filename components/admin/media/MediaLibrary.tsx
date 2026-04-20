@@ -202,43 +202,85 @@ export function MediaLibrary({
     const isDataLoading = isLoading;
 
     return (
-        <div className="flex flex-col gap-6 w-full h-full">
+        <div className="flex flex-col gap-6 w-full h-full p-4 sm:p-6 md:p-8">
             {/* Header Toolbar */}
             {!hideHeader && (
-            <div className="flex items-end justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-0">
                 <div>
-                    <h1 className="text-3xl font-extrabold tracking-tight">Media Library</h1>
-                    <p className="text-muted-foreground text-sm mt-1">Manage and optimize your portfolio assets.</p>
+                    <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Media Library</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm mt-1">Manage and optimize your portfolio assets.</p>
                 </div>
-                <div className="flex items-center gap-2 bg-muted p-1 rounded-lg">
-                    <Button variant={viewMode === "grid" ? "default" : "ghost"} size="icon" onClick={() => setViewMode("grid")}>
-                        <Grid size={18} />
+                <div className="flex items-center gap-2 bg-muted p-1 rounded-lg self-end sm:self-auto">
+                    <Button variant={viewMode === "grid" ? "default" : "ghost"} size="icon" onClick={() => setViewMode("grid")} className="h-8 w-8 sm:h-10 sm:w-10">
+                        <Grid size={16} className="sm:w-[18px] sm:h-[18px]" />
                     </Button>
-                    <Button variant={viewMode === "list" ? "default" : "ghost"} size="icon" onClick={() => setViewMode("list")}>
-                        <List size={18} />
+                    <Button variant={viewMode === "list" ? "default" : "ghost"} size="icon" onClick={() => setViewMode("list")} className="h-8 w-8 sm:h-10 sm:w-10">
+                        <List size={16} className="sm:w-[18px] sm:h-[18px]" />
                     </Button>
                 </div>
             </div>
             )}
 
             {/* Actions & Path */}
-            <div className="flex items-center justify-between bg-card p-4 rounded-2xl shadow-sm border">
-                {/* Breadcrumbs */}
-                <div className="flex items-center gap-2 text-sm font-medium">
-                    <button onClick={() => navigateToBreadcrumb(-1)} className="hover:bg-muted p-1.5 rounded-md flex items-center transition-colors">
-                        <Home size={16} />
-                    </button>
-                    {folderPath.map((folder, idx) => (
-                        <React.Fragment key={folder.id}>
-                            <ChevronRight size={14} className="text-muted-foreground" />
-                            <button 
-                                onClick={() => navigateToBreadcrumb(idx)}
-                                className="hover:bg-muted px-2 py-1.5 rounded-md transition-colors"
-                            >
-                                {folder.name}
-                            </button>
-                        </React.Fragment>
-                    ))}
+            <div className="flex flex-col gap-4 bg-card p-4 rounded-2xl shadow-sm border">
+                <div className="flex items-center justify-between gap-4">
+                    {/* Breadcrumbs - Scrollable on mobile */}
+                    <div className="flex items-center gap-1 text-sm font-medium overflow-x-auto no-scrollbar pb-1">
+                        <button onClick={() => navigateToBreadcrumb(-1)} className="hover:bg-muted p-1.5 rounded-md flex items-center transition-colors flex-shrink-0">
+                            <Home size={16} />
+                        </button>
+                        {folderPath.map((folder, idx) => (
+                            <React.Fragment key={folder.id}>
+                                <ChevronRight size={14} className="text-muted-foreground flex-shrink-0" />
+                                <button 
+                                    onClick={() => navigateToBreadcrumb(idx)}
+                                    className="hover:bg-muted px-2 py-1.5 rounded-md transition-colors whitespace-nowrap flex-shrink-0"
+                                >
+                                    {folder.name}
+                                </button>
+                            </React.Fragment>
+                        ))}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <Dialog open={isNewFolderOpen} onOpenChange={setIsNewFolderOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" className="h-9 px-3 gap-2">
+                                    <FolderPlus size={16} /> <span className="hidden sm:inline">New Folder</span>
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Create New Folder</DialogTitle>
+                                </DialogHeader>
+                                <div className="py-4">
+                                    <Input 
+                                        placeholder="Folder name" 
+                                        value={newFolderName}
+                                        onChange={(e) => setNewFolderName(e.target.value)}
+                                        autoFocus
+                                    />
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsNewFolderOpen(false)}>Cancel</Button>
+                                    <Button onClick={handleCreateFolder}>Create</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
+
+                        <Button size="sm" className="h-9 px-3 gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                            <UploadCloud size={16} /> <span className="hidden sm:inline">{isUploading ? "Uploading..." : "Upload Media"}</span>
+                            <span className="sm:hidden">{isUploading ? "..." : "Upload"}</span>
+                        </Button>
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            className="hidden" 
+                            multiple 
+                            onChange={handleFileUpload} 
+                            accept="image/*,video/*,.pdf"
+                        />
+                    </div>
                 </div>
 
                 {/* Rename Folder Dialog */}
@@ -261,72 +303,34 @@ export function MediaLibrary({
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-
-                {/* Upload & Create Folder */}
-                <div className="flex items-center gap-3">
-                    <Dialog open={isNewFolderOpen} onOpenChange={setIsNewFolderOpen}>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" className="gap-2">
-                                <FolderPlus size={16} /> New Folder
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Create New Folder</DialogTitle>
-                            </DialogHeader>
-                            <div className="py-4">
-                                <Input 
-                                    placeholder="Folder name" 
-                                    value={newFolderName}
-                                    onChange={(e) => setNewFolderName(e.target.value)}
-                                    autoFocus
-                                />
-                            </div>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsNewFolderOpen(false)}>Cancel</Button>
-                                <Button onClick={handleCreateFolder}>Create</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-
-                    <Button size="sm" className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                        <UploadCloud size={16} /> {isUploading ? "Uploading..." : "Upload Media"}
-                    </Button>
-                    <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        className="hidden" 
-                        multiple 
-                        onChange={handleFileUpload} 
-                        accept="image/*,video/*,.pdf"
-                    />
-                </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="grid grid-cols-12 gap-6 min-h-[500px]">
+            <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 min-h-[500px]">
                 {/* Grid Area */}
-                <div className={`${activeMediaDetails ? 'col-span-8' : 'col-span-12'} flex flex-col gap-6`}>
+                <div className={`${activeMediaDetails ? 'lg:col-span-8 xl:col-span-9' : 'lg:col-span-12'} flex flex-col gap-6 order-2 lg:order-1`}>
                     {isDataLoading ? (
-                        <div className="grid grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                             {[1,2,3,4].map(i => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
                         </div>
                     ) : (
                         <ScrollArea className="h-full">
                             {/* Folders */}
                             {folders && folders.length > 0 && (
-                                <div className="mb-6">
-                                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Folders</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                <div className="mb-8">
+                                    <h3 className="text-[10px] font-bold mb-4 text-muted-foreground uppercase tracking-[0.2em] px-1">Folders</h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                                         {folders.map(folder => (
                                             <div 
                                                 key={folder.id} 
                                                 onClick={() => navigateToFolder(folder.id, folder.name)}
-                                                className="group flex items-center justify-between p-4 bg-card rounded-xl border hover:border-primary/50 hover:shadow-sm cursor-pointer transition-all"
+                                                className="group flex items-center justify-between p-3.5 bg-card rounded-xl border hover:border-primary/40 hover:shadow-sm cursor-pointer transition-all active:scale-95"
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    <Folder className="text-primary/70 fill-primary/10" size={24} />
-                                                    <span className="font-medium text-sm">{folder.name}</span>
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="p-2 bg-primary/5 rounded-lg">
+                                                        <Folder className="text-primary/70 fill-primary/10" size={20} />
+                                                    </div>
+                                                    <span className="font-semibold text-sm truncate">{folder.name}</span>
                                                 </div>
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
@@ -357,19 +361,19 @@ export function MediaLibrary({
                             )}
 
                             {/* Media Files */}
-                            <div>
-                                <h3 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">Files</h3>
+                            <div className="pb-24 lg:pb-10">
+                                <h3 className="text-[10px] font-bold mb-4 text-muted-foreground uppercase tracking-[0.2em] px-1">Files</h3>
                                 {media && media.length === 0 && folders?.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed rounded-2xl border-muted">
-                                        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                                            <UploadCloud size={32} className="text-muted-foreground" />
+                                    <div className="flex flex-col items-center justify-center py-16 px-4 text-center border-2 border-dashed rounded-3xl border-muted bg-slate-50/10">
+                                        <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-4">
+                                            <ImageIcon size={32} className="text-slate-200" />
                                         </div>
-                                        <h3 className="text-lg font-bold">This folder is empty</h3>
-                                        <p className="text-muted-foreground text-sm mt-1 mb-4">Upload media or create a new folder to get started</p>
-                                        <Button onClick={() => fileInputRef.current?.click()}>Upload Files</Button>
+                                        <h3 className="text-lg font-bold text-slate-800">This folder is empty</h3>
+                                        <p className="text-muted-foreground text-sm mt-1 mb-6 max-w-[240px]">Upload media or create a new folder to get started</p>
+                                        <Button onClick={() => fileInputRef.current?.click()} className="rounded-xl shadow-lg border-2 border-primary/20">Upload Files</Button>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-4">
                                         {media?.map(file => {
                                             const isSelected = selectedMedia.has(file.id);
                                             const isImage = file.type === "image";
@@ -377,25 +381,26 @@ export function MediaLibrary({
                                                 <div 
                                                     key={file.id}
                                                     onClick={() => setActiveMediaDetails(file)}
-                                                    className={`group relative aspect-square bg-card rounded-2xl overflow-hidden border-2 transition-all cursor-pointer shadow-sm hover:shadow-md ${isSelected ? 'border-primary ring-2 ring-primary/20' : 'border-transparent'}`}
+                                                    className={`group relative aspect-square bg-white rounded-2xl overflow-hidden border-2 transition-all cursor-pointer shadow-sm hover:shadow-md ${isSelected ? 'border-primary ring-2 ring-primary/20 transform scale-[0.98]' : 'border-transparent hover:border-primary/20'}`}
                                                 >
                                                     {isImage ? (
-                                                        <img src={file.url} alt={file.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 bg-muted" />
+                                                        <img src={file.url} alt={file.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 bg-slate-50" />
                                                     ) : (
-                                                        <div className="w-full h-full flex flex-col items-center justify-center bg-muted">
-                                                            {file.type === "video" ? <Video size={48} className="text-muted-foreground/50" /> : <FileText size={48} className="text-muted-foreground/50" />}
+                                                        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50">
+                                                            {file.type === "video" ? <Video size={40} className="text-slate-300" /> : <FileText size={40} className="text-slate-300" />}
+                                                            <span className="text-[10px] font-bold text-slate-400 mt-2 uppercase">{file.type}</span>
                                                         </div>
                                                     )}
                                                     
                                                     {/* Selection Checkbox */}
-                                                    <div className={`absolute top-3 left-3 w-5 h-5 rounded-md border flex items-center justify-center transition-opacity bg-background/80 backdrop-blur-sm ${isSelected ? 'opacity-100 border-primary bg-primary text-primary-foreground' : 'opacity-0 group-hover:opacity-100 border-muted-foreground'}`} onClick={(e) => toggleMediaSelection(file.id, e)}>
-                                                        {isSelected && <Check size={14} strokeWidth={3} />}
+                                                    <div className={`absolute top-3 left-3 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all bg-white/90 backdrop-blur-sm z-10 ${isSelected ? 'border-primary bg-primary text-white scale-110 shadow-lg' : 'opacity-0 group-hover:opacity-100 border-white/50 shadow-sm'}`} onClick={(e) => toggleMediaSelection(file.id, e)}>
+                                                        {isSelected && <Check size={14} strokeWidth={4} />}
                                                     </div>
 
                                                     {/* Gradient Overlay & Name */}
-                                                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent translate-y-full group-hover:translate-y-0 transition-transform">
-                                                        <p className="text-xs text-white font-medium truncate">{file.name}</p>
-                                                        <p className="text-[10px] text-white/70 uppercase">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    <div className="absolute inset-x-0 bottom-0 p-3 pb-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                                        <p className="text-[11px] text-white font-bold truncate">{file.name}</p>
+                                                        <p className="text-[9px] text-white/70 font-medium uppercase tracking-tighter mt-0.5">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                                     </div>
                                                 </div>
                                             );
@@ -409,54 +414,57 @@ export function MediaLibrary({
 
                 {/* Sidebar Details Pane */}
                 {activeMediaDetails && (
-                    <div className="col-span-4 sticky top-0 h-fit bg-card rounded-3xl p-6 border shadow-sm flex flex-col">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold">Asset Details</h3>
-                            <Button variant="ghost" size="icon" onClick={() => setActiveMediaDetails(null)}>
-                                <span className="sr-only">Close</span>
-                                ✕
-                            </Button>
-                        </div>
-
-                        <div className="aspect-video bg-muted rounded-2xl mb-6 overflow-hidden flex flex-col items-center justify-center relative">
-                            {activeMediaDetails.type === "image" ? (
-                                <img src={activeMediaDetails.url} alt={activeMediaDetails.name} className="w-full h-full object-contain bg-black/5" />
-                            ) : (
-                                <FileText size={64} className="text-muted-foreground/30" />
-                            )}
-                        </div>
-
-                        <div className="space-y-6 flex-1">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-muted p-3 rounded-xl border">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">File Size</p>
-                                    <p className="text-sm font-semibold">{(activeMediaDetails.size / 1024 / 1024).toFixed(2)} MB</p>
-                                </div>
-                                <div className="bg-muted p-3 rounded-xl border">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Type</p>
-                                    <p className="text-sm font-semibold capitalize">{activeMediaDetails.type}</p>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label className="block text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Title</label>
-                                <Input value={activeMediaDetails.name} readOnly className="bg-muted border-none" />
+                    <div className="lg:col-span-4 xl:col-span-3 order-1 lg:order-2">
+                        <div className="sticky top-6 bg-card rounded-3xl p-5 md:p-6 border shadow-xl flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-bold">Asset Details</h3>
+                                <Button variant="ghost" size="icon" onClick={() => setActiveMediaDetails(null)} className="h-8 w-8 rounded-full hover:bg-slate-100">
+                                    <span className="sr-only">Close</span>
+                                    ✕
+                                </Button>
                             </div>
 
-                            <div className="pt-4 flex flex-col gap-3 mt-auto">
-                                <Button variant="secondary" className="w-full gap-2" onClick={() => {
-                                    navigator.clipboard.writeText(activeMediaDetails.url);
-                                    // toast.success("URL copied to clipboard");
-                                }}>
-                                    <LinkIcon size={16} /> Copy URL
-                                </Button>
-                                <Button variant="destructive" className="w-full gap-2" onClick={async () => {
-                                    await deleteMediaAction(activeMediaDetails.id, activeMediaDetails.storage_path);
-                                    setActiveMediaDetails(null);
-                                    fetchData();
-                                }}>
-                                    <Trash2 size={16} /> Delete Asset
-                                </Button>
+                            <div className="aspect-square bg-slate-50 rounded-2xl mb-6 overflow-hidden flex flex-col items-center justify-center relative border border-slate-100 shadow-inner">
+                                {activeMediaDetails.type === "image" ? (
+                                    <img src={activeMediaDetails.url} alt={activeMediaDetails.name} className="w-full h-full object-contain p-2" />
+                                ) : (
+                                    <FileText size={48} className="text-slate-200" />
+                                )}
+                            </div>
+
+                            <div className="space-y-5 flex-1">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-0.5 mb-1">Size</p>
+                                        <p className="text-xs font-bold text-slate-700">{(activeMediaDetails.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    </div>
+                                    <div className="bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
+                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-0.5 mb-1">Type</p>
+                                        <p className="text-xs font-bold text-slate-700 capitalize">{activeMediaDetails.type}</p>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest pl-1 mb-2">File Name</label>
+                                    <div className="p-3 bg-slate-50 rounded-xl text-xs font-medium text-slate-600 border border-slate-100 break-all">
+                                        {activeMediaDetails.name}
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex flex-col gap-2 mt-auto">
+                                    <Button variant="secondary" className="w-full gap-2 rounded-xl h-11 text-xs font-bold shadow-sm" onClick={() => {
+                                        navigator.clipboard.writeText(activeMediaDetails.url);
+                                    }}>
+                                        <LinkIcon size={16} /> Copy Direct Link
+                                    </Button>
+                                    <Button variant="destructive" className="w-full gap-2 rounded-xl h-11 text-xs font-bold shadow-sm" onClick={async () => {
+                                        await deleteMediaAction(activeMediaDetails.id, activeMediaDetails.storage_path);
+                                        setActiveMediaDetails(null);
+                                        fetchData();
+                                    }}>
+                                        <Trash2 size={16} /> Delete Permanently
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </div>

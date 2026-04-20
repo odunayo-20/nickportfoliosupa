@@ -91,87 +91,100 @@ export default function NewsletterHistoryPage() {
     };
 
     return (
-        <div className="p-6 md:p-8 w-full space-y-8 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
+        <div className="p-4 sm:p-6 md:p-8 w-full space-y-8 animate-in fade-in duration-500 pb-24 max-w-5xl mx-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div className="flex items-center gap-3 sm:gap-4">
                     <Button 
                         variant="ghost" 
                         size="icon" 
                         onClick={() => router.push("/admin/newsletter")}
-                        className="rounded-full"
+                        className="rounded-full hover:bg-slate-100 transition-colors shrink-0"
                     >
                         <ChevronLeft size={20} />
                     </Button>
-                    <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Broadcast History</h1>
-                        <p className="text-slate-500">View and manage previously sent newsletter campaigns.</p>
+                    <div className="min-w-0">
+                        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 leading-tight">Broadcasts</h1>
+                        <p className="text-[13px] sm:text-sm text-slate-500 font-medium truncate sm:whitespace-normal">Review your previous campaigns</p>
                     </div>
                 </div>
-                <Button variant="outline" onClick={fetchCampaigns} disabled={isLoading}>
-                    <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                    Refresh
+                <Button 
+                    variant="outline" 
+                    onClick={fetchCampaigns} 
+                    disabled={isLoading}
+                    className="h-11 rounded-xl font-bold border-slate-200 px-6 shadow-sm active:scale-95 transition-all w-full sm:w-auto"
+                >
+                    <RefreshCw className={`w-4 h-4 mr-2 text-slate-400 ${isLoading ? 'animate-spin' : ''}`} />
+                    Sync List
                 </Button>
             </div>
 
             {isLoading ? (
                 <div className="h-64 flex flex-col items-center justify-center gap-4">
-                    <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-                    <p className="text-slate-400 font-medium">Fetching your history...</p>
+                    <div className="relative">
+                        <div className="w-12 h-12 rounded-2xl border-4 border-slate-100 border-t-slate-900 animate-spin" />
+                    </div>
+                    <p className="text-[11px] font-black uppercase tracking-widest text-slate-400">Loading history...</p>
                 </div>
             ) : campaigns.length === 0 ? (
-                <div className="h-96 flex flex-col items-center justify-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl gap-4">
-                    <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-slate-300">
-                        <Mail size={32} />
+                <div className="h-96 flex flex-col items-center justify-center bg-white border border-slate-100 rounded-[2.5rem] gap-6 p-8 text-center shadow-xl shadow-slate-200/20">
+                    <div className="w-20 h-20 bg-slate-50 rounded-[2rem] flex items-center justify-center text-slate-200">
+                        <Mail size={40} strokeWidth={1.5} />
                     </div>
-                    <div className="text-center">
-                        <h3 className="text-lg font-bold text-slate-900">No campaigns found</h3>
-                        <p className="text-slate-500">You haven't sent any newsletters yet.</p>
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-black text-slate-900">Silent Waves</h3>
+                        <p className="text-sm text-slate-400 font-medium max-w-[240px] mx-auto leading-relaxed">Your broadcast history is empty. Start a conversation with your audience.</p>
                     </div>
-                    <Button onClick={() => router.push("/admin/newsletter/compose")} className="mt-2 bg-indigo-600">
-                        Send Your First Newsletter
+                    <Button 
+                        onClick={() => router.push("/admin/newsletter/compose")} 
+                        className="h-12 px-8 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95 transition-all"
+                    >
+                        Draft First Email
                     </Button>
                 </div>
             ) : (
-                <div className="grid gap-6">
+                <div className="grid gap-4 sm:gap-6">
                     {paginatedCampaigns.map((campaign) => (
-                        <Card key={campaign.id} className="overflow-hidden border-slate-200 border group hover:border-indigo-200 transition-all hover:shadow-lg hover:shadow-indigo-50/50">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <div className="space-y-1 flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                        <Card key={campaign.id} className="overflow-hidden border-slate-100 border shadow-sm group hover:border-slate-300 transition-all hover:shadow-xl hover:shadow-slate-200/30 rounded-[1.5rem] sm:rounded-[2rem] bg-white">
+                            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 sm:p-8">
+                                <div className="space-y-2 flex-1 min-w-0">
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <CardTitle className="text-lg sm:text-xl font-bold text-slate-900 truncate leading-tight">
                                             {campaign.subject}
                                         </CardTitle>
-                                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded text-[10px] font-black uppercase tracking-widest">
+                                        <span className="px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest">
                                             {campaign.status}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-4 text-sm text-slate-500">
-                                        <div className="flex items-center gap-1">
-                                            <Calendar size={14} className="text-slate-400" />
-                                            {isMounted ? format(new Date(campaign.created_at), "PPP") : "Loading date..."}
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 text-[11px] sm:text-xs text-slate-400 font-bold uppercase tracking-tight">
+                                        <div className="flex items-center gap-2">
+                                            <Calendar size={14} className="text-slate-300" />
+                                            {isMounted ? format(new Date(campaign.created_at), "MMM d, yyyy") : "..."}
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <Users size={14} className="text-slate-400" />
-                                            {campaign.recipient_count} Recipients
+                                        <div className="flex items-center gap-2">
+                                            <Users size={14} className="text-slate-300" />
+                                            {campaign.recipient_count} SHIPPED
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 pt-2 sm:pt-0">
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50">
+                                            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
                                                 <Eye size={18} />
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-[80vw] max-h-[90vh] overflow-y-auto">
-                                            <DialogHeader>
-                                                <DialogTitle className="text-2xl font-bold">{campaign.subject}</DialogTitle>
-                                                <DialogDescription className="flex items-center gap-2">
-                                                    Sent on {isMounted ? format(new Date(campaign.created_at), "MMMM d, yyyy") : "..."} to {campaign.recipient_count} users.
+                                        <DialogContent className="max-w-[95vw] sm:max-w-[80vw] max-h-[90vh] overflow-y-auto rounded-[2rem] border-none shadow-2xl">
+                                            <DialogHeader className="p-4 sm:p-6 pb-0">
+                                                <DialogTitle className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">{campaign.subject}</DialogTitle>
+                                                <DialogDescription className="text-xs sm:text-sm font-bold text-slate-400 uppercase tracking-widest pt-2">
+                                                    Shipped {isMounted ? format(new Date(campaign.created_at), "PPP") : "..."} • {campaign.recipient_count} Recipients
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <div className="mt-6 border rounded-xl p-8 bg-white prose prose-slate max-w-none shadow-inner">
-                                                <div dangerouslySetInnerHTML={{ __html: campaign.content }} />
+                                            <div className="mt-6 border border-slate-50 rounded-2xl sm:rounded-[2rem] p-5 sm:p-10 bg-slate-50/30 prose prose-slate max-w-none shadow-inner overflow-x-hidden">
+                                                <div 
+                                                    className="text-slate-700 leading-relaxed break-words"
+                                                    dangerouslySetInnerHTML={{ __html: campaign.content }} 
+                                                />
                                             </div>
                                         </DialogContent>
                                     </Dialog>
@@ -181,14 +194,18 @@ export default function NewsletterHistoryPage() {
                                         size="icon" 
                                         onClick={() => handleDelete(campaign.id)}
                                         disabled={isDeleting === campaign.id}
-                                        className="text-slate-400 hover:text-red-600 hover:bg-red-50"
+                                        className="h-11 w-11 rounded-xl text-slate-300 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all"
                                     >
                                         {isDeleting === campaign.id ? (
-                                            <Loader2 size={18} className="animate-spin" />
+                                            <Loader2 size={18} className="animate-spin text-rose-500" />
                                         ) : (
                                             <Trash2 size={18} />
                                         )}
                                     </Button>
+                                    
+                                    <div className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 sm:hidden">
+                                         <ChevronRight size={18} />
+                                    </div>
                                 </div>
                             </CardHeader>
                         </Card>
@@ -196,35 +213,38 @@ export default function NewsletterHistoryPage() {
                 </div>
             )}
 
-            {/* Pagination Controls */}
+            {/* Pagination Footer */}
             {!isLoading && campaigns.length > 0 && (
-                <div className="px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-100 bg-slate-50/30 rounded-xl mt-6">
-                    <p className="text-[12px] text-slate-500 font-medium">
-                        Showing <span className="font-bold text-slate-900">{Math.min(campaigns.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}</span> to <span className="font-bold text-slate-900">{Math.min(campaigns.length, currentPage * ITEMS_PER_PAGE)}</span> of <span className="font-bold text-slate-900">{campaigns.length}</span> campaigns
-                    </p>
+                <div className="px-6 sm:px-10 py-8 flex flex-col sm:flex-row items-center justify-between gap-6 border border-slate-100 bg-white shadow-xl shadow-slate-200/20 rounded-[2rem] mt-8">
+                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <span className="bg-slate-900 text-white px-2.5 py-1 rounded-lg leading-none shadow-lg">
+                             {Math.min(campaigns.length, (currentPage - 1) * ITEMS_PER_PAGE + 1)}—{Math.min(campaigns.length, currentPage * ITEMS_PER_PAGE)}
+                        </span>
+                        OF {campaigns.length} BROADCASTS
+                    </div>
 
                     {totalPages > 1 && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="h-8 w-8 p-0"
+                                className="h-11 w-11 p-0 rounded-xl border-slate-200 hover:bg-slate-50 active:scale-90 transition-all shadow-sm"
                             >
-                                <ChevronLeft size={16} />
+                                <ChevronLeft size={18} />
                             </Button>
 
-                            <div className="flex items-center gap-1 mx-2">
+                            <div className="flex items-center gap-1.5 mx-1">
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                                    const isVisible = totalPages <= 7 || 
+                                    const isVisible = totalPages <= 5 || 
                                         page === 1 || 
                                         page === totalPages || 
                                         (page >= currentPage - 1 && page <= currentPage + 1);
                                     
                                     if (!isVisible) {
                                         if (page === 2 || page === totalPages - 1) {
-                                            return <span key={page} className="text-slate-300 px-1">...</span>;
+                                            return <span key={page} className="text-slate-200 font-black">.</span>;
                                         }
                                         return null;
                                     }
@@ -233,10 +253,10 @@ export default function NewsletterHistoryPage() {
                                         <button
                                             key={page}
                                             onClick={() => setCurrentPage(page)}
-                                            className={`min-w-[32px] h-8 px-2 text-[12px] font-bold rounded-lg transition-all ${
+                                            className={`min-w-[40px] h-11 px-3 text-[11px] font-black rounded-xl transition-all shadow-sm ${
                                                 currentPage === page 
-                                                    ? "bg-slate-900 text-white shadow-lg shadow-slate-200" 
-                                                    : "text-slate-500 hover:bg-slate-100"
+                                                    ? "bg-slate-900 text-white shadow-slate-300 transform scale-105" 
+                                                    : "bg-white text-slate-400 hover:bg-slate-50 border border-slate-100 hover:text-slate-800"
                                             }`}
                                         >
                                             {page}
@@ -250,9 +270,9 @@ export default function NewsletterHistoryPage() {
                                 size="sm"
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="h-8 w-8 p-0"
+                                className="h-11 w-11 p-0 rounded-xl border-slate-200 hover:bg-slate-50 active:scale-90 transition-all shadow-sm"
                             >
-                                <ChevronRight size={16} />
+                                <ChevronRight size={18} />
                             </Button>
                         </div>
                     )}
