@@ -37,14 +37,14 @@ const TopNavBar = () => {
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url;
 
   return (
-    <header className="flex justify-between items-center px-6 py-3 w-full sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-40 transition-all duration-200 shadow-sm border-b border-slate-100 dark:border-slate-800">
+    <header className="flex justify-between items-center px-4 sm:px-6 py-3 w-full sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md z-40 transition-all duration-200 shadow-sm border-b border-slate-100 dark:border-slate-800">
       
-      {/* Left Section */}
-      <div className="flex items-center gap-6">
+      {/* Left Section - Search */}
+      <div className="flex-1 max-w-md">
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors w-4 h-4" />
           <input
-            className="pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-sm focus:ring-4 focus:ring-indigo-500/10 focus:bg-white w-72 transition-all placeholder:text-slate-400 font-medium"
+            className="pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl text-xs sm:text-sm focus:ring-4 focus:ring-indigo-500/10 focus:bg-white w-full sm:w-72 transition-all placeholder:text-slate-400 font-medium"
             placeholder="Search…"
             type="text"
           />

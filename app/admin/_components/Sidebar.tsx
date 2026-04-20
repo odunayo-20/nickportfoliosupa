@@ -53,17 +53,15 @@ const Sidebar = () => {
 
   const navItems = [
     { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+    { name: "Categories", href: "/admin/categories", icon: Tag },
     { name: "Projects", href: "/admin/project", icon: FolderKanban },
     { name: "Blog", href: "/admin/blog", icon: FileEdit },
-    { name: "Categories", href: "/admin/categories", icon: Tag },
-    { name: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-    { name: "Newsletter", href: "/admin/newsletter", icon: Mail },
     { name: "Messages", href: "/admin/message", icon: MessageCircle },
     { name: "Comments", href: "/admin/comments", icon: MessageCircle },
-    { name: "Profile", href: "/admin/profile", icon: UserIcon },
     { name: "Invite Users", href: "/admin/whitelist", icon: ShieldCheck },
     { name: "Media", href: "/admin/media", icon: ImageIcon },
-    { name: "Settings", href: "/admin/settings", icon: Settings },
+    { name: "Newsletter", href: "/admin/newsletter", icon: Mail },
   ];
 
   const displayName = profileName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || "User";
