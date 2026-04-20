@@ -1,4 +1,5 @@
 import { getPublishedPosts } from "@/actions/blog";
+import { getCategories } from "@/actions/categories";
 import BlogClient from "./BlogClient";
 import { Metadata } from "next";
 
@@ -8,7 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Blog() {
-  const posts = await getPublishedPosts();
+  const [posts, categories] = await Promise.all([
+    getPublishedPosts(),
+    getCategories(),
+  ]);
 
-  return <BlogClient posts={posts} />;
+  return <BlogClient posts={posts} categories={categories} />;
 }

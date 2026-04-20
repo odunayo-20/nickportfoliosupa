@@ -1,8 +1,8 @@
 "use client";
 import { Calendar, ArrowRight, MailOpen } from 'lucide-react'
-import { motion } from 'motion/react'
+import { motion, AnimatePresence } from 'motion/react'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -14,17 +14,29 @@ const staggerContainer = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15
+      staggerChildren: 0.12
     }
   }
 };
 
-export default function BlogClient({ posts }: { posts: any[] }) {
+type Category = { id: string; name: string; slug: string };
+
+interface BlogClientProps {
+  posts: any[];
+  categories: Category[];
+}
+
+export default function BlogClient({ posts, categories }: BlogClientProps) {
   const [visibleCount, setVisibleCount] = useState(6);
+  const [activeCategory, setActiveCategory] = useState<string>("all");
   
-  // Try to find the featured article (e.g. the latest one with a specific tag or just the first one)
-  const featuredPost = posts.length > 0 ? posts[0] : null;
-  const otherPosts = posts.length > 1 ? posts.slice(1) : [];
+  const filteredPosts = useMemo(() => {
+        if (activeCategory === "all") return posts;
+        return posts.filter(p => p.category === activeCategory);
+  }, [posts, activeCategory]);
+
+  const featuredPost = filteredPosts.length > 0 ? filteredPosts[0] : null;
+  const otherPosts = filteredPosts.length > 1 ? filteredPosts.slice(1) : [];
 
   return (
     <>
@@ -46,121 +58,148 @@ export default function BlogClient({ posts }: { posts: any[] }) {
             </motion.p>
             
             <motion.div variants={fadeInUp} className="flex flex-wrap justify-center gap-4">
-                <button className="px-6 py-2 bg-brand-dark text-white text-sm font-bold rounded-full shadow-md">All Posts</button>
-                <button className="px-6 py-2 bg-white text-brand-muted border border-gray-200 text-sm font-bold rounded-full hover:border-brand-orange hover:text-brand-orange transition-colors">Architecture</button>
-                <button className="px-6 py-2 bg-white text-brand-muted border border-gray-200 text-sm font-bold rounded-full hover:border-brand-orange hover:text-brand-orange transition-colors">Kotlin</button>
-                <button className="px-6 py-2 bg-white text-brand-muted border border-gray-200 text-sm font-bold rounded-full hover:border-brand-orange hover:text-brand-orange transition-colors">Mobile Dev</button>
+                <button
+                    onClick={() => { setActiveCategory("all"); setVisibleCount(6); }}
+                    className={`px-6 py-2 text-sm font-bold rounded-full transition-all duration-200 ${
+                        activeCategory === "all"
+                            ? "bg-brand-dark text-white shadow-md"
+                            : "bg-white text-brand-muted border border-gray-200 hover:border-brand-orange hover:text-brand-orange"
+                    }`}
+                >
+                    All Posts
+                    <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${activeCategory === "all" ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>
+                        {posts.length}
+                    </span>
+                </button>
+                {categories.map(cat => {
+                    const count = posts.filter(p => p.category === cat.name).length;
+                    if (count === 0) return null;
+                    return (
+                        <button
+                            key={cat.id}
+                            onClick={() => { setActiveCategory(cat.name); setVisibleCount(6); }}
+                            className={`px-6 py-2 text-sm font-bold rounded-full transition-all duration-200 ${
+                                activeCategory === cat.name
+                                    ? "bg-brand-dark text-white shadow-md"
+                                    : "bg-white text-brand-muted border border-gray-200 hover:border-brand-orange hover:text-brand-orange"
+                            }`}
+                        >
+                            {cat.name}
+                            <span className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${activeCategory === cat.name ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500"}`}>
+                                {count}
+                            </span>
+                        </button>
+                    );
+                })}
             </motion.div>
         </div>
     </motion.header>
 
-    <motion.section 
-        className="py-20 bg-brand-light"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={staggerContainer}
-    >
-        <div className="max-w-7xl mx-auto px-6 reveal">
-            <motion.h2 variants={fadeInUp} className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Featured Article</motion.h2>
-            
-            {featuredPost ? (
-                <motion.div variants={fadeInUp}>
-                    <Link href={`/blog/${featuredPost.slug}`} className="group grid lg:grid-cols-2 gap-10 items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all article-card block">
-                        <div className="overflow-hidden bg-brand-offwhite h-full min-h-[350px] relative">
-                            <img src={featuredPost.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200"} 
-                                 alt={featuredPost.title} 
-                                 className="article-image absolute inset-0 w-full h-full object-cover grayscale" />
+    <AnimatePresence mode="wait">
+        <motion.div
+            key={activeCategory}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="bg-brand-light pb-32"
+        >
+            <section className="py-20">
+                <div className="max-w-7xl mx-auto px-6 reveal">
+                    {filteredPosts.length === 0 && (
+                        <div className="text-center py-20">
+                            <p className="text-brand-muted text-lg font-medium">No posts in this category yet.</p>
                         </div>
-                        <div className="p-8 lg:p-12">
-                            <div className="flex items-center gap-4 mb-6">
-                                {featuredPost.category && (
-                                    <span className="text-xs font-bold text-brand-dark bg-brand-orange px-3 py-1 rounded-full uppercase tracking-widest">{featuredPost.category}</span>
-                                )}
-                                <span className="text-sm font-medium text-brand-muted flex items-center gap-1">
-                                    <Calendar className="w-4 h-4" /> 
-                                    {new Date(featuredPost.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                                </span>
-                            </div>
-                            <h3 className="text-3xl md:text-4xl font-extrabold tracking-tight text-brand-dark mb-6 group-hover:text-brand-green transition-colors">
-                                {featuredPost.title}
-                            </h3>
-                            <p className="text-brand-muted text-lg leading-relaxed mb-8 line-clamp-3">
-                                {featuredPost.excerpt}
-                            </p>
-                            <div className="inline-flex items-center gap-2 text-brand-green font-bold group-hover:gap-4 transition-all">
-                                Read Full Article <ArrowRight className="w-5 h-5" />
-                            </div>
-                        </div>
-                    </Link>
-                </motion.div>
-            ) : (
-                <p className="text-brand-muted">No featured articles currently available.</p>
-            )}
-        </div>
-    </motion.section>
-
-    <motion.section 
-        className="pb-32 bg-brand-light"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={staggerContainer}
-    >
-        <div className="max-w-7xl mx-auto px-6">
-            <motion.h2 variants={fadeInUp} className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Latest Posts</motion.h2>
-            
-            {otherPosts.length > 0 ? (
-                <>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {otherPosts.slice(0, visibleCount).map((post: any, index: number) => (
-                            <motion.div variants={fadeInUp} key={post.id || index}>
-                                <Link href={`/blog/${post.slug}`} className="article-card flex flex-col h-full bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all reveal group delay-100 block">
-                                    <div className="aspect-[16/9] overflow-hidden relative bg-brand-offwhite">
-                                        <img src={post.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} 
-                                             alt={post.title} 
-                                             className="article-image absolute inset-0 w-full h-full object-cover grayscale" />
-                                    </div>
-                                    <div className="p-8 flex-grow flex flex-col">
-                                        <div className="flex items-center justify-between mb-4">
-                                            {post.category ? (
-                                                <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">{post.category}</span>
-                                            ) : (
-                                                <span className="hidden"></span>
-                                            )}
-                                            <span className="text-xs font-medium text-brand-muted">
-                                                {new Date(post.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-xl font-bold text-brand-dark mb-4 group-hover:text-brand-green transition-colors">{post.title}</h3>
-                                        <p className="text-brand-muted text-sm leading-relaxed mb-6 flex-grow line-clamp-3">
-                                            {post.excerpt}
-                                        </p>
-                                        <div className="text-sm font-bold text-brand-orange flex items-center gap-2">
-                                            Read More <ArrowRight className="w-4 h-4" />
-                                        </div>
-                                    </div>
-                                </Link>
-                            </motion.div>
-                        ))}
-                    </div>
-                    
-                    {visibleCount < otherPosts.length && (
-                        <motion.div variants={fadeInUp} className="mt-16 text-center reveal">
-                            <button 
-                                onClick={() => setVisibleCount(prev => prev + 6)}
-                                className="px-8 py-3 bg-brand-offwhite border border-gray-200 text-brand-dark font-bold rounded-full hover:bg-brand-green hover:text-white hover:border-brand-green transition-all shadow-sm"
-                            >
-                                Load More Articles
-                            </button>
-                        </motion.div>
                     )}
-                </>
-            ) : (
-                <p className="text-brand-muted text-center py-10">More articles coming soon.</p>
+                    
+                    {featuredPost && (
+                        <>
+                            <h2 className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Featured Article</h2>
+                            <Link href={`/blog/${featuredPost.slug}`} className="group grid lg:grid-cols-2 gap-10 items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all article-card block">
+                                <div className="overflow-hidden bg-brand-offwhite h-full min-h-[350px] relative">
+                                    <img src={featuredPost.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200"} 
+                                        alt={featuredPost.title} 
+                                        className="article-image absolute inset-0 w-full h-full object-cover grayscale" />
+                                </div>
+                                <div className="p-8 lg:p-12">
+                                    <div className="flex items-center gap-4 mb-6">
+                                        {featuredPost.category && (
+                                            <span className="text-xs font-bold text-brand-dark bg-brand-orange px-3 py-1 rounded-full uppercase tracking-widest">{featuredPost.category}</span>
+                                        )}
+                                        <span className="text-sm font-medium text-brand-muted flex items-center gap-1">
+                                            <Calendar className="w-4 h-4" /> 
+                                            {new Date(featuredPost.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-3xl md:text-4xl font-extrabold tracking-tight text-brand-dark mb-6 group-hover:text-brand-green transition-colors">
+                                        {featuredPost.title}
+                                    </h3>
+                                    <p className="text-brand-muted text-lg leading-relaxed mb-8 line-clamp-3">
+                                        {featuredPost.excerpt}
+                                    </p>
+                                    <div className="inline-flex items-center gap-2 text-brand-green font-bold group-hover:gap-4 transition-all">
+                                        Read Full Article <ArrowRight className="w-5 h-5" />
+                                    </div>
+                                </div>
+                            </Link>
+                        </>
+                    )}
+                </div>
+            </section>
+
+            {otherPosts.length > 0 && (
+                <section>
+                    <div className="max-w-7xl mx-auto px-6">
+                        <h2 className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Latest Posts</h2>
+                        
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {otherPosts.slice(0, visibleCount).map((post: any, index: number) => (
+                                <motion.div variants={fadeInUp} key={post.id || index} initial="hidden" animate="visible" custom={index}>
+                                    <Link href={`/blog/${post.slug}`} className="article-card flex flex-col h-full bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all reveal group delay-100 block">
+                                        <div className="aspect-[16/9] overflow-hidden relative bg-brand-offwhite">
+                                            <img src={post.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} 
+                                                alt={post.title} 
+                                                className="article-image absolute inset-0 w-full h-full object-cover grayscale" />
+                                        </div>
+                                        <div className="p-8 flex-grow flex flex-col">
+                                            <div className="flex items-center justify-between mb-4">
+                                                {post.category ? (
+                                                    <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">{post.category}</span>
+                                                ) : (
+                                                    <span className="hidden"></span>
+                                                )}
+                                                <span className="text-xs font-medium text-brand-muted">
+                                                    {new Date(post.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </span>
+                                            </div>
+                                            <h3 className="text-xl font-bold text-brand-dark mb-4 group-hover:text-brand-green transition-colors">{post.title}</h3>
+                                            <p className="text-brand-muted text-sm leading-relaxed mb-6 flex-grow line-clamp-3">
+                                                {post.excerpt}
+                                            </p>
+                                            <div className="text-sm font-bold text-brand-orange flex items-center gap-2">
+                                                Read More <ArrowRight className="w-4 h-4" />
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </motion.div>
+                            ))}
+                        </div>
+                        
+                        {visibleCount < otherPosts.length && (
+                            <div className="mt-16 text-center reveal">
+                                <button 
+                                    onClick={() => setVisibleCount(prev => prev + 6)}
+                                    className="px-8 py-3 bg-brand-offwhite border border-gray-200 text-brand-dark font-bold rounded-full hover:bg-brand-green hover:text-white hover:border-brand-green transition-all shadow-sm"
+                                >
+                                    Load More Articles
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </section>
             )}
-        </div>
-    </motion.section>
+        </motion.div>
+    </AnimatePresence>
 
     <motion.section 
         className="py-24 bg-brand-green text-white"
