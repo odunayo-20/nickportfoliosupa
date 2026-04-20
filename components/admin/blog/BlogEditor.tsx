@@ -39,6 +39,7 @@ import { MediaModal } from "@/components/admin/media/MediaModal";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { cn } from "@/lib/utils";
 import { createPost, updatePost } from "@/actions/blog";
+import { getCategories } from "@/actions/categories";
 import { supabase } from "@/lib/supabaseClient";
 
 const formSchema = z.object({
@@ -67,9 +68,11 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
     const [tagInput, setTagInput] = useState("");
     const [isMounted, setIsMounted] = useState(false);
+    const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
 
     useEffect(() => {
         setIsMounted(true);
+        getCategories().then(setCategories);
     }, []);
 
     const form = useForm<FormValues>({
@@ -351,10 +354,17 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                                             <SelectValue placeholder="Select Category" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="Architecture">Architecture</SelectItem>
-                                            <SelectItem value="UI Design">UI Design</SelectItem>
-                                            <SelectItem value="Development">Development</SelectItem>
-                                            <SelectItem value="Personal">Personal</SelectItem>
+                                            {categories.length === 0 ? (
+                                                <SelectItem value="__none" disabled>
+                                                    No categories yet
+                                                </SelectItem>
+                                            ) : (
+                                                categories.map((cat) => (
+                                                    <SelectItem key={cat.id} value={cat.name}>
+                                                        {cat.name}
+                                                    </SelectItem>
+                                                ))
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 )}

@@ -1,6 +1,7 @@
 "use client";
 import { Smartphone, Globe, Database, Cpu, Check, ArrowRight } from 'lucide-react'
 import { motion } from 'motion/react'
+import Link from 'next/link';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -229,12 +230,12 @@ const Service = () => {
             <h2 className="text-4xl font-extrabold tracking-tighter text-brand-dark mb-6">Ready to scale your product?</h2>
             <p className="text-brand-muted text-lg mb-10">Whether you need a full app built from scratch or high-level consulting to fix a bottleneck, let's talk.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="contact.html" className="px-8 py-4 bg-brand-orange text-brand-dark font-bold rounded-full hover:bg-brand-dark hover:text-white transition-all shadow-lg flex items-center gap-2">
+                <Link href="contact" className="px-8 py-4 bg-brand-orange text-brand-dark font-bold rounded-full hover:bg-brand-dark hover:text-white transition-all shadow-lg flex items-center gap-2">
                     Start a Project <ArrowRight className="w-4 h-4" />
-                </a>
-                <a href="projects.html" className="px-8 py-4 border border-gray-300 text-brand-dark font-bold rounded-full hover:border-brand-dark transition-all">
+                </Link>
+                <Link href="projects" className="px-8 py-4 border border-gray-300 text-brand-dark font-bold rounded-full hover:border-brand-dark transition-all">
                     View Case Studies
-                </a>
+                </Link>
             </div>
         </motion.div>
     </motion.section>

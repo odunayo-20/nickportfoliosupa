@@ -26,6 +26,26 @@ export interface Database {
           email?: string
         }
       }
+      categories: {
+        Row: {
+          id: string
+          created_at: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          name?: string
+          slug?: string
+        }
+      }
       folders: {
         Row: {
           id: string

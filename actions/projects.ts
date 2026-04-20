@@ -159,6 +159,47 @@ export async function getAllProjects() {
     return projects;
 }
 
+export async function getPublishedProjects() {
+    const supabase = await createClient();
+    const { data: projects, error } = await supabase
+        .from("projects")
+        .select("*")
+        .eq("status", "published")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("Error fetching published projects:", error);
+        return [];
+    }
+
+    if (projects && projects.length > 0) {
+        const mediaIds = projects
+            .map(p => p.featured_image)
+            .filter(id => !!id) as string[];
+        
+        if (mediaIds.length > 0) {
+            const { data: media } = await supabase
+                .from("media")
+                .select("*")
+                .in("id", mediaIds);
+            
+            if (media) {
+                return projects.map(project => {
+                    const featured_image_media = media.find(m => m.id === project.featured_image);
+                    return {
+                        ...project,
+                        featured_image_media,
+                        imageUrl: featured_image_media?.url,
+                        image_url: featured_image_media?.url
+                    };
+                });
+            }
+        }
+    }
+
+    return projects;
+}
+
 export async function getProjectBySlug(slug: string) {
     const supabase = await createClient();
     
@@ -184,6 +225,17 @@ export async function getProjectBySlug(slug: string) {
             (project as any).featured_image_media = media;
             (project as any).imageUrl = media.url;
             (project as any).image_url = media.url;
+        }
+    }
+
+    if (project && project.media_ids && project.media_ids.length > 0) {
+        const { data: galleryMedia } = await supabase
+            .from("media")
+            .select("*")
+            .in("id", project.media_ids);
+        if (galleryMedia) {
+            (project as any).gallery_media = galleryMedia;
+            (project as any).additionalImages = galleryMedia.map((m: any) => m.url);
         }
     }
 

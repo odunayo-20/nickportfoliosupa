@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { createProject, updateProject } from "@/actions/projects";
 import { getMediaById, getMediaByIds } from "@/actions/media";
+import { getCategories } from "@/actions/categories";
 import { 
     Save, 
     Send, 
@@ -88,9 +89,11 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
     // Media Previews State
     const [featuredImageDoc, setFeaturedImageDoc] = useState<any>(null);
     const [galleryItems, setGalleryItems] = useState<any[]>([]);
+    const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
 
     useEffect(() => {
         setIsMounted(true);
+        getCategories().then(setCategories);
     }, []);
 
     const {
@@ -613,11 +616,17 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                                             <SelectValue placeholder="Select Category" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="Architecture">Architecture</SelectItem>
-                                            <SelectItem value="Interior Design">Interior Design</SelectItem>
-                                            <SelectItem value="Landscape">Landscape</SelectItem>
-                                            <SelectItem value="Urban Design">Urban Design</SelectItem>
-                                            <SelectItem value="Sustainable">Sustainable</SelectItem>
+                                            {categories.length === 0 ? (
+                                                <SelectItem value="__none" disabled>
+                                                    No categories yet
+                                                </SelectItem>
+                                            ) : (
+                                                categories.map((cat) => (
+                                                    <SelectItem key={cat.id} value={cat.name}>
+                                                        {cat.name}
+                                                    </SelectItem>
+                                                ))
+                                            )}
                                         </SelectContent>
                                     </Select>
                                 </div>
