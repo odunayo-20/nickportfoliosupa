@@ -76,7 +76,7 @@ const Sidebar = () => {
         </div>
         <div>
           <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-none tracking-tight">
-            Architect
+            Nick
           </h1>
           <p className="text-[11px] font-medium text-slate-400 mt-0.5">
             Portfolio Manager

@@ -13,9 +13,9 @@ const MobileNav = () => {
     { name: "Blog", href: "/admin/blog", icon: FileEdit },
     { name: "Media", href: "/admin/media", icon: ImageIcon },
     { name: "Whitelist", href: "/admin/whitelist", icon: ShieldCheck },
-    { name: "Messages", href: "/admin/message", icon: MessageCircle },
-    { name: "Comments", href: "/admin/comments", icon: MessageCircle },
-    { name: "Settings", href: "/admin/settings", icon: Settings },
+    // { name: "Messages", href: "/admin/message", icon: MessageCircle },
+    // { name: "Comments", href: "/admin/comments", icon: MessageCircle },
+    // { name: "Settings", href: "/admin/settings", icon: Settings },
   ];
 
   return (
