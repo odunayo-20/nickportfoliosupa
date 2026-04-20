@@ -2,14 +2,14 @@
 import { useState, useMemo } from 'react'
 import { ArrowRight, Fingerprint, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion, AnimatePresence, Variants } from 'motion/react'
 
-const fadeInUp = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -101,7 +101,7 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: "easeOut" as const }}
         >
             {filteredProjects.length === 0 && (
                 <div className="max-w-7xl mx-auto px-6 py-32 text-center">

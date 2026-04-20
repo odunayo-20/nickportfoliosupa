@@ -47,10 +47,10 @@ const formSchema = z.object({
     slug: z.string().min(1, "Slug is required"),
     excerpt: z.string().optional(),
     content: z.string().min(1, "Content is required"),
-    status: z.enum(["draft", "published"]).default("draft"),
-    visibility: z.enum(["public", "private"]).default("public"),
+    status: z.enum(["draft", "published"]),
+    visibility: z.enum(["public", "private"]),
     category: z.string().optional(),
-    tags: z.array(z.string()).default([]),
+    tags: z.array(z.string()),
     published_at: z.string().optional(),
     featured_image_id: z.string().optional(),
 });
@@ -75,20 +75,22 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
         getCategories().then(setCategories);
     }, []);
 
+    const defaultValues: FormValues = {
+        title: initialData?.title || "",
+        slug: initialData?.slug || "",
+        excerpt: initialData?.summary || "",
+        content: initialData?.content || "",
+        status: (initialData?.status === "published" ? "published" : "draft") as "draft" | "published",
+        visibility: (initialData?.visibility === "private" ? "private" : "public") as "public" | "private",
+        category: initialData?.category || "General",
+        tags: initialData?.tags || [],
+        published_at: initialData?.published_at || new Date().toISOString(),
+        featured_image_id: initialData?.featured_image_id || undefined,
+    };
+
     const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            title: initialData?.title || "",
-            slug: initialData?.slug || "",
-            excerpt: initialData?.summary || "",
-            content: initialData?.content || "",
-            status: initialData?.status || "draft",
-            visibility: initialData?.visibility || "public",
-            category: initialData?.category || "General",
-            tags: initialData?.tags || [],
-            published_at: initialData?.published_at || new Date().toISOString(),
-            featured_image_id: initialData?.featured_image_id || undefined,
-        },
+        resolver: zodResolver(formSchema as any),
+        defaultValues,
     });
 
     const { register, handleSubmit, watch, setValue, control, formState: { errors, isSubmitting } } = form;

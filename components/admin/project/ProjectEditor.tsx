@@ -57,15 +57,15 @@ const projectSchema = z.object({
     description: z.string().min(10, "Description must be at least 10 characters"),
     content: z.string().optional(),
     category: z.string().optional(),
-    techStack: z.array(z.string()).default([]),
+    techStack: z.array(z.string()),
     githubUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
     liveUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
     appStoreUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
     playStoreUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-    status: z.enum(["draft", "published"]).default("draft"),
-    isFeatured: z.boolean().default(false),
+    status: z.enum(["draft", "published"]),
+    isFeatured: z.boolean(),
     featuredImage: z.string().optional(),
-    mediaIds: z.array(z.string()).default([]),
+    mediaIds: z.array(z.string()),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -96,6 +96,23 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
         getCategories().then(setCategories);
     }, []);
 
+    const defaultValues: ProjectFormValues = {
+        title: initialData?.title || "",
+        slug: initialData?.slug || "",
+        description: initialData?.description || "",
+        content: initialData?.content || "",
+        category: initialData?.category || "",
+        techStack: initialData?.tech_stack || initialData?.techStack || [],
+        githubUrl: initialData?.githubUrl || "",
+        liveUrl: initialData?.liveUrl || "",
+        appStoreUrl: initialData?.appStoreUrl || "",
+        playStoreUrl: initialData?.playStoreUrl || "",
+        status: (initialData?.status === "published" ? "published" : "draft") as "draft" | "published",
+        isFeatured: initialData?.is_featured || initialData?.isFeatured || false,
+        featuredImage: initialData?.featured_image || initialData?.featured_image_id || initialData?.featuredImage || undefined,
+        mediaIds: initialData?.media_ids || initialData?.mediaIds || [],
+    };
+
     const {
         register,
         handleSubmit,
@@ -104,23 +121,8 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
         getValues,
         formState: { errors },
     } = useForm<ProjectFormValues>({
-        resolver: zodResolver(projectSchema),
-        defaultValues: {
-            title: initialData?.title || "",
-            slug: initialData?.slug || "",
-            description: initialData?.description || "",
-            content: initialData?.content || "",
-            category: initialData?.category || "",
-            techStack: initialData?.tech_stack || initialData?.techStack || [],
-            githubUrl: initialData?.githubUrl || "",
-            liveUrl: initialData?.liveUrl || "",
-            appStoreUrl: initialData?.appStoreUrl || "",
-            playStoreUrl: initialData?.playStoreUrl || "",
-            status: initialData?.status || "draft",
-            isFeatured: initialData?.is_featured || initialData?.isFeatured || false,
-            featuredImage: initialData?.featured_image || initialData?.featured_image_id || initialData?.featuredImage || undefined,
-            mediaIds: initialData?.media_ids || initialData?.mediaIds || [],
-        },
+        resolver: zodResolver(projectSchema as any),
+        defaultValues,
     });
 
     const values = watch();

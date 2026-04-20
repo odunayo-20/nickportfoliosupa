@@ -1,15 +1,15 @@
 "use client";
 import { Calendar, ArrowRight, MailOpen } from 'lucide-react'
-import { motion, AnimatePresence } from 'motion/react'
+import { motion, AnimatePresence, Variants } from 'motion/react'
 import Link from 'next/link'
 import React, { useState, useMemo } from 'react'
 
-const fadeInUp = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -101,7 +101,7 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: "easeOut" as const }}
             className="bg-brand-light pb-32"
         >
             <section className="py-20">

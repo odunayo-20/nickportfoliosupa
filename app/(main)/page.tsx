@@ -1,16 +1,16 @@
 "use client";
 import React from 'react'
 import { Asterisk, ArrowRight, Layers, Cpu, Layout, Database } from 'lucide-react'
-import { motion } from 'motion/react'
+import { motion, Variants } from 'motion/react'
 import Hero from './_components/Hero'
 import Navbar from './_components/Navbar'
 
-const fadeInUp = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -20,9 +20,9 @@ const staggerContainer = {
   }
 };
 
-const scaleIn = {
+const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" } }
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" as const } }
 };
 
 const Home = () => {

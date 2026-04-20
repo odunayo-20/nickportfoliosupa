@@ -1,14 +1,14 @@
 "use client";
 import { Smartphone, Globe, Database, Cpu, Check, ArrowRight } from 'lucide-react'
-import { motion } from 'motion/react'
+import { motion, Variants } from 'motion/react'
 import Link from 'next/link';
 
-const fadeInUp = {
+const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
 };
 
-const staggerContainer = {
+const staggerContainer: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,

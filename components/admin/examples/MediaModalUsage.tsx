@@ -13,7 +13,8 @@ export function BlogEditorExample() {
     const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
     const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
 
-    const handleSelectImage = (id: string) => {
+    const handleSelectImage = (ids: string | string[]) => {
+        const id = Array.isArray(ids) ? ids[0] : ids;
         console.log("Image selected:", id);
         setSelectedMediaId(id);
     };

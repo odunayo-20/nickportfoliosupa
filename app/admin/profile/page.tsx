@@ -31,9 +31,27 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { getMediaByIds } from "@/actions/media";
 import { formatDistanceToNow } from "date-fns";
 
+interface ProfileFormData {
+    name: string;
+    email: string;
+    title: string;
+    bio: string;
+    avatar_url: string;
+    resume_url: string;
+    resume_name: string;
+    skills: string[];
+    social_links: {
+        github: string;
+        linkedin: string;
+        twitter: string;
+        website: string;
+        [key: string]: string;
+    };
+}
+
 export default function ProfilePage() {
     const [profileData, setProfileData] = useState<any>(null);
-    const [formData, setFormData] = useState<any>({
+    const [formData, setFormData] = useState<ProfileFormData>({
         name: "",
         email: "",
         title: "",
@@ -73,9 +91,9 @@ export default function ProfilePage() {
             if (mediaItems && mediaItems.length > 0) {
                 const item = mediaItems[0];
                 if (pickerTarget === "avatar") {
-                    setFormData((prev: any) => ({ ...prev, avatar_url: item.url }));
+                    setFormData((prev) => ({ ...prev, avatar_url: item.url }));
                 } else {
-                    setFormData((prev: any) => ({
+                    setFormData((prev) => ({
                         ...prev,
                         resume_url: item.url,
                         resume_name: item.name || item.url.split('/').pop() || "document",
@@ -110,7 +128,7 @@ export default function ProfilePage() {
                 .from("media")
                 .getPublicUrl(filePath);
 
-            setFormData(prev => ({ ...prev, avatar_url: publicUrl }));
+            setFormData((prev) => ({ ...prev, avatar_url: publicUrl }));
             toast.success("Image uploaded. Remember to save changes!");
         } catch (error: any) {
             console.error("Upload error:", error);
@@ -151,11 +169,11 @@ export default function ProfilePage() {
     }, [fetchProfile]);
 
     const handleInputChange = (field: string, value: any) => {
-        setFormData((prev: any) => ({ ...prev, [field]: value }));
+        setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
     const handleSocialChange = (network: string, value: string) => {
-        setFormData((prev: any) => ({
+        setFormData((prev) => ({
             ...prev,
             social_links: { ...prev.social_links, [network]: value }
         }));
@@ -163,7 +181,7 @@ export default function ProfilePage() {
 
     const addSkill = () => {
         if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-            setFormData((prev: any) => ({
+            setFormData((prev) => ({
                 ...prev,
                 skills: [...prev.skills, newSkill.trim()]
             }));
@@ -179,7 +197,7 @@ export default function ProfilePage() {
     };
 
     const removeSkill = (skillToRemove: string) => {
-        setFormData((prev: any) => ({
+        setFormData((prev) => ({
             ...prev,
             skills: prev.skills.filter(s => s !== skillToRemove)
         }));
@@ -428,7 +446,7 @@ export default function ProfilePage() {
                                                 <Download size={16} />
                                             </a>
                                             <button 
-                                                onClick={() => setFormData(prev => ({ ...prev, resume_url: "" }))}
+                                                onClick={() => setFormData((prev) => ({ ...prev, resume_url: "" }))}
                                                 className="w-9 h-9 flex items-center justify-center bg-white hover:bg-red-500 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all font-bold"
                                             >
                                                  <Trash2 size={16} />
@@ -638,7 +656,7 @@ export default function ProfilePage() {
                                 type="password"
                                 placeholder="Min 8 characters"
                                 value={passwordData.newPassword}
-                                onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                                onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
                             />
                         </div>
                         <div className="space-y-2">
@@ -648,7 +666,7 @@ export default function ProfilePage() {
                                 type="password"
                                 placeholder="Re-enter password"
                                 value={passwordData.confirmPassword}
-                                onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                             />
                         </div>
                         <div className="flex gap-4 pt-2">
