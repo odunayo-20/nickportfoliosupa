@@ -1,4 +1,5 @@
 import { getPublishedProjects } from "@/actions/projects";
+import { getCategories } from "@/actions/categories";
 import ProjectsClient from "./ProjectsClient";
 import { Metadata } from "next";
 
@@ -8,7 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Projects() {
-  const projects = await getPublishedProjects();
+  const [projects, categories] = await Promise.all([
+    getPublishedProjects(),
+    getCategories(),
+  ]);
 
-  return <ProjectsClient projects={projects} />;
+  return <ProjectsClient projects={projects} categories={categories} />;
 }

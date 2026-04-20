@@ -20,10 +20,12 @@ import { BulkActionsBar } from "@/components/admin/project/BulkActionsBar";
 import { DeleteProjectsModal } from "@/components/admin/project/DeleteProjectsModal";
 import { supabase } from "@/lib/supabaseClient";
 import { deleteProject, bulkDeleteProjects, bulkUpdateProjectStatus, updateProject, getAllProjects } from "@/actions/projects";
+import { getCategories } from "@/actions/categories";
 
 export default function ProjectManagementPage() {
     // State
     const [projects, setProjects] = useState<any[]>([]);
+    const [dbCategories, setDbCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [categoryFilter, setCategoryFilter] = useState("all");
@@ -34,28 +36,30 @@ export default function ProjectManagementPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 8;
 
-    const fetchProjects = useCallback(async () => {
+    const fetchData = useCallback(async () => {
         setIsLoading(true);
         try {
-            const data = await getAllProjects();
-            setProjects(data || []);
+            const [projectsData, categoriesData] = await Promise.all([
+                getAllProjects(),
+                getCategories(),
+            ]);
+            setProjects(projectsData || []);
+            setDbCategories(categoriesData || []);
         } catch (error) {
-            console.error("Error fetching projects:", error);
-            toast.error("Failed to fetch projects");
+            console.error("Error fetching data:", error);
+            toast.error("Failed to fetch data");
         }
         setIsLoading(false);
     }, []);
 
     useEffect(() => {
-        fetchProjects();
-    }, [fetchProjects]);
+        fetchData();
+    }, [fetchData]);
 
     // Derived Data
     const categories = useMemo(() => {
-        if (!projects) return [];
-        const cats = new Set(projects.map(p => p.category).filter(Boolean));
-        return Array.from(cats) as string[];
-    }, [projects]);
+        return dbCategories.map(c => c.name);
+    }, [dbCategories]);
 
     const filteredProjects = useMemo(() => {
         if (!projects) return [];
@@ -119,7 +123,7 @@ export default function ProjectManagementPage() {
         try {
             await updateProject(id, { status: newStatus });
             toast.success(`Project ${newStatus === "published" ? "published" : "set to draft"}`);
-            fetchProjects();
+            fetchData();
         } catch (error) {
             toast.error("Failed to update project status");
         }
@@ -129,7 +133,7 @@ export default function ProjectManagementPage() {
         try {
             await updateProject(id, { is_featured: !currentFeatured });
             toast.success(currentFeatured ? "Removed from featured" : "Marked as featured");
-            fetchProjects();
+            fetchData();
         } catch (error) {
             toast.error("Failed to update featured status");
         }
@@ -147,7 +151,7 @@ export default function ProjectManagementPage() {
                 await deleteProject(idsToDelete[0]);
             }
             toast.success(isBulk ? `${idsToDelete.length} projects deleted` : "Project deleted");
-            fetchProjects();
+            fetchData();
         } catch (error) {
             toast.error("Deletion failed");
         } finally {
@@ -160,7 +164,7 @@ export default function ProjectManagementPage() {
             await bulkUpdateProjectStatus(Array.from(selectedIds), status);
             toast.success(`${selectedIds.size} projects ${status === "published" ? "published" : "unpublished"}`);
             setSelectedIds(new Set());
-            fetchProjects();
+            fetchData();
         } catch (error) {
             toast.error("Bulk update failed");
         }
@@ -255,7 +259,7 @@ export default function ProjectManagementPage() {
                                         try {
                                             await deleteProject(id);
                                             toast.success("Project deleted");
-                                            fetchProjects();
+                                            fetchData();
                                         } catch (error) {
                                             toast.error("Deletion failed");
                                         }
