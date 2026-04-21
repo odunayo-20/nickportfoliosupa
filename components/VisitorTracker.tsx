@@ -9,13 +9,16 @@ export default function VisitorTracker() {
   const { user } = myAppHook();
 
   useEffect(() => {
+    // Safety check for browser environment
+    if (typeof window === 'undefined') return;
+
     const trackVisit = async () => {
       try {
-        // 1. Get or generate visitor_id
-        let visitorId = localStorage.getItem('visitor_id');
+        // 1. Get or generate visitor_id safely from browser APIs
+        let visitorId = window.localStorage.getItem('visitor_id');
         if (!visitorId) {
-          visitorId = crypto.randomUUID();
-          localStorage.setItem('visitor_id', visitorId);
+          visitorId = window.crypto.randomUUID();
+          window.localStorage.setItem('visitor_id', visitorId);
         }
 
         // 2. Send to API route

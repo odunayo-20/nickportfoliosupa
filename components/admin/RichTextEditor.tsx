@@ -61,7 +61,7 @@ export function RichTextEditor({
             {isMounted ? (
                 <div className={isLoaded ? "opacity-100 transition-opacity duration-500" : "opacity-0"}>
                     <Editor
-                        tinymceScriptSrc="/tinymce/tinymce.min.js"
+                        tinymceScriptSrc="https://cdnjs.cloudflare.com/ajax/libs/tinymce/7.0.0/tinymce.min.js"
                         licenseKey="gpl"
                         onInit={(_evt, editor) => {
                             editorRef.current = editor;

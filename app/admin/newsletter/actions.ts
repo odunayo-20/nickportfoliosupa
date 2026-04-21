@@ -2,9 +2,7 @@
 
 import { createAdminClient } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendBrevoEmail } from "@/lib/brevo";
 
 export interface NewsletterCampaign {
     id: string;
@@ -33,20 +31,15 @@ export async function sendNewsletter(payload: {
         return { error: "No active subscribers found." };
     }
 
-    const recipientEmails = subscribers.map(s => s.email);
+    const recipientEmails = subscribers.map(s => ({ email: s.email }));
 
     try {
-        // 2. Send email via Resend
-        // Note: For large lists, you might want to batch this or use a queue.
-        // For a typical portfolio, this should be fine for a few hundred recipients.
-        const { data, error: mailError } = await resend.emails.send({
-            from: "Newsletter <onboarding@resend.dev>", // Transition to your verified domain when ready
+        // 2. Send email via Brevo
+        await sendBrevoEmail({
             to: recipientEmails,
             subject: payload.subject,
-            html: payload.content,
+            htmlContent: payload.content,
         });
-
-        if (mailError) return { error: mailError.message };
 
         // 3. Save to campaign history
         const { error: historyError } = await admin
@@ -91,14 +84,12 @@ export async function sendTestNewsletter(payload: {
     email: string;
 }) {
     try {
-        const { error: mailError } = await resend.emails.send({
-            from: "Newsletter <onboarding@resend.dev>",
-            to: [payload.email],
+        await sendBrevoEmail({
+            to: [{ email: payload.email }],
             subject: `[TEST] ${payload.subject}`,
-            html: payload.content,
+            htmlContent: payload.content,
         });
 
-        if (mailError) return { error: mailError.message };
         return { success: true };
     } catch (err: any) {
         return { error: err.message || "An unexpected error occurred." };
