@@ -117,7 +117,7 @@ const About = () => {
                         <h3 className="text-2xl font-bold text-brand-dark">Senior App Developer</h3>
                         <span className="text-brand-orange font-bold text-sm bg-brand-orange/10 px-3 py-1 rounded-full w-fit mt-2 md:mt-0">2023 - Present</span>
                     </div>
-                    <h4 className="text-brand-green font-semibold mb-4 text-lg">OdunGlobal</h4>
+                    <h4 className="text-brand-green font-semibold mb-4 text-lg">Native Dev</h4>
                     <p className="text-brand-muted leading-relaxed">
                         Leading the native mobile engineering team. Architected and deployed scalable Kotlin-based enterprise solutions resulting in a 40% reduction in app crash rates and a 200% increase in daily active users.
                     </p>
