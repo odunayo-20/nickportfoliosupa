@@ -30,7 +30,10 @@ import {
     Calendar,
     Tag,
     Star,
-    Layers
+    Layers,
+    RefreshCw,
+    CheckCircle,
+    AlertCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -81,6 +84,9 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
 
     // Form State
     const [isSaving, setIsSaving] = useState(false);
+    const [currentId, setCurrentId] = useState<string | undefined>(id);
+    const [lastSaved, setLastSaved] = useState<Date | null>(initialData?.updated_at || initialData?.updatedAt ? new Date(initialData.updated_at || initialData.updatedAt) : null);
+    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
     const [activeMediaModal, setActiveMediaModal] = useState<"featured" | "gallery" | null>(null);
     const [tagInput, setTagInput] = useState("");
     const [isMounted, setIsMounted] = useState(false);
@@ -160,7 +166,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
 
     // Live slug generation if creating
     useEffect(() => {
-        if (!isEditing && values.title) {
+        if (!isEditing && !currentId && values.title) {
             const slug = values.title
                 .toLowerCase()
                 .replace(/[^\w\s-]/g, "")
@@ -168,7 +174,61 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                 .replace(/^-+|-+$/g, "");
             setValue("slug", slug, { shouldValidate: true });
         }
-    }, [values.title, isEditing, setValue]);
+    }, [values.title, isEditing, currentId, setValue]);
+
+    // Auto-save logic
+    const [isFirstRender, setIsFirstRender] = useState(true);
+
+    const handleAutoSave = async (data: ProjectFormValues) => {
+        if (!data.title && !data.description) return;
+        
+        setSaveStatus("saving");
+        try {
+            const payload = {
+                title: data.title,
+                slug: data.slug,
+                description: data.description,
+                content: data.content,
+                category: data.category || undefined,
+                tech_stack: data.techStack,
+                github_url: data.githubUrl || undefined,
+                live_url: data.liveUrl || undefined,
+                app_store_url: data.appStoreUrl || undefined,
+                play_store_url: data.playStoreUrl || undefined,
+                status: data.status,
+                is_featured: data.isFeatured,
+                featured_image: data.featuredImage || undefined,
+                media_ids: data.mediaIds,
+            };
+
+            if (currentId) {
+                await updateProject(currentId, payload);
+            } else {
+                const newProject = await createProject(payload);
+                setCurrentId(newProject.id);
+                // Update URL without full navigation
+                window.history.replaceState(null, "", `/admin/project/edit/${newProject.id}`);
+            }
+            setLastSaved(new Date());
+            setSaveStatus("saved");
+        } catch (error) {
+            console.error("Auto-save failed:", error);
+            setSaveStatus("error");
+        }
+    };
+
+    useEffect(() => {
+        if (isFirstRender) {
+            setIsFirstRender(false);
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            handleAutoSave(values);
+        }, 5000); // 5 second debounce
+
+        return () => clearTimeout(timer);
+    }, [values]);
 
     // Handlers
     const handleAddTag = (e: React.KeyboardEvent) => {
@@ -225,6 +285,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
 
     const onSubmit = async (data: ProjectFormValues) => {
         setIsSaving(true);
+        setSaveStatus("saving");
         try {
             const payload = {
                 title: data.title,
@@ -243,16 +304,21 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                 media_ids: data.mediaIds,
             };
 
-            if (isEditing && id) {
-                await updateProject(id, payload);
+            const finalId = currentId || id;
+
+            if (finalId) {
+                await updateProject(finalId, payload);
                 toast.success("Project updated successfully");
             } else {
                 const newProject = await createProject(payload);
                 toast.success("Project created successfully");
                 router.push(`/admin/project/edit/${newProject.id}`);
             }
+            setSaveStatus("saved");
+            setLastSaved(new Date());
         } catch (error) {
             console.error(error);
+            setSaveStatus("error");
             toast.error(error instanceof Error ? error.message : "Failed to save project");
         } finally {
             setIsSaving(false);
@@ -468,7 +534,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                                 ) : (
                                     <div 
                                         onClick={() => setActiveMediaModal("gallery")}
-                                        className="aspect-[4/1] rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center gap-2 bg-slate-50/30 hover:bg-slate-50/80 cursor-pointer transition-all group"
+                                        className="aspect-4/1 rounded-2xl border-2 border-dashed border-slate-100 flex flex-col items-center justify-center gap-2 bg-slate-50/30 hover:bg-slate-50/80 cursor-pointer transition-all group"
                                     >
                                         <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-slate-300 group-hover:text-primary transition-colors border border-slate-100">
                                             <ImageIcon size={20} />
@@ -483,14 +549,25 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                     {/* RIGHT COLUMN: Sidebar Panels */}
                     <div className="w-full lg:w-[340px] space-y-6">
                         
-                        {/* 1. Status Panel (WordPress Publish Style) */}
+                        {/* 1. Status Panel (WordPress Style) */}
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                                 <h3 className="text-xs font-bold uppercase tracking-widest text-slate-700">Project Status</h3>
-                                <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                    status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
-                                }`}>
-                                    {status}
+                                <div className="flex items-center gap-1.5">
+                                    {saveStatus === "saving" && (
+                                        <RefreshCw size={12} className="text-primary animate-spin" />
+                                    )}
+                                    {saveStatus === "saved" && (
+                                        <CheckCircle size={12} className="text-emerald-500" />
+                                    )}
+                                    {saveStatus === "error" && (
+                                        <AlertCircle size={12} className="text-red-500" />
+                                    )}
+                                    <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                        status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                                    }`}>
+                                        {status}
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-6 space-y-4">
@@ -519,10 +596,10 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                                     <div className="flex items-center gap-3 text-slate-600">
                                         <Calendar size={16} className="text-slate-400" />
                                         <div className="text-[13px] font-medium leading-tight">
-                                            Last Updated: <br/>
+                                            Last Saved: <br/>
                                             <span className="font-bold text-slate-900">
-                                                {isMounted && (initialData?.updated_at || initialData?.updatedAt)
-                                                    ? format(new Date(initialData?.updated_at || initialData?.updatedAt), "MMM d, yyyy 'at' h:mm a") 
+                                                {isMounted && lastSaved
+                                                    ? format(lastSaved, "MMM d, yyyy 'at' h:mm:ss a") 
                                                     : "Not saved yet"}
                                             </span>
                                         </div>

@@ -12,6 +12,9 @@ import {
     ChevronLeft, 
     Eye, 
     Image as ImageIcon,
+    RefreshCw,
+    CheckCircle,
+    AlertCircle,
     Plus,
     Save,
     Trash2,
@@ -69,6 +72,11 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
     const [tagInput, setTagInput] = useState("");
     const [isMounted, setIsMounted] = useState(false);
     const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
+    
+    // Auto-save states
+    const [lastSaved, setLastSaved] = useState<Date | null>(initialData?.updated_at ? new Date(initialData.updated_at) : null);
+    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+    const [postId, setPostId] = useState<string | undefined>(initialData?.id);
 
     useEffect(() => {
         setIsMounted(true);
@@ -102,19 +110,83 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
 
     // Auto-slug
     useEffect(() => {
-        if (!isEditing && titleWatcher) {
+        if (!isEditing && !postId && titleWatcher) {
             const slug = titleWatcher
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/(^-|-$)+/g, "");
             setValue("slug", slug, { shouldValidate: true });
         }
-    }, [titleWatcher, setValue, isEditing]);
+    }, [titleWatcher, setValue, isEditing, postId]);
+
+    // Auto-save logic
+    const allValues = watch();
+    const [isFirstRender, setIsFirstRender] = useState(true);
+
+    const handleAutoSave = async (data: FormValues) => {
+        if (!data.title && !data.content) return;
+        
+        setSaveStatus("saving");
+        try {
+            if (postId) {
+                await updatePost(postId, {
+                    title: data.title,
+                    slug: data.slug,
+                    summary: data.excerpt || "",
+                    content: data.content,
+                    tags: data.tags,
+                    status: data.status,
+                    visibility: data.visibility,
+                    category: data.category,
+                    published_at: data.published_at,
+                    featured_image_id: data.featured_image_id,
+                    updated_at: new Date().toISOString()
+                });
+            } else {
+                const newPost = await createPost({
+                    title: data.title || "Untitled Draft",
+                    slug: data.slug || `draft-${Date.now()}`,
+                    summary: data.excerpt || "",
+                    content: data.content || "",
+                    tags: data.tags,
+                    status: "draft",
+                    visibility: data.visibility,
+                    category: data.category,
+                    published_at: data.published_at,
+                    featured_image_id: data.featured_image_id,
+                });
+                setPostId(newPost.id);
+                // Update URL without full navigation
+                window.history.replaceState(null, "", `/admin/blog/edit/${newPost.id}`);
+            }
+            setLastSaved(new Date());
+            setSaveStatus("saved");
+        } catch (error) {
+            console.error("Auto-save failed:", error);
+            setSaveStatus("error");
+        }
+    };
+
+    useEffect(() => {
+        if (isFirstRender) {
+            setIsFirstRender(false);
+            return;
+        }
+
+        const timer = setTimeout(() => {
+            handleAutoSave(allValues);
+        }, 5000); // 5 second debounce for auto-save
+
+        return () => clearTimeout(timer);
+    }, [allValues]);
 
     const onSubmit = async (data: FormValues) => {
         try {
-            if (isEditing && initialData?.id) {
-                await updatePost(initialData.id, {
+            setSaveStatus("saving");
+            const finalPostId = postId || (isEditing ? initialData?.id : null);
+            
+            if (finalPostId) {
+                await updatePost(finalPostId, {
                     title: data.title,
                     slug: data.slug,
                     summary: data.excerpt || "",
@@ -143,9 +215,11 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                 });
                 toast.success("Post created successfully");
             }
+            setSaveStatus("saved");
             router.push("/admin/blog");
         } catch (error) {
             console.error(error);
+            setSaveStatus("error");
             toast.error(isEditing ? "Failed to update post" : "Failed to create post");
         }
     };
@@ -258,7 +332,31 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
             <div className="w-full lg:w-[320px] space-y-6">
                 {/* Publish Box */}
                 <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-6">
-                    <h3 className="font-bold text-slate-800 uppercase tracking-widest text-[11px]">Post Settings</h3>
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-bold text-slate-800 uppercase tracking-widest text-[11px]">Post Settings</h3>
+                        <div className="flex items-center gap-1.5 transition-all">
+                            {saveStatus === "saving" && (
+                                <>
+                                    <RefreshCw className="h-3 w-3 text-primary animate-spin" />
+                                    <span className="text-[9px] font-bold text-primary uppercase tracking-tighter">Saving...</span>
+                                </>
+                            )}
+                            {saveStatus === "saved" && (
+                                <>
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
+                                    <span className="text-[9px] font-bold text-green-500 uppercase tracking-tighter">
+                                        Saved {lastSaved && format(lastSaved, "HH:mm")}
+                                    </span>
+                                </>
+                            )}
+                            {saveStatus === "error" && (
+                                <>
+                                    <AlertCircle className="h-3 w-3 text-red-500" />
+                                    <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter">Save Failed</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
                     
                     <div className="space-y-4">
                         <div className="space-y-2">
