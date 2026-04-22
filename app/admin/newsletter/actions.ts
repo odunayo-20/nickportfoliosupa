@@ -31,15 +31,33 @@ export async function sendNewsletter(payload: {
         return { error: "No active subscribers found." };
     }
 
-    const recipientEmails = subscribers.map(s => ({ email: s.email }));
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     try {
-        // 2. Send email via Brevo
-        await sendBrevoEmail({
-            to: recipientEmails,
-            subject: payload.subject,
-            htmlContent: payload.content,
+        // 2. Send individual emails to include personalized unsubscribe link
+        const sendPromises = subscribers.map(async (sub) => {
+            const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(sub.email)}`;
+            const personalizedContent = `
+                <div style="font-family: sans-serif;">
+                    ${payload.content}
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center;">
+                        <p>You are receiving this because you are subscribed to my newsletter.</p>
+                        <p>
+                            <a href="${unsubscribeUrl}" style="color: #6366f1; text-decoration: underline;">Unsubscribe</a> 
+                            from these emails.
+                        </p>
+                    </div>
+                </div>
+            `;
+
+            return sendBrevoEmail({
+                to: [{ email: sub.email }],
+                subject: payload.subject,
+                htmlContent: personalizedContent,
+            });
         });
+
+        await Promise.all(sendPromises);
 
         // 3. Save to campaign history
         const { error: historyError } = await admin
@@ -48,7 +66,7 @@ export async function sendNewsletter(payload: {
                 subject: payload.subject,
                 content: payload.content,
                 sent_at: new Date().toISOString(),
-                recipient_count: recipientEmails.length,
+                recipient_count: subscribers.length,
                 status: "sent"
             });
 
@@ -58,7 +76,7 @@ export async function sendNewsletter(payload: {
         }
 
         revalidatePath("/admin/newsletter/history");
-        return { success: true, count: recipientEmails.length };
+        return { success: true, count: subscribers.length };
     } catch (err: any) {
         return { error: err.message || "An unexpected error occurred." };
     }
@@ -83,11 +101,27 @@ export async function sendTestNewsletter(payload: {
     content: string;
     email: string;
 }) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(payload.email)}`;
+    const personalizedContent = `
+        <div style="font-family: sans-serif;">
+            ${payload.content}
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center;">
+                <p>You are receiving this because you are subscribed to my newsletter.</p>
+                <p>
+                    <a href="${unsubscribeUrl}" style="color: #6366f1; text-decoration: underline;">Unsubscribe</a> 
+                    from these emails.
+                </p>
+                <p style="margin-top: 10px; color: #f43f5e; font-weight: bold;">[TEST EMAIL]</p>
+            </div>
+        </div>
+    `;
+
     try {
         await sendBrevoEmail({
             to: [{ email: payload.email }],
             subject: `[TEST] ${payload.subject}`,
-            htmlContent: payload.content,
+            htmlContent: personalizedContent,
         });
 
         return { success: true };

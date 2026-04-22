@@ -2,6 +2,13 @@ import React from "react";
 import { BlogEditor } from "@/components/admin/blog/BlogEditor";
 import { getPostById } from "@/actions/blog";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Edit Blog | Nikola",
+    description: "Edit blog for me",
+};
+
 
 interface EditBlogPostPageProps {
     params: {

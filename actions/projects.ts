@@ -1,7 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/server";
-import { revalidatePath } from "next/cache";
+import { createClient, createStaticClient } from "@/lib/server";
+import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
+import { cache } from "react";
 import { Database } from "@/types/database";
 
 type ProjectInsert = Database["public"]["Tables"]["projects"]["Insert"];
@@ -21,6 +22,7 @@ export async function createProject(data: ProjectInsert) {
     }
 
     revalidatePath("/admin/project");
+    revalidateTag("projects", "max");
     return project;
 }
 
@@ -41,6 +43,7 @@ export async function updateProject(id: string, data: ProjectUpdate) {
     revalidatePath("/admin/project");
     revalidatePath(`/admin/project/edit/${id}`);
     revalidatePath(`/admin/project/show/${id}`);
+    revalidateTag("projects", "max");
     return project;
 }
 
@@ -57,6 +60,7 @@ export async function deleteProject(id: string) {
     }
 
     revalidatePath("/admin/project");
+    revalidateTag("projects", "max");
 }
 
 export async function bulkDeleteProjects(ids: string[]) {
@@ -72,6 +76,7 @@ export async function bulkDeleteProjects(ids: string[]) {
     }
 
     revalidatePath("/admin/project");
+    revalidateTag("projects", "max");
 }
 
 export async function bulkUpdateProjectStatus(ids: string[], status: "draft" | "published") {
@@ -87,6 +92,7 @@ export async function bulkUpdateProjectStatus(ids: string[], status: "draft" | "
     }
 
     revalidatePath("/admin/project");
+    revalidateTag("projects", "max");
 }
 
 export async function getProjectById(id: string) {
@@ -119,125 +125,139 @@ export async function getProjectById(id: string) {
     return project;
 }
 
-export async function getAllProjects() {
-    const supabase = await createClient();
-    const { data: projects, error } = await supabase
-        .from("projects")
-        .select("*")
-        .order("created_at", { ascending: false });
+export const getAllProjects = cache(unstable_cache(
+    async () => {
+        const supabase = createStaticClient();
+        const { data: projects, error } = await supabase
+            .from("projects")
+            .select("*")
+            .order("created_at", { ascending: false });
 
-    if (error) {
-        console.error("Error fetching projects:", error);
-        return [];
-    }
+        if (error) {
+            console.error("Error fetching projects:", error);
+            return [];
+        }
 
-    if (projects && projects.length > 0) {
-        const mediaIds = projects
-            .map(p => p.featured_image)
-            .filter(id => !!id) as string[];
-        
-        if (mediaIds.length > 0) {
-            const { data: media } = await supabase
-                .from("media")
-                .select("*")
-                .in("id", mediaIds);
+        if (projects && projects.length > 0) {
+            const mediaIds = projects
+                .map(p => p.featured_image)
+                .filter(id => !!id) as string[];
             
-            if (media) {
-                return projects.map(project => {
-                    const featured_image_media = media.find(m => m.id === project.featured_image);
-                    return {
-                        ...project,
-                        featured_image_media,
-                        imageUrl: featured_image_media?.url,
-                        image_url: featured_image_media?.url
-                    };
-                });
+            if (mediaIds.length > 0) {
+                const { data: media } = await supabase
+                    .from("media")
+                    .select("*")
+                    .in("id", mediaIds);
+                
+                if (media) {
+                    return projects.map(project => {
+                        const featured_image_media = media.find(m => m.id === project.featured_image);
+                        return {
+                            ...project,
+                            featured_image_media,
+                            imageUrl: featured_image_media?.url,
+                            image_url: featured_image_media?.url
+                        };
+                    });
+                }
             }
         }
-    }
 
-    return projects;
-}
+        return projects;
+    },
+    ["all-projects"],
+    { tags: ["projects"] }
+));
 
-export async function getPublishedProjects() {
-    const supabase = await createClient();
-    const { data: projects, error } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("status", "published")
-        .order("created_at", { ascending: false });
+export const getPublishedProjects = cache(unstable_cache(
+    async () => {
+        const supabase = createStaticClient();
+        const { data: projects, error } = await supabase
+            .from("projects")
+            .select("*")
+            .eq("status", "published")
+            .order("created_at", { ascending: false });
 
-    if (error) {
-        console.error("Error fetching published projects:", error);
-        return [];
-    }
+        if (error) {
+            console.error("Error fetching published projects:", error);
+            return [];
+        }
 
-    if (projects && projects.length > 0) {
-        const mediaIds = projects
-            .map(p => p.featured_image)
-            .filter(id => !!id) as string[];
-        
-        if (mediaIds.length > 0) {
-            const { data: media } = await supabase
-                .from("media")
-                .select("*")
-                .in("id", mediaIds);
+        if (projects && projects.length > 0) {
+            const mediaIds = projects
+                .map(p => p.featured_image)
+                .filter(id => !!id) as string[];
             
-            if (media) {
-                return projects.map(project => {
-                    const featured_image_media = media.find(m => m.id === project.featured_image);
-                    return {
-                        ...project,
-                        featured_image_media,
-                        imageUrl: featured_image_media?.url,
-                        image_url: featured_image_media?.url
-                    };
-                });
+            if (mediaIds.length > 0) {
+                const { data: media } = await supabase
+                    .from("media")
+                    .select("*")
+                    .in("id", mediaIds);
+                
+                if (media) {
+                    return projects.map(project => {
+                        const featured_image_media = media.find(m => m.id === project.featured_image);
+                        return {
+                            ...project,
+                            featured_image_media,
+                            imageUrl: featured_image_media?.url,
+                            image_url: featured_image_media?.url
+                        };
+                    });
+                }
             }
         }
-    }
 
-    return projects;
-}
+        return projects;
+    },
+    ["published-projects"],
+    { tags: ["projects"] }
+));
 
-export async function getProjectBySlug(slug: string) {
-    const supabase = await createClient();
-    
-    const { data: project, error } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("slug", slug)
-        .eq("status", "published")
-        .single();
+export const getProjectBySlug = cache(async (slug: string) => {
+    return unstable_cache(
+        async () => {
+            const supabase = createStaticClient();
+            
+            const { data: project, error } = await supabase
+                .from("projects")
+                .select("*")
+                .eq("slug", slug)
+                .eq("status", "published")
+                .single();
 
-    if (error) {
-        console.error("Error fetching project by slug:", error.message);
-        return null;
-    }
+            if (error) {
+                console.error("Error fetching project by slug:", error.message);
+                return null;
+            }
 
-    if (project && project.featured_image) {
-        const { data: media } = await supabase
-            .from("media")
-            .select("*")
-            .eq("id", project.featured_image)
-            .single();
-        if (media) {
-            (project as any).featured_image_media = media;
-            (project as any).imageUrl = media.url;
-            (project as any).image_url = media.url;
-        }
-    }
+            if (project && project.featured_image) {
+                const { data: media } = await supabase
+                    .from("media")
+                    .select("*")
+                    .eq("id", project.featured_image)
+                    .single();
+                if (media) {
+                    (project as any).featured_image_media = media;
+                    (project as any).imageUrl = media.url;
+                    (project as any).image_url = media.url;
+                }
+            }
 
-    if (project && project.media_ids && project.media_ids.length > 0) {
-        const { data: galleryMedia } = await supabase
-            .from("media")
-            .select("*")
-            .in("id", project.media_ids);
-        if (galleryMedia) {
-            (project as any).gallery_media = galleryMedia;
-            (project as any).additionalImages = galleryMedia.map((m: any) => m.url);
-        }
-    }
+            if (project && project.media_ids && project.media_ids.length > 0) {
+                const { data: galleryMedia } = await supabase
+                    .from("media")
+                    .select("*")
+                    .in("id", project.media_ids);
+                if (galleryMedia) {
+                    (project as any).gallery_media = galleryMedia;
+                    (project as any).additionalImages = galleryMedia.map((m: any) => m.url);
+                }
+            }
 
-    return project;
-}
+            return project;
+        },
+        [`project-${slug}`],
+        { tags: ["projects", `project-${slug}`] }
+    )();
+});

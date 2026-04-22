@@ -709,7 +709,7 @@ const LoginPage = () => {
             <div className="auth-mobile-header">
                 <div className="auth-mobile-header-logo">
                     <div className="auth-mobile-header-logo-mark">N</div>
-                    <div className="auth-mobile-header-logo-text">Architect</div>
+                    <div className="auth-mobile-header-logo-text">Nikola</div>
                 </div>
                 <h1 className="auth-mobile-header-title">
                     Welcome back.<br />

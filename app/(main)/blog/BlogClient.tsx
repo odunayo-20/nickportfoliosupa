@@ -1,6 +1,7 @@
 "use client";
 import { Calendar, ArrowRight, MailOpen } from 'lucide-react'
 import { motion, AnimatePresence, Variants } from 'motion/react'
+import Image from 'next/image';
 import Link from 'next/link'
 import React, { useState, useMemo } from 'react'
 
@@ -117,9 +118,10 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
                             <h2 className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Featured Article</h2>
                             <Link href={`/blog/${featuredPost.slug}`} className="group grid lg:grid-cols-2 gap-10 items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all article-card block">
                                 <div className="overflow-hidden bg-brand-offwhite h-full min-h-[350px] relative">
-                                    <img src={featuredPost.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200"} 
+                                    <Image src={featuredPost.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200"} 
+                                    fill
                                         alt={featuredPost.title} 
-                                        className="article-image absolute inset-0 w-full h-full object-cover grayscale" />
+                                        className="article-image absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 grayscale hover:grayscale-0" />
                                 </div>
                                 <div className="p-8 lg:p-12">
                                     <div className="flex items-center gap-4 mb-6">
@@ -157,9 +159,10 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
                                 <motion.div variants={fadeInUp} key={post.id || index} initial="hidden" animate="visible" custom={index}>
                                     <Link href={`/blog/${post.slug}`} className="article-card flex flex-col h-full bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all reveal group delay-100 block">
                                         <div className="aspect-[16/9] overflow-hidden relative bg-brand-offwhite">
-                                            <img src={post.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} 
+                                            <Image src={post.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} 
+                                            fill
                                                 alt={post.title} 
-                                                className="article-image absolute inset-0 w-full h-full object-cover grayscale" />
+                                                className="article-image absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
                                         </div>
                                         <div className="p-8 flex-grow flex flex-col">
                                             <div className="flex items-center justify-between mb-4">
@@ -201,7 +204,7 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
         </motion.div>
     </AnimatePresence>
 
-    <motion.section 
+    {/* <motion.section 
         className="py-24 bg-brand-green text-white"
         initial="hidden"
         whileInView="visible"
@@ -223,7 +226,7 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
             </form>
             <p className="text-xs text-gray-400 mt-4">No spam. Unsubscribe at any time.</p>
         </motion.div>
-    </motion.section>
+    </motion.section> */}
     </>
   )
 }

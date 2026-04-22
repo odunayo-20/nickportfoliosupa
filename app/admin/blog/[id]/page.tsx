@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { DeleteConfirmModal } from "@/components/admin/blog/DeleteConfirmModal";
 import { getPostById, updatePost, deletePost as deletePostAction } from "@/actions/blog";
+import Image from "next/image";
 
 export default function BlogShowPage() {
     const params = useParams();
@@ -188,7 +189,7 @@ export default function BlogShowPage() {
                     {/* Featured Image */}
                     {post.image_url ? (
                         <div className="aspect-[2/1] rounded-xl overflow-hidden mb-8 bg-slate-100 border">
-                            <img src={post.image_url} alt={post.title} className="w-full h-full object-cover" />
+                            <Image src={post.image_url} alt={post.title} className="w-full h-full object-cover" width={1200} height={630} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                         </div>
                     ) : (
                         <div className="aspect-[3/1] rounded-xl mb-8 bg-gradient-to-br from-slate-100 to-slate-50 border border-dashed border-slate-200 flex items-center justify-center">

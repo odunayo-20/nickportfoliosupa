@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Image as ImageIcon, Pencil, Trash2, Eye, Calendar, Tag } from "lucide-react";
+import Image from "next/image";
 
 type BlogPostWithImage = any;
 
@@ -35,7 +36,7 @@ export function BlogTable({ posts, onToggleStatus, onDeleteRequest }: BlogTableP
                         {/* Thumbnail */}
                         <div className="w-[72px] h-[72px] rounded-lg bg-slate-100 flex-shrink-0 overflow-hidden border border-slate-200 flex items-center justify-center mt-0.5">
                             {post.imageUrl ? (
-                                <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
+                                <Image src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" width={72} height={72} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                             ) : (
                                 <ImageIcon size={24} className="text-slate-300" />
                             )}

@@ -4,9 +4,11 @@ import { Mail, Users, UserCheck, UserMinus, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { Metadata } from "next";
 
-export const metadata = {
-  title: "Newsletter — Admin",
+export const metadata: Metadata = {
+  title: "Newsletter | Nikola",
+  description: "Newsletter for Nikola Portfolio",
 };
 
 export default async function NewsletterPage() {
@@ -24,7 +26,7 @@ export default async function NewsletterPage() {
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Link href="/admin/newsletter/history" className="flex-1 sm:flex-none">
-            <Button variant="outline" className="w-full font-bold gap-2 rounded-xl h-11 border-slate-200 shadow-sm hover:bg-slate-50 transition-all active:scale-95">
+            <Button variant="outline" className="w-full font-bold gap-2 rounded-xl h-11 border-slate-200 border shadow-sm hover:bg-slate-50 transition-all active:scale-95">
               <Mail className="w-4 h-4 text-slate-400" />
               History
             </Button>

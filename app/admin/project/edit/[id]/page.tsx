@@ -2,6 +2,12 @@ import React from "react";
 import { ProjectEditor } from "@/components/admin/project/ProjectEditor";
 import { AlertCircle } from "lucide-react";
 import { getProjectById } from "@/actions/projects";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Edit Project | Nikola",
+    description: "Edit project for Nikola Portfolio",
+};
 
 export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

@@ -4,6 +4,7 @@ import { Asterisk, ArrowRight, Layers, Cpu, Layout, Database } from 'lucide-reac
 import { motion, Variants } from 'motion/react'
 import Hero from './_components/Hero'
 import Navbar from './_components/Navbar'
+import Image from 'next/image'
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -100,8 +101,10 @@ const Home = () => {
             <motion.div variants={scaleIn} className="relative w-full max-w-md mx-auto aspect-square reveal">
                 <div className="absolute inset-4 bg-brand-orange rounded-full -translate-x-6 -translate-y-6"></div>
                 
-                <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800" 
+                <Image src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800" 
                      alt="Nikola Working" 
+                     width={800}
+                     height={800}
                      className="absolute inset-0 w-full h-full object-cover rounded-full z-10 border-8 border-brand-green grayscale" />
                 
                 <motion.div variants={scaleIn} className="absolute z-20 top-1/4 -left-8 bg-brand-dark text-brand-orange text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">UX/UI Design</motion.div>
@@ -169,19 +172,19 @@ const Home = () => {
         
         <div className="flex flex-wrap justify-center gap-6 md:gap-10">
             <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
+                <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
             </motion.div>
             <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
+                <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
             </motion.div>
             <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React Native" className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
+                <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt="React Native" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
             </motion.div>
             <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
+                <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nextjs/nextjs-original.svg" alt="Next.js" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
             </motion.div>
             <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg" alt="Figma" className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
+                <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg" alt="Figma" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all"/>
             </motion.div>
             <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
                 <Database className="w-8 h-8 text-gray-500" />

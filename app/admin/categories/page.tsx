@@ -3,7 +3,8 @@ import { CategoriesClient } from "./CategoriesClient";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Categories | Admin",
+    title: "Categories | Nikola",
+    description: "Categories for Nikola Portfolio",
 };
 
 export default async function CategoriesPage() {

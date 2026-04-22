@@ -1,9 +1,10 @@
 import React from 'react'
 import { MediaLibrary } from '@/components/admin/media/MediaLibrary'
+import { Metadata } from 'next'
 
-export const metadata = {
-    title: 'Media Library - Admin',
-    description: 'Manage and optimize your portfolio assets.',
+export const metadata: Metadata = {
+    title: 'Media Library | Nikola',
+    description: 'Media Library for Nikola Portfolio',
 }
 
 export default function MediaPage() {

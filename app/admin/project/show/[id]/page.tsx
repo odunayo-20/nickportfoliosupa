@@ -19,6 +19,14 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { getMediaByIds } from "@/actions/media";
+import { Metadata } from "next";
+import Image from "next/image";
+
+export const metadata: Metadata = {
+    title: "Show Project | Nikola",
+    description: "Show project for me",
+};
+
 
 export default async function ShowProjectPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -86,10 +94,13 @@ export default async function ShowProjectPage({ params }: { params: Promise<{ id
                         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                             {project.imageUrl && (
                                 <div className="aspect-video w-full relative group">
-                                    <img 
+                                    <Image 
                                         src={project.imageUrl} 
                                         alt={project.title} 
                                         className="w-full h-full object-cover"
+                                        width={1920} 
+                                        height={1080} 
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                                     {isFeatured && (
@@ -221,7 +232,7 @@ export default async function ShowProjectPage({ params }: { params: Promise<{ id
                                 </div>
                             </div>
 
-                            <hr className="border-slate-100" />
+                            <hr className="border-slate-100 border" />
 
                             <div className="space-y-3">
                                 <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">External Assets</h3>

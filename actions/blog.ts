@@ -1,7 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/server";
-import { revalidatePath } from "next/cache";
+import { createClient, createStaticClient } from "@/lib/server";
+import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
+import { cache } from "react";
 import { Database } from "@/types/database";
 
 type PostInsert = Database["public"]["Tables"]["posts"]["Insert"];
@@ -28,6 +29,7 @@ export async function createPost(data: PostInsert) {
     }
 
     revalidatePath("/admin/blog");
+    revalidateTag("posts", "max");
     return post;
 }
 
@@ -47,6 +49,8 @@ export async function updatePost(id: string, data: PostUpdate) {
 
     revalidatePath("/admin/blog");
     revalidatePath(`/admin/blog/edit/${id}`);
+    revalidatePath(`/admin/blog/show/${id}`);
+    revalidateTag("posts", "max");
     return post;
 }
 
@@ -63,6 +67,7 @@ export async function deletePost(id: string) {
     }
 
     revalidatePath("/admin/blog");
+    revalidateTag("posts", "max");
 }
 
 export async function getPostById(id: string) {
@@ -88,118 +93,6 @@ export async function getPostById(id: string) {
             .eq("id", post.featured_image_id)
             .single();
         if (media) {
-            post.featured_image = media;
-            post.imageUrl = media.url;
-            post.image_url = media.url;
-        }
-    }
-
-    return post;
-}
-
-export async function getAllPosts() {
-    const supabase = await createClient();
-    const { data: posts, error } = await supabase
-        .from("posts")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-    if (error) {
-        console.error("Error fetching posts:", error);
-        return [];
-    }
-
-    if (posts && posts.length > 0) {
-        const mediaIds = posts
-            .map(p => p.featured_image_id)
-            .filter(id => !!id);
-        
-        if (mediaIds.length > 0) {
-            const { data: media } = await supabase
-                .from("media")
-                .select("*")
-                .in("id", mediaIds);
-            
-            if (media) {
-                return posts.map(post => {
-                    const featured_image = media.find(m => m.id === post.featured_image_id);
-                    return {
-                        ...post,
-                        featured_image,
-                        imageUrl: featured_image?.url,
-                        image_url: featured_image?.url
-                    };
-                });
-            }
-        }
-    }
-
-    return posts;
-}
-
-export async function getPublishedPosts() {
-    const supabase = await createClient();
-    const { data: posts, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("status", "published")
-        .order("created_at", { ascending: false });
-
-    if (error) {
-        console.error("Error fetching published posts:", error);
-        return [];
-    }
-
-    if (posts && posts.length > 0) {
-        const mediaIds = posts
-            .map(p => p.featured_image_id)
-            .filter(id => !!id);
-        
-        if (mediaIds.length > 0) {
-            const { data: media } = await supabase
-                .from("media")
-                .select("*")
-                .in("id", mediaIds);
-            
-            if (media) {
-                return posts.map(post => {
-                    const featured_image = media.find(m => m.id === post.featured_image_id);
-                    return {
-                        ...post,
-                        featured_image,
-                        imageUrl: featured_image?.url,
-                        image_url: featured_image?.url
-                    };
-                });
-            }
-        }
-    }
-
-    return posts;
-}
-
-export async function getPostBySlug(slug: string) {
-    const supabase = await createClient();
-    
-    const { data: post, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("slug", slug)
-        .eq("status", "published")
-        .single();
-
-    if (error) {
-        console.error("Error fetching post by slug:", error.message);
-        return null;
-    }
-
-    if (post && post.featured_image_id) {
-        const { data: media } = await supabase
-            .from("media")
-            .select("*")
-            .eq("id", post.featured_image_id)
-            .single();
-        if (media) {
             (post as any).featured_image = media;
             (post as any).imageUrl = media.url;
             (post as any).image_url = media.url;
@@ -208,3 +101,140 @@ export async function getPostBySlug(slug: string) {
 
     return post;
 }
+
+export const getAllPosts = cache(unstable_cache(
+    async () => {
+        const supabase = createStaticClient();
+        const { data: posts, error } = await supabase
+            .from("posts")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Error fetching posts:", error);
+            return [];
+        }
+
+        if (posts && posts.length > 0) {
+            const mediaIds = posts
+                .map(p => p.featured_image_id)
+                .filter(id => !!id);
+            
+            if (mediaIds.length > 0) {
+                const { data: media } = await supabase
+                    .from("media")
+                    .select("*")
+                    .in("id", mediaIds);
+                
+                if (media) {
+                    return posts.map(post => {
+                        const featured_image = media.find(m => m.id === post.featured_image_id);
+                        return {
+                            ...post,
+                            featured_image,
+                            imageUrl: featured_image?.url,
+                            image_url: featured_image?.url
+                        };
+                    });
+                }
+            }
+        }
+
+        return posts;
+    },
+    ["all-posts"],
+    { tags: ["posts"] }
+));
+
+export const getPublishedPosts = cache(unstable_cache(
+    async () => {
+        const supabase = createStaticClient();
+        const { data: posts, error } = await supabase
+            .from("posts")
+            .select("*")
+            .eq("status", "published")
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error("Error fetching published posts:", error);
+            return [];
+        }
+
+        if (posts && posts.length > 0) {
+            const mediaIds = posts
+                .map(p => p.featured_image_id)
+                .filter(id => !!id);
+            
+            if (mediaIds.length > 0) {
+                const { data: media } = await supabase
+                    .from("media")
+                    .select("*")
+                    .in("id", mediaIds);
+                
+                if (media) {
+                    return posts.map(post => {
+                        const featured_image = media.find(m => m.id === post.featured_image_id);
+                        return {
+                            ...post,
+                            featured_image,
+                            imageUrl: featured_image?.url,
+                            image_url: featured_image?.url
+                        };
+                    });
+                }
+            }
+        }
+
+        return posts;
+    },
+    ["published-posts"],
+    { tags: ["posts"] }
+));
+
+export const getPostBySlug = cache(async (slug: string) => {
+    return unstable_cache(
+        async () => {
+            const supabase = createStaticClient();
+            
+            const { data: post, error } = await supabase
+                .from("posts")
+                .select("*")
+                .eq("slug", slug)
+                .eq("status", "published")
+                .single();
+
+            if (error) {
+                console.error("Error fetching post by slug:", error.message);
+                return null;
+            }
+
+            if (post && post.featured_image_id) {
+                const { data: media } = await supabase
+                    .from("media")
+                    .select("*")
+                    .eq("id", post.featured_image_id)
+                    .single();
+                if (media) {
+                    (post as any).featured_image = media;
+                    (post as any).imageUrl = media.url;
+                    (post as any).image_url = media.url;
+                }
+            }
+
+            if (post && post.media_ids && post.media_ids.length > 0) {
+                const { data: galleryMedia } = await supabase
+                    .from("media")
+                    .select("*")
+                    .in("id", post.media_ids);
+                if (galleryMedia) {
+                    (post as any).gallery_media = galleryMedia;
+                    (post as any).additionalImages = galleryMedia.map((m: any) => m.url);
+                }
+            }
+
+            return post;
+        },
+        [`post-${slug}`],
+        { tags: ["posts", `post-${slug}`] }
+    )();
+});

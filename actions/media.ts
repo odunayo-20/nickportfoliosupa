@@ -6,7 +6,7 @@ import { Database } from "@/types/database";
 
 type MediaInsert = Database["public"]["Tables"]["media"]["Insert"];
 
-export async function createMedia(data: MediaInsert) {
+export const createMedia = async (data: MediaInsert) => {
     const supabase = await createClient();
     const { data: media, error } = await supabase
         .from("media")
@@ -19,11 +19,11 @@ export async function createMedia(data: MediaInsert) {
         throw new Error(error.message);
     }
 
-    revalidatePath("/admin/media");
+    revalidatePath("/admin/media", "page");
     return media;
-}
+};
 
-export async function deleteMedia(id: string, storagePath: string) {
+export const deleteMedia = async (id: string, storagePath: string) => {
     const supabase = await createClient();
     
     // 1. Delete from storage
@@ -33,7 +33,6 @@ export async function deleteMedia(id: string, storagePath: string) {
 
     if (storageError) {
         console.error("Error deleting from storage:", storageError);
-        // We might still want to delete the DB entry if it's orphaned, or handle this error
     }
 
     // 2. Delete from DB
@@ -47,10 +46,10 @@ export async function deleteMedia(id: string, storagePath: string) {
         throw new Error(dbError.message);
     }
 
-    revalidatePath("/admin/media");
-}
+    revalidatePath("/admin/media", "page");
+};
 
-export async function createFolder(name: string, parentId?: string) {
+export const createFolder = async (name: string, parentId?: string) => {
     const supabase = await createClient();
     
     const { data: authData } = await supabase.auth.getUser();
@@ -67,11 +66,11 @@ export async function createFolder(name: string, parentId?: string) {
         throw new Error(error.message);
     }
 
-    revalidatePath("/admin/media");
+    revalidatePath("/admin/media", "page");
     return folder;
-}
+};
 
-export async function deleteFolder(id: string) {
+export const deleteFolder = async (id: string) => {
     const supabase = await createClient();
     const { error } = await supabase
         .from("folders")
@@ -83,10 +82,10 @@ export async function deleteFolder(id: string) {
         throw new Error(error.message);
     }
 
-    revalidatePath("/admin/media");
-}
+    revalidatePath("/admin/media", "page");
+};
 
-export async function renameFolder(id: string, name: string) {
+export const renameFolder = async (id: string, name: string) => {
     const supabase = await createClient();
     const { error } = await supabase
         .from("folders")
@@ -98,10 +97,10 @@ export async function renameFolder(id: string, name: string) {
         throw new Error(error.message);
     }
 
-    revalidatePath("/admin/media");
-}
+    revalidatePath("/admin/media", "page");
+};
 
-export async function getFolders(parentId?: string) {
+export const getFolders = async (parentId?: string) => {
     const supabase = await createClient();
     let query = supabase.from("folders").select("*");
     
@@ -119,9 +118,9 @@ export async function getFolders(parentId?: string) {
     }
 
     return data;
-}
+};
 
-export async function getMediaByFolder(folderId?: string) {
+export const getMediaByFolder = async (folderId?: string) => {
     const supabase = await createClient();
     let query = supabase.from("media").select("*");
     
@@ -139,9 +138,9 @@ export async function getMediaByFolder(folderId?: string) {
     }
 
     return data;
-}
+};
 
-export async function getMediaById(id: string) {
+export const getMediaById = async (id: string) => {
     const supabase = await createClient();
     const { data, error } = await supabase
         .from("media")
@@ -155,9 +154,9 @@ export async function getMediaById(id: string) {
     }
 
     return data;
-}
+};
 
-export async function getMediaByIds(ids: string[]) {
+export const getMediaByIds = async (ids: string[]) => {
     if (!ids || ids.length === 0) return [];
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -171,4 +170,4 @@ export async function getMediaByIds(ids: string[]) {
     }
 
     return data;
-}
+};

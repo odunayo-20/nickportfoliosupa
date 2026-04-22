@@ -1,6 +1,12 @@
 import { createClient } from "@/lib/server";
 import { BarChart3, Users, MousePointer2, Clock, Globe, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Analytics | Nikola",
+    description: "Analytics for me",
+};
 
 export default async function AnalyticsPage() {
   const supabase = await createClient();

@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react'
 import { ArrowRight, Fingerprint, Plus } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence, Variants } from 'motion/react'
+import Image from 'next/image';
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -122,8 +123,9 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
                     <motion.div key={project.id} variants={fadeInUp} className="grid lg:grid-cols-2 gap-12 items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-shadow project-card mb-12 last:mb-0">
                         <Link href={`/projects/${project.slug}`} className="block overflow-hidden bg-brand-offwhite h-full min-h-[400px] relative hover:opacity-90 transition-opacity">
                             {project.imageUrl || project.image_url ? (
-                                <img src={project.imageUrl || project.image_url} 
+                                <Image src={project.imageUrl || project.image_url} 
                                      alt={project.title} 
+                                     fill
                                      className="project-image absolute inset-0 w-full h-full object-cover" />
                             ) : (
                                 <div className="absolute inset-0 bg-brand-green/10 flex items-center justify-center">
@@ -179,8 +181,9 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
                         <motion.div key={project.id} variants={fadeInUp} className="project-card flex flex-col bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-shadow reveal">
                             <Link href={`/projects/${project.slug}`} className="aspect-[4/3] overflow-hidden relative bg-brand-offwhite block hover:opacity-90 transition-opacity">
                                 {project.imageUrl || project.image_url ? (
-                                    <img src={project.imageUrl || project.image_url} 
+                                    <Image src={project.imageUrl || project.image_url} 
                                          alt={project.title} 
+                                         fill
                                          className="project-image absolute inset-0 w-full h-full object-cover" />
                                 ) : (
                                     <div className="absolute inset-0 bg-brand-green/90 flex items-center justify-center project-image">

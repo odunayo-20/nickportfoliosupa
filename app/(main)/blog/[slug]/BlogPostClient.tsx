@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState, useTransition, useRef } from 'react'
 import { likePost, addComment, unlikePost } from '@/actions/interactions'
 import { toast } from 'sonner'
+import Image from 'next/image';
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -156,7 +157,10 @@ export default function BlogPostClient({
             
             <div className="flex items-center justify-between py-6 border-y border-gray-100 border">
                 <div className="flex items-center gap-4">
-                    <img src={post.author?.avatar_url || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=150"} alt={post.author?.name || "Author"} className="w-12 h-12 rounded-full object-cover border-2 border-brand-green/10" />
+                    <Image src={post.author?.avatar_url || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=150"} alt={post.author?.name || "Author"}
+                    width={150}
+                    height={150}
+                    className="w-12 h-12 rounded-full object-cover border-2 border-brand-green/10" />
                     <div>
                         <div className="font-bold text-brand-dark">{post.author?.name || "Nikola"}</div>
                         <div className="text-sm text-brand-muted">{post.author?.role || "Senior App Developer"}</div>
@@ -178,9 +182,10 @@ export default function BlogPostClient({
             variants={fadeInUp}
         >
             <div className="w-full aspect-[16/9] md:aspect-[21/9] bg-brand-offwhite rounded-sharp overflow-hidden border border-gray-100">
-                <img src={post.image_url} 
+                <Image src={post.image_url} 
                      alt={post.title} 
-                     className="w-full h-full object-cover grayscale" />
+                     fill
+                     className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
             </div>
         </motion.div>
     )}
@@ -329,7 +334,7 @@ export default function BlogPostClient({
                 {relatedPosts.slice(0, 2).map((relPost: any) => (
                     <Link href={`/blog/${relPost.slug}`} key={relPost.id} className="flex flex-col bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all group">
                         <div className="aspect-[16/9] overflow-hidden relative bg-brand-offwhite">
-                            <img src={relPost.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} alt={relPost.title} className="absolute inset-0 w-full h-full object-cover grayscale group-hover:scale-105 transition-transform duration-700" />
+                            <Image src={relPost.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} fill alt={relPost.title} className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 group-hover:scale-105 transition-transform duration-700" />
                         </div>
                         <div className="p-8 flex-grow flex flex-col">
                             <div className="flex items-center justify-between mb-4">

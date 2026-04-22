@@ -1,7 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/server";
-import { revalidatePath } from "next/cache";
+import { createClient, createStaticClient } from "@/lib/server";
+import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
+import { cache } from "react";
 
 function toSlug(name: string) {
     return name
@@ -11,19 +12,23 @@ function toSlug(name: string) {
         .replace(/(^-|-$)+/g, "");
 }
 
-export async function getCategories() {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-        .from("categories")
-        .select("*")
-        .order("name", { ascending: true });
+export const getCategories = cache(unstable_cache(
+    async () => {
+        const supabase = createStaticClient();
+        const { data, error } = await supabase
+            .from("categories")
+            .select("*")
+            .order("name", { ascending: true });
 
-    if (error) {
-        console.error("Error fetching categories:", error.message);
-        return [];
-    }
-    return data ?? [];
-}
+        if (error) {
+            console.error("Error fetching categories:", error.message);
+            return [];
+        }
+        return data ?? [];
+    },
+    ["categories"],
+    { tags: ["categories"] }
+));
 
 export async function createCategory(name: string) {
     const supabase = await createClient();
@@ -41,6 +46,7 @@ export async function createCategory(name: string) {
     }
 
     revalidatePath("/admin/categories");
+    revalidateTag("categories", "max");
     return data;
 }
 
@@ -61,6 +67,7 @@ export async function updateCategory(id: string, name: string) {
     }
 
     revalidatePath("/admin/categories");
+    revalidateTag("categories", "max");
     return data;
 }
 
@@ -77,4 +84,5 @@ export async function deleteCategory(id: string) {
     }
 
     revalidatePath("/admin/categories");
+    revalidateTag("categories", "max");
 }

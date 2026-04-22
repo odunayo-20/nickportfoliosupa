@@ -96,7 +96,7 @@ export default function ComposeNewsletterPage() {
                         variant="outline"
                         onClick={handleSendTest} 
                         disabled={isSending}
-                        className="flex-1 md:flex-none h-11 rounded-xl font-bold border-slate-200"
+                        className="flex-1 md:flex-none h-11 rounded-xl font-bold border-slate-200 border"
                     >
                         Test Run
                     </Button>
@@ -123,7 +123,7 @@ export default function ComposeNewsletterPage() {
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         placeholder="e.g. Major Project Update and New Blog Post"
-                        className="text-base sm:text-xl font-bold py-6 sm:py-7 px-4 sm:px-6 border-slate-100 bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-slate-900/5 focus:border-slate-300 transition-all rounded-2xl placeholder:text-slate-200"
+                        className="text-base sm:text-xl font-bold py-6 sm:py-7 px-4 sm:px-6 border-slate-100 border bg-slate-50/50 focus:bg-white focus:ring-4 focus:ring-slate-900/5 focus:border-slate-300 transition-all rounded-2xl placeholder:text-slate-200"
                     />
                 </div>
 

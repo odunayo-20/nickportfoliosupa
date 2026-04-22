@@ -1,7 +1,8 @@
 "use server";
 
-import { createClient } from "@/lib/server";
-import { revalidatePath } from "next/cache";
+import { createClient, createStaticClient } from "@/lib/server";
+import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
+import { cache } from "react";
 
 // Try to find the first settings row, or fallback to the master ID
 async function getMasterId(supabase: any) {
@@ -9,23 +10,27 @@ async function getMasterId(supabase: any) {
     return data?.id || '00000000-0000-0000-0000-000000000000';
 }
 
-export async function getSettings() {
-    const supabase = await createClient();
-    
-    // First try by limited selection to find the actual row
-    const { data: settings, error } = await supabase
-        .from("settings")
-        .select("*")
-        .limit(1)
-        .maybeSingle();
+export const getSettings = cache(unstable_cache(
+    async () => {
+        const supabase = createStaticClient();
+        
+        // First try by limited selection to find the actual row
+        const { data: settings, error } = await supabase
+            .from("settings")
+            .select("*")
+            .limit(1)
+            .maybeSingle();
 
-    if (error) {
-        console.error("Error fetching settings:", error);
-        return null;
-    }
+        if (error) {
+            console.error("Error fetching settings:", error);
+            return null;
+        }
 
-    return settings;
-}
+        return settings;
+    },
+    ["settings"],
+    { tags: ["settings"] }
+));
 
 export async function updateSettings(data: Record<string, any>) {
     const supabase = await createClient();
@@ -69,5 +74,6 @@ export async function updateSettings(data: Record<string, any>) {
     }
 
     revalidatePath("/", "layout");
+    revalidateTag("settings", "max");
     return { success: true };
 }

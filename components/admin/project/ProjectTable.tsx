@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ProjectRowActions } from "./ProjectRowActions";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 interface ProjectTableProps {
     projects: any[] | undefined;
@@ -98,7 +99,7 @@ export function ProjectTable({
                                     <div className="flex items-center gap-3 md:gap-4">
                                         <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
                                             {project.imageUrl ? (
-                                                <img src={project.imageUrl} alt={project.title} className="w-full h-full object-cover" />
+                                                <Image src={project.imageUrl} alt={project.title} className="w-full h-full object-cover" width={48} height={48} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                                             ) : (
                                                 <ImageIcon size={18} className="text-slate-300" />
                                             )}
