@@ -271,8 +271,9 @@ const ContactClient = () => {
                           disabled={isLoading}
                         >
                           <option value="">Select an option</option>
+                          <option value="Multiplatform App Development">Multiplatform App Development</option>
                           <option value="Native Mobile App Development">Native Mobile App Development</option>
-                          <option value="Web Architecture / Dashboard">Web Architecture / Dashboard</option>
+                          <option value="Web Application Development / Dashboard">Web Application Development / Dashboard</option>
                           <option value="Technical Consulting">Technical Consulting</option>
                           <option value="Other Inquiry">Other Inquiry</option>
                         </select>
