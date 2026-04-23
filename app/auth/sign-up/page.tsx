@@ -456,14 +456,14 @@ const SignUpPage = () => {
                         </p>
                     </div>
 
-                    <div className="auth-social-row">
+                    {/* <div className="auth-social-row">
                         <button type="button" className="auth-social-btn" onClick={() => handleSocialOauth("github")}>
                             GitHub
                         </button>
                         <button type="button" className="auth-social-btn" onClick={() => handleSocialOauth("google")}>
                             Google
                         </button>
-                    </div>
+                    </div> */}
 
                     <div className="auth-divider">
                         <div className="auth-divider-line" />
