@@ -19,7 +19,7 @@ import {
   ChevronLeft
 } from 'lucide-react'
 import { getMessages, markAsRead, deleteMessage } from '@/actions/message'
-import { sendReply } from '@/actions/email'
+import { sendReply, checkEmailConfig } from '@/actions/email'
 import { toast } from 'sonner'
 
 import { formatDistanceToNow } from 'date-fns'
@@ -33,6 +33,7 @@ const MessagesClient = () => {
     const [replyText, setReplyText] = useState('')
     const [isSending, setIsSending] = useState(false)
     const [currentPage, setCurrentPage] = useState(1);
+    const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
     const ITEMS_PER_PAGE = 10;
 
 
@@ -46,6 +47,7 @@ const MessagesClient = () => {
 
     useEffect(() => {
         fetchMessages()
+        checkEmailConfig().then(res => setIsConfigured(res.isConfigured))
     }, [])
 
     const filteredMessages = useMemo(() => {
@@ -330,6 +332,20 @@ const MessagesClient = () => {
                                             <h3 className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] text-slate-300">Quick Response</h3>
                                             <div className="flex-1 h-px bg-slate-100" />
                                         </div>
+
+                                        {isConfigured === false && (
+                                            <div className="mb-4 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
+                                                <Mail className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                                                <div>
+                                                    <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">Brevo Not Configured</p>
+                                                    <p className="text-[11px] text-amber-700 leading-relaxed">
+                                                        The <code className="bg-amber-100 px-1 rounded">BREVO_API_KEY</code> is missing from your <code className="bg-amber-100 px-1 rounded">.env.local</code> file. 
+                                                        Replies will fallback to your default mail client.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="bg-white rounded-[2rem] border border-slate-200 shadow-xl shadow-slate-200/20 focus-within:ring-4 focus-within:ring-indigo-500/5 focus-within:border-indigo-200 transition-all overflow-hidden group/reply">
                                             <textarea 
                                                 className="w-full p-6 sm:p-8 text-[14px] sm:text-[15px] font-bold text-slate-700 bg-transparent border-none focus:ring-0 resize-none leading-relaxed placeholder:text-slate-200 min-h-[200px]"

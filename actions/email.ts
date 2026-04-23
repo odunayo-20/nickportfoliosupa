@@ -26,3 +26,11 @@ export async function sendReply(email: string, name: string, message: string) {
         return { error: error.message || "Failed to send email" };
     }
 }
+
+export async function checkEmailConfig() {
+    return {
+        isConfigured: !!process.env.BREVO_API_KEY,
+        senderName: process.env.BREVO_SENDER_NAME,
+        senderEmail: process.env.BREVO_SENDER_EMAIL
+    };
+}
