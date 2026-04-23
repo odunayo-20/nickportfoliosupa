@@ -1,5 +1,23 @@
 import React from 'react'
 
+export const XIcon = ({ className }: { className?: string }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={className}
+    >
+        <path d="M18 6L6 18"></path>
+        <path d="M6 6l12 12"></path>
+    </svg>
+)
+
 export const LinkedinIcon = ({ className }: { className?: string }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -54,5 +72,5 @@ export const TwitterIcon = ({ className }: { className?: string }) => (
 )
 
 // Default export retained for backwards compatibility
-const Icons = { LinkedinIcon, GithubIcon, TwitterIcon }
+const Icons = { LinkedinIcon, GithubIcon, TwitterIcon, XIcon }
 export default Icons

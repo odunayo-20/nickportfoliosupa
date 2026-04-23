@@ -4,7 +4,7 @@ import React from 'react'
 import { Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { NewsletterForm } from '@/components/NewsletterForm'
-import { LinkedinIcon, GithubIcon, TwitterIcon } from '@/components/Icons'
+import { LinkedinIcon, GithubIcon, TwitterIcon, XIcon } from '@/components/Icons'
 import { myAppHook } from '@/context/AppUtils'
 import { useGDPR } from '@/context/GDPRContext'
 
@@ -37,14 +37,14 @@ const Footer = () => {
                         {siteSettings?.meta_description || 'Senior App Developer based in Nigeria, specializing in high-performance native architectures and robust web systems.'}
                     </p>
                     <div className="flex gap-3">
-                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                        <a href="https://www.linkedin.com/in/nikola-srdoc-ab559962/" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
                             <LinkedinIcon className="w-4 h-4" />
                         </a>
-                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                        <a href="https://github.com/Aero51" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
                             <GithubIcon className="w-4 h-4" />
                         </a>
-                        <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
-                            <TwitterIcon className="w-4 h-4" />
+                        <a href="https://x.com/Aero0110" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                            <XIcon className="w-4 h-4" />
                         </a>
                     </div>
                 </div>

@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react'
 import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { sendMessage } from '@/actions/message'
 import { motion, Variants } from 'motion/react'
-import { LinkedinIcon, GithubIcon, TwitterIcon } from '@/components/Icons'
+import { LinkedinIcon, GithubIcon, XIcon } from '@/components/Icons'
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -177,12 +177,12 @@ const ContactClient = () => {
                     <GithubIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </a>
                   <a
-                    href="#"
+                    href="https://x.com/Aero0110"
                     aria-label="Twitter"
                     target='_blank'
                     className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
                   >
-                    <TwitterIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </a>
                 </div>
               </div>
@@ -335,6 +335,88 @@ const ContactClient = () => {
             </motion.div>
 
           </div>
+        </div>
+      </motion.section>
+
+      {/* ── MAP SECTION ───────────────────────────────────────────── */}
+      <motion.section 
+        className="py-16 sm:py-24 bg-white"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+        variants={staggerContainer}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <motion.div variants={fadeInUp} className="mb-12 text-center lg:text-left">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-brand-dark mb-4">
+              Where I&apos;m <span className="text-brand-orange">located</span>
+            </h2>
+            <p className="text-brand-muted text-lg max-w-2xl">
+              Based in the beautiful coastal city of Zadar, Croatia. While I work with clients globally, I&apos;m always happy to meet for coffee if you&apos;re in the neighborhood.
+            </p>
+          </motion.div>
+
+          <motion.div 
+            variants={fadeInUp}
+            className="relative h-[400px] sm:h-[500px] w-full rounded-sharp overflow-hidden border border-gray-200 shadow-2xl group"
+          >
+            {/* Grayscale Map Wrapper */}
+            <div className="absolute inset-0 grayscale contrast-[1.1] brightness-[0.95] opacity-90 transition-all duration-700 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100">
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d23157.65991873138!2d15.225950854443358!3d44.11936354898114!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4761fa6627038e87%3A0x400ad50862bd150!2sZadar%2C%20Croatia!5e0!3m2!1sen!2suk!4v1713891234567" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen={true} 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                className="grayscale"
+              />
+            </div>
+
+            {/* Overlay Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-dark/20 to-transparent pointer-events-none" />
+
+            {/* Central Pin */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <motion.div
+                initial={{ y: 0 }}
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                className="relative"
+              >
+                <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <div className="absolute bottom-[-10px] left-1/2 -translate-x-1/2 w-4 h-1 bg-brand-dark/20 rounded-full blur-[2px]" />
+              </motion.div>
+            </div>
+
+            {/* Floating Info Card */}
+            <div className="absolute bottom-6 left-6 right-6 sm:left-10 sm:bottom-10 sm:right-auto max-w-sm bg-white/90 backdrop-blur-md p-6 rounded-sharp border border-white/50 shadow-xl z-10 reveal-card">
+               <div className="flex items-center gap-4 mb-4">
+                  <div className="w-12 h-12 bg-brand-orange/10 rounded-full flex items-center justify-center">
+                    <MapPin className="w-6 h-6 text-brand-orange" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-brand-dark">Studio Location</h4>
+                    <p className="text-sm text-brand-muted">Zadar, Croatia</p>
+                  </div>
+               </div>
+               <p className="text-sm text-brand-muted leading-relaxed mb-6">
+                 I operate from a high-performance home studio optimized for deep work and seamless remote collaboration across all time zones.
+               </p>
+               <a 
+                 href="https://www.google.com/maps/search/?api=1&query=Zadar,+Croatia" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="inline-flex items-center gap-2 text-sm font-bold text-brand-orange hover:text-brand-dark transition-colors group/link"
+               >
+                 Open in Google Maps
+                 <div className="w-4 h-[1px] bg-brand-orange group-hover/link:w-8 transition-all" />
+               </a>
+            </div>
+          </motion.div>
         </div>
       </motion.section>
 
