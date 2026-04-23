@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react'
 import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { sendMessage } from '@/actions/message'
 import { motion, Variants } from 'motion/react'
+import { LinkedinIcon, GithubIcon, TwitterIcon } from '@/components/Icons'
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -20,26 +21,7 @@ const staggerContainer: Variants = {
   }
 };
 
-/* ── Inline SVG brand icons ─────────────────────────────────── */
-const LinkedinIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-    <rect width="4" height="12" x="2" y="9"></rect>
-    <circle cx="4" cy="4" r="2"></circle>
-  </svg>
-)
 
-const GithubIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.2c3-.3 6-1.5 6-6.5a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 5 3 6.2 6 6.5a4.8 4.8 0 0 0-1 3.2v4"></path>
-  </svg>
-)
-
-const TwitterIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5 2.8 12.5 3 11c-1.2.6-2.5.5-3.5-.5 1-1.3 2.8-1.5 4-1.5-1-1.5-3.5-.5-5 1.5 2 3.5 3.5 6 4-.5-3.5 4-5.5 6.5-3 1.5-.5 3-1.5 4-2.5-1 1.5-2.5 3-4 3.5z"></path>
-  </svg>
-)
 
 /* ── Types ──────────────────────────────────────────────────── */
 type FormState = 'idle' | 'loading' | 'success' | 'error'
@@ -141,10 +123,10 @@ const ContactClient = () => {
                   <div>
                     <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-1">Email Address</span>
                     <a
-                      href="mailto:hello@Nikola.dev"
+                      href="mailto:nikola.srdoc@gmail.com" target='_blank'
                       className="text-base sm:text-lg font-semibold text-brand-dark hover:text-brand-orange transition-colors break-all"
                     >
-                      hello@Nikola.dev
+                      nikola.srdoc@gmail.com
                     </a>
                   </div>
                 </div>
@@ -156,7 +138,7 @@ const ContactClient = () => {
                   </div>
                   <div>
                     <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-1">Location</span>
-                    <span className="text-base sm:text-lg font-semibold text-brand-dark">Lagos, Nigeria (WAT)</span>
+                    <span className="text-base sm:text-lg font-semibold text-brand-dark">Zadar, Croatia (GMT+2)</span>
                     <span className="block text-sm text-brand-muted mt-1">Available for remote collaboration worldwide.</span>
                   </div>
                 </div>
@@ -168,7 +150,7 @@ const ContactClient = () => {
                   </div>
                   <div>
                     <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-1">Working Hours</span>
-                    <span className="text-base sm:text-lg font-semibold text-brand-dark">9:00 AM – 6:00 PM</span>
+                    <span className="text-base sm:text-lg font-semibold text-brand-dark">8:00 AM – 6:00 PM</span>
                     <span className="block text-sm text-brand-muted mt-1">Monday through Friday</span>
                   </div>
                 </div>
@@ -179,14 +161,16 @@ const ContactClient = () => {
                 <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-4">Social Profiles</span>
                 <div className="flex gap-3 flex-wrap">
                   <a
-                    href="#"
+                    href="https://www.linkedin.com/in/nikola-srdoc-ab559962"
+                    target='_blank'
                     aria-label="LinkedIn"
                     className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
                   >
                     <LinkedinIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                   </a>
                   <a
-                    href="#"
+                    href="https://github.com/Aero51"
+                    target='_blank'
                     aria-label="GitHub"
                     className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
                   >
@@ -195,6 +179,7 @@ const ContactClient = () => {
                   <a
                     href="#"
                     aria-label="Twitter"
+                    target='_blank'
                     className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
                   >
                     <TwitterIcon className="w-4 h-4 sm:w-5 sm:h-5" />

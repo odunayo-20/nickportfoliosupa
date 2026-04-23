@@ -37,7 +37,7 @@ const AboutClient = () => {
                     Bridging the gap between <span className="text-brand-orange italic font-normal">design</span> & <span className="text-brand-orange italic font-normal">logic.</span>
                 </h1>
                 <p className="text-gray-300 text-lg leading-relaxed max-w-lg mb-8">
-                    With over 8 years in the tech industry, I don't just write code. I architect scalable systems that provide flawless user experiences. I believe that the best applications are built where rigorous engineering meets intuitive design.
+                    With over 5+ years in mobile development, I don't just build apps — I engineer scalable, high-performance experiences across Android and iOS. I specialize in Kotlin, Kotlin Multiplatform, and modern mobile architectures, creating seamless applications that feel intuitive and reliable. I believe the best mobile products emerge where solid engineering meets thoughtful, user-centered design.
                 </p>
                 <div className="flex gap-4">
                     <a href="#timeline" className="px-8 py-3.5 bg-brand-orange text-brand-dark font-bold rounded-full hover:bg-white transition-all">
