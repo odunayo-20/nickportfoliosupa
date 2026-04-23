@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { AppUtilsProvider } from "@/context/AppUtils";
+import { GDPRProvider } from "@/context/GDPRContext";
+import GDPRBanner from "@/components/GDPRBanner";
 import VisitorTracker from "@/components/VisitorTracker";
 
 const geistSans = Geist({
@@ -50,8 +52,11 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col tracking-tight bg-background text-foreground">
         <AppUtilsProvider>
-          {children}
-          <VisitorTracker />
+          <GDPRProvider>
+            {children}
+            <GDPRBanner />
+            <VisitorTracker />
+          </GDPRProvider>
         </AppUtilsProvider>
         <Toaster />
       </body>

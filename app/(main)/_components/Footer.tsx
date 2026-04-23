@@ -6,10 +6,12 @@ import Link from 'next/link'
 import { NewsletterForm } from '@/components/NewsletterForm'
 import { LinkedinIcon, GithubIcon, TwitterIcon } from '@/components/Icons'
 import { myAppHook } from '@/context/AppUtils'
+import { useGDPR } from '@/context/GDPRContext'
 
 
 const Footer = () => {
   const { siteSettings } = myAppHook()
+  const { setPreferenceModalOpen } = useGDPR()
 
   return (
     <>
@@ -94,7 +96,14 @@ const Footer = () => {
   © {new Date().getFullYear()} {siteSettings?.site_title || 'Nikola Portfolio'}. All Rights Reserved.
 </p>
                 <div className="flex gap-6">
-                    <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
+                    <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                    <Link href="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link>
+                    <button 
+                        onClick={() => setPreferenceModalOpen(true)}
+                        className="hover:text-white transition-colors cursor-pointer"
+                    >
+                        Cookie Preferences
+                    </button>
                     <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
                 </div>
             </div>
