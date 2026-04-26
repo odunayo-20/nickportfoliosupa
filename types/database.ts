@@ -140,6 +140,7 @@ export interface Database {
           bio: string | null
           avatar_url: string | null
           resume_url: string | null
+          resume_name: string | null
           skills: string[] | null
           social_links: Json | null
         }
@@ -152,6 +153,7 @@ export interface Database {
           bio?: string | null
           avatar_url?: string | null
           resume_url?: string | null
+          resume_name?: string | null
           skills?: string[] | null
           social_links?: Json | null
         }
@@ -164,6 +166,7 @@ export interface Database {
           bio?: string | null
           avatar_url?: string | null
           resume_url?: string | null
+          resume_name?: string | null
           skills?: string[] | null
           social_links?: Json | null
         }

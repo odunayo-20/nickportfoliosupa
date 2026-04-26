@@ -77,21 +77,26 @@ const ServiceClient = () => {
                 <motion.div variants={fadeInUp} className="service-row border-b border-l-4 border-l-transparent border-b-gray-200 py-16 px-4 md:px-8 grid md:grid-cols-12 gap-8 items-start reveal">
                     <div className="md:col-span-1 text-2xl font-black text-brand-orange italic opacity-50">01</div>
                     <div className="md:col-span-4">
-                        <h2 className="text-3xl font-extrabold text-brand-dark mb-4">Native Mobile Development</h2>
-                        <div className="flex gap-2">
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Kotlin</span>
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Java</span>
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Android SDK</span>
+                        <h2 className="text-3xl font-extrabold text-brand-dark mb-4">Multiplatform App Development</h2>
+                        <div className="flex flex-wrap gap-2">
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Kotlin Multiplatform</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Compose Multiplatform</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Supabase</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">SQLDelight</span>
                         </div>
                     </div>
                     <div className="md:col-span-7">
                         <p className="text-brand-muted text-lg leading-relaxed mb-6">
-                            Building hardware-accelerated, zero-latency mobile applications. I specialize in deep device API integration, memory-safe architecture via Coroutines, and offline-first data caching to ensure your app runs flawlessly in any condition.
+                            Ship one codebase to Android and iOS while sharing up to 70% of code — without sacrificing native performance. I architect KMP apps from scratch including offline-first storage, real-time WebSocket systems, and cloud backend (Supabase/PostgreSQL).
+                        </p>
+                        <p className="text-brand-dark font-bold text-sm mb-4 italic">
+                            Proven by: TraderApp (trading simulator), Up Network (social/events app)
                         </p>
                         <ul className="space-y-3 text-brand-dark font-medium">
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Complex State Management</li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Real-time WebSocket Integration</li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Hardware/Sensor Optimization</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> ~70% shared Kotlin code between Android & iOS</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Offline-first with SQLDelight caching</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Real-time Supabase Realtime + WebSocket integration</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Full backend design (PostgreSQL, RLS, Edge Functions, RPCs)</li>
                         </ul>
                     </div>
                 </motion.div>
@@ -99,21 +104,26 @@ const ServiceClient = () => {
                 <motion.div variants={fadeInUp} className="service-row border-b border-l-4 border-l-transparent border-b-gray-200 py-16 px-4 md:px-8 grid md:grid-cols-12 gap-8 items-start reveal">
                     <div className="md:col-span-1 text-2xl font-black text-brand-orange italic opacity-50">02</div>
                     <div className="md:col-span-4">
-                        <h2 className="text-3xl font-extrabold text-brand-dark mb-4">Scalable Web Architecture</h2>
-                        <div className="flex gap-2">
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Next.js</span>
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Node.js</span>
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">PostgreSQL</span>
+                        <h2 className="text-3xl font-extrabold text-brand-dark mb-4">Native Mobile Development</h2>
+                        <div className="flex flex-wrap gap-2">
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Kotlin</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Jetpack Compose</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Android SDK</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Java</span>
                         </div>
                     </div>
                     <div className="md:col-span-7">
                         <p className="text-brand-muted text-lg leading-relaxed mb-6">
-                            Designing the digital backbone that powers modern applications. From decoupling monolithic systems into microservices to engineering secure authentication gateways and high-concurrency event platforms.
+                            Native Android applications with hardware-level performance — real-time streaming, geo-spatial maps, ARCore, and sensor integrations. Focused on high-performance media pipelines and deep device capabilities.
+                        </p>
+                        <p className="text-brand-dark font-bold text-sm mb-4 italic">
+                            Experience: Meritum Soft (10+ fan apps for premier football clubs)
                         </p>
                         <ul className="space-y-3 text-brand-dark font-medium">
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> API Design (REST & GraphQL)</li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Cloud Infrastructure (AWS/GCP)</li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> High-Concurrency Database Tuning</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> RTMP Streaming & Media Pipelines</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> ARCore & MapLibre Clustering</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> STOMP/WebSocket Real-time Events</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Geofencing & Sensor Integrations</li>
                         </ul>
                     </div>
                 </motion.div>
@@ -121,20 +131,23 @@ const ServiceClient = () => {
                 <motion.div variants={fadeInUp} className="service-row border-b border-l-4 border-l-transparent border-b-gray-200 py-16 px-4 md:px-8 grid md:grid-cols-12 gap-8 items-start reveal">
                     <div className="md:col-span-1 text-2xl font-black text-brand-orange italic opacity-50">03</div>
                     <div className="md:col-span-4">
-                        <h2 className="text-3xl font-extrabold text-brand-dark mb-4">UI/UX Implementation</h2>
-                        <div className="flex gap-2">
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Figma Integration</span>
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">TailwindCSS</span>
+                        <h2 className="text-3xl font-extrabold text-brand-dark mb-4">Web App & Dashboard Development</h2>
+                        <div className="flex flex-wrap gap-2">
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Supabase</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">PostgreSQL</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">TypeScript</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Edge Functions</span>
                         </div>
                     </div>
                     <div className="md:col-span-7">
                         <p className="text-brand-muted text-lg leading-relaxed mb-6">
-                            A great design is useless if the code doesn't respect it. I act as the ultimate bridge between your design team and the codebase, ensuring micro-interactions, responsive grids, and typography are translated with pixel-perfect accuracy.
+                            Backend-first web applications and admin dashboards powered by Supabase. I build data-intensive tools featuring real-time synchronization, PostGIS spatial queries, and automated background jobs.
                         </p>
                         <ul className="space-y-3 text-brand-dark font-medium">
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Design System Tokenization</li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Fluid Animation Engineering</li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Strict Accessibility (a11y) Compliance</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Real-time Data Dashboards</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> PostGIS Spatial Queries</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Automated Scheduled Jobs (pg_cron)</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Secure RLS & Role-based Access</li>
                         </ul>
                     </div>
                 </motion.div>
@@ -143,19 +156,21 @@ const ServiceClient = () => {
                     <div className="md:col-span-1 text-2xl font-black text-brand-orange italic opacity-50">04</div>
                     <div className="md:col-span-4">
                         <h2 className="text-3xl font-extrabold text-brand-dark mb-4">Technical Consulting</h2>
-                        <div className="flex gap-2">
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Auditing</span>
-                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">System Design</span>
+                        <div className="flex flex-wrap gap-2">
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Architecture</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">KMP Migration</span>
+                            <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">Supabase Design</span>
                         </div>
                     </div>
                     <div className="md:col-span-7">
                         <p className="text-brand-muted text-lg leading-relaxed mb-6">
-                            Is your current application buckling under user load? I provide retained consulting to audit existing codebases, identify memory leaks, restructure monolithic repositories, and mentor junior development teams.
+                            Strategic guidance for high-growth startups and enterprises. I help teams navigate complex architectural transitions, optimize database performance, and implement robust real-time systems.
                         </p>
                         <ul className="space-y-3 text-brand-dark font-medium">
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Codebase Audits & Refactoring</li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> CI/CD Pipeline Setup</li>
-                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Tech Stack Migration Planning</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> KMP Architecture Planning (Native to KMP)</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Supabase Backend Design & RLS Review</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Performance Optimization (API & Caching)</li>
+                            <li className="flex items-center gap-3"><Check className="w-5 h-5 text-brand-orange" /> Real-time System Design (WebSockets)</li>
                         </ul>
                     </div>
                 </motion.div>
@@ -185,8 +200,8 @@ const ServiceClient = () => {
                     <div className="absolute top-0 left-0 w-8 h-[2px] bg-brand-orange"></div>
                     <div className="absolute -top-3 left-0 w-6 h-6 bg-brand-orange text-brand-dark font-black flex items-center justify-center rounded-full text-xs">1</div>
                     
-                    <h3 className="text-xl font-bold text-brand-dark mt-6 mb-3">Discovery</h3>
-                    <p className="text-brand-muted text-sm leading-relaxed">Deep-dive into your business logic, user demographics, and long-term scaling goals before a single line of code is written.</p>
+                    <h3 className="text-xl font-bold text-brand-dark mt-6 mb-3">Strategic Discovery</h3>
+                    <p className="text-brand-muted text-sm leading-relaxed">Deep-dive into your business logic and platform requirements (Android, iOS, Web) to identify shared logic opportunities and long-term scaling goals.</p>
                 </motion.div>
 
                 <motion.div variants={fadeInUp} className="relative pt-8">
@@ -194,8 +209,8 @@ const ServiceClient = () => {
                     <div className="absolute top-0 left-0 w-8 h-[2px] bg-brand-orange"></div>
                     <div className="absolute -top-3 left-0 w-6 h-6 bg-brand-orange text-brand-dark font-black flex items-center justify-center rounded-full text-xs">2</div>
                     
-                    <h3 className="text-xl font-bold text-brand-dark mt-6 mb-3">Architecture</h3>
-                    <p className="text-brand-muted text-sm leading-relaxed">Designing the database schema, selecting the strict technology stack, and setting up the CI/CD deployment pipelines.</p>
+                    <h3 className="text-xl font-bold text-brand-dark mt-6 mb-3">Unified Architecture</h3>
+                    <p className="text-brand-muted text-sm leading-relaxed">Designing the shared Kotlin core, Supabase database schema, and offline-first storage strategy to ensure consistency across all devices.</p>
                 </motion.div>
 
                 <motion.div variants={fadeInUp} className="relative pt-8">
@@ -203,8 +218,8 @@ const ServiceClient = () => {
                     <div className="absolute top-0 left-0 w-8 h-[2px] bg-brand-orange"></div>
                     <div className="absolute -top-3 left-0 w-6 h-6 bg-brand-orange text-brand-dark font-black flex items-center justify-center rounded-full text-xs">3</div>
                     
-                    <h3 className="text-xl font-bold text-brand-dark mt-6 mb-3">Execution</h3>
-                    <p className="text-brand-muted text-sm leading-relaxed">Agile, sprint-based development. Code is heavily documented, modular, and tested continuously against edge cases.</p>
+                    <h3 className="text-xl font-bold text-brand-dark mt-6 mb-3">Agile Execution</h3>
+                    <p className="text-brand-muted text-sm leading-relaxed">Sprint-based development with ~70% code sharing. Code is modular, typesafe, and continuously tested against edge cases for maximum reliability.</p>
                 </motion.div>
 
                 <motion.div variants={fadeInUp} className="relative pt-8">
@@ -212,8 +227,8 @@ const ServiceClient = () => {
                     <div className="absolute top-0 left-0 w-8 h-[2px] bg-brand-orange"></div>
                     <div className="absolute -top-3 left-0 w-6 h-6 bg-brand-orange text-brand-dark font-black flex items-center justify-center rounded-full text-xs">4</div>
                     
-                    <h3 className="text-xl font-bold text-brand-dark mt-6 mb-3">Deployment</h3>
-                    <p className="text-brand-muted text-sm leading-relaxed">Zero-downtime deployment to app stores and cloud servers, followed by performance monitoring and strict QA handoff.</p>
+                    <h3 className="text-xl font-bold text-brand-dark mt-6 mb-3">Continuous Delivery</h3>
+                    <p className="text-brand-muted text-sm leading-relaxed">Zero-downtime deployment to App Stores and cloud servers, coupled with real-time performance monitoring and automated edge functions.</p>
                 </motion.div>
             </div>
         </div>

@@ -37,7 +37,7 @@ const AboutClient = () => {
                     Bridging the gap between <span className="text-brand-orange italic font-normal">design</span> & <span className="text-brand-orange italic font-normal">logic.</span>
                 </h1>
                 <p className="text-gray-300 text-lg leading-relaxed max-w-lg mb-8">
-                    With over 5+ years in mobile development, I don't just build apps — I engineer scalable, high-performance experiences across Android and iOS. I specialize in Kotlin, Kotlin Multiplatform, and modern mobile architectures, creating seamless applications that feel intuitive and reliable. I believe the best mobile products emerge where solid engineering meets thoughtful, user-centered design.
+                    With over 8+ years of engineering experience, I don't just build apps — I architect scalable, high-performance systems across Android and iOS. I specialize in Kotlin Multiplatform (KMP), real-time WebSocket integrations, and offline-first architectures. From building fan apps for premier football clubs to maintaining mission-critical IT infrastructure, I bridge the gap between design and solid engineering.
                 </p>
                 <div className="flex gap-4">
                     <a href="#timeline" className="px-8 py-3.5 bg-brand-orange text-brand-dark font-bold rounded-full hover:bg-white transition-all">
@@ -107,43 +107,58 @@ const AboutClient = () => {
             <motion.span variants={fadeInUp} className="text-brand-orange font-semibold flex items-center gap-2 text-sm mb-4">
                 <span className="w-4 h-[2px] bg-brand-orange"></span> Professional Timeline
             </motion.span>
-            <motion.h2 variants={fadeInUp} className="text-4xl md:text-5xl font-extrabold tracking-tighter text-brand-dark mb-16">8+ Years of Building.</motion.h2>
+            <motion.h2 variants={fadeInUp} className="text-4xl md:text-5xl font-extrabold tracking-tighter text-brand-dark mb-16">10+ Years of Building.</motion.h2>
             
             <div className="relative border-l-2 border-brand-green/20 pl-8 ml-4 space-y-16">
                 
                 <motion.div variants={fadeInUp} className="relative group">
                     <div className="absolute -left-[41px] top-1 w-5 h-5 bg-brand-light border-4 border-brand-orange rounded-full group-hover:bg-brand-orange transition-colors"></div>
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
-                        <h3 className="text-2xl font-bold text-brand-dark">Senior App Developer</h3>
-                        <span className="text-brand-orange font-bold text-sm bg-brand-orange/10 px-3 py-1 rounded-full w-fit mt-2 md:mt-0">2023 - Present</span>
+                        <h3 className="text-2xl font-bold text-brand-dark">IT Equipment Repair Technician</h3>
+                        <span className="text-brand-orange font-bold text-sm bg-brand-orange/10 px-3 py-1 rounded-full w-fit mt-2 md:mt-0">Aug 2024 – May 2025</span>
                     </div>
-                    <h4 className="text-brand-green font-semibold mb-4 text-lg">Native Dev</h4>
+                    <h4 className="text-brand-green font-semibold mb-4 text-lg">Hrvatski Telekom (Full-time) • Zadar, Croatia</h4>
+                    <ul className="text-brand-muted leading-relaxed list-disc list-inside space-y-2">
+                        <li>Repair and maintenance of IT equipment for large customers like INA, Tisak, Lidl, MUP, Carina, Zaba, and McDonalds.</li>
+                        <li>Maintenance of Diebold ATMs and POS systems in the Zadarska, Šibensko-kninska, and Ličko-senjska regions.</li>
+                    </ul>
+                </motion.div>
+
+                <motion.div variants={fadeInUp} className="relative group">
+                    <div className="absolute -left-[41px] top-1 w-5 h-5 bg-brand-light border-4 border-brand-green rounded-full group-hover:bg-brand-green transition-colors"></div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <h3 className="text-2xl font-bold text-brand-dark">Android Developer</h3>
+                        <span className="text-brand-muted font-bold text-sm bg-gray-100 px-3 py-1 rounded-full w-fit mt-2 md:mt-0">Oct 2021 – Jun 2024</span>
+                    </div>
+                    <h4 className="text-brand-green font-semibold mb-4 text-lg">Meritum Soft (Full-time)</h4>
+                    <ul className="text-brand-muted leading-relaxed list-disc list-inside space-y-2">
+                        <li><span className="font-bold">Sports Fan Apps:</span> Core developer for ~10 modular sports engagement applications built natively in Android (Java 8, Kotlin), including América de Cali.</li>
+                        <li><span className="font-bold">Tech & Integrations:</span> Integrated ExoPlayer (RTMP streaming), STOMP/WebSockets (live stats), ARCore/SceneForm (avatars), Firebase Suite, and location-based check-ins.</li>
+                        <li><span className="font-bold">Subcontract (Feb–Mar 2021):</span> Worked on a financial app for a Dutch client utilizing Kotlin, MVVM, and Coroutines.</li>
+                    </ul>
+                </motion.div>
+
+                <motion.div variants={fadeInUp} className="relative group">
+                    <div className="absolute -left-[41px] top-1 w-5 h-5 bg-brand-light border-4 border-brand-green rounded-full group-hover:bg-brand-green transition-colors"></div>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <h3 className="text-2xl font-bold text-brand-dark">Android Developer</h3>
+                        <span className="text-brand-muted font-bold text-sm bg-gray-100 px-3 py-1 rounded-full w-fit mt-2 md:mt-0">Mar 2021 – Jun 2021</span>
+                    </div>
+                    <h4 className="text-brand-green font-semibold mb-4 text-lg">Mathcode (Full-time)</h4>
                     <p className="text-brand-muted leading-relaxed">
-                        Leading the native mobile engineering team. Architected and deployed scalable Kotlin-based enterprise solutions resulting in a 40% reduction in app crash rates and a 200% increase in daily active users.
+                        Handled end-to-end development of Android applications.
                     </p>
                 </motion.div>
 
                 <motion.div variants={fadeInUp} className="relative group">
                     <div className="absolute -left-[41px] top-1 w-5 h-5 bg-brand-light border-4 border-brand-green rounded-full group-hover:bg-brand-green transition-colors"></div>
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
-                        <h3 className="text-2xl font-bold text-brand-dark">Lead Mobile Engineer</h3>
-                        <span className="text-brand-muted font-bold text-sm bg-gray-100 px-3 py-1 rounded-full w-fit mt-2 md:mt-0">2020 - 2023</span>
+                        <h3 className="text-2xl font-bold text-brand-dark">Freelance Android Developer (Xamarin)</h3>
+                        <span className="text-brand-muted font-bold text-sm bg-gray-100 px-3 py-1 rounded-full w-fit mt-2 md:mt-0">2015 – 2016</span>
                     </div>
-                    <h4 className="text-brand-green font-semibold mb-4 text-lg">UP Social App</h4>
+                    <h4 className="text-brand-green font-semibold mb-4 text-lg">Road Pal (Egyptian Startup) & Grasshopper (Ri Startup)</h4>
                     <p className="text-brand-muted leading-relaxed">
-                        Spearheaded the development of a real-time event discovery platform. Implemented complex state management protocols and optimized real-time database syncing protocols for seamless user interactions.
-                    </p>
-                </motion.div>
-
-                <motion.div variants={fadeInUp} className="relative group">
-                    <div className="absolute -left-[41px] top-1 w-5 h-5 bg-brand-light border-4 border-brand-green rounded-full group-hover:bg-brand-green transition-colors"></div>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-2">
-                        <h3 className="text-2xl font-bold text-brand-dark">Software Engineer</h3>
-                        <span className="text-brand-muted font-bold text-sm bg-gray-100 px-3 py-1 rounded-full w-fit mt-2 md:mt-0">2016 - 2020</span>
-                    </div>
-                    <h4 className="text-brand-green font-semibold mb-4 text-lg">DitDash & Independent Freelance</h4>
-                    <p className="text-brand-muted leading-relaxed">
-                        Developed utility applications utilizing low-level device APIs. Started career building responsive web interfaces and transitioned into native Java/Kotlin development for specialized communication tools.
+                        Sole developer for a ride-sharing Android app (Parse.com, Google Autocomplete, Real-time chat). Re-platformed field service apps with location-aware services.
                     </p>
                 </motion.div>
                 

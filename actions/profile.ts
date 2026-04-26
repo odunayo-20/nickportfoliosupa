@@ -19,7 +19,22 @@ export async function getProfile() {
         console.error("Error fetching profile:", error);
     }
 
-    console.log("=== GET PROFILE: raw social_links from DB ===", JSON.stringify(profile?.social_links));
+    // Clean social_links if they still contain resume fields
+    let sl = (profile?.social_links as any) || {
+        github: "",
+        linkedin: "",
+        twitter: "",
+        website: "",
+    };
+
+    if (sl.resume_url) delete sl.resume_url;
+    if (sl.resume_name) delete sl.resume_name;
+
+    let resumeUrl = profile?.resume_url || (profile?.social_links as any)?.resume_url || "";
+    if (resumeUrl && !resumeUrl.includes("download=")) {
+        const separator = resumeUrl.includes("?") ? "&" : "?";
+        resumeUrl = `${resumeUrl}${separator}download=`;
+    }
 
     return {
         id: user.id,
@@ -29,13 +44,10 @@ export async function getProfile() {
         title: profile?.title || "",
         bio: profile?.bio || "",
         avatar_url: profile?.avatar_url || user.user_metadata?.avatar_url || "",
+        resume_url: resumeUrl,
+        resume_name: profile?.resume_name || (profile?.social_links as any)?.resume_name || "",
         skills: profile?.skills || [],
-        social_links: (profile?.social_links as any) || {
-            github: "",
-            linkedin: "",
-            twitter: "",
-            website: "",
-        }
+        social_links: sl
     };
 }
 
@@ -45,26 +57,26 @@ export async function updateProfile(data: Record<string, any>) {
     
     if (!user) return { error: "Unauthorized" };
 
-    const { resume_url, email, id, ...rest } = data;
+    const { email, id, ...rest } = data;
+    
+    // Ensure resume_url has download parameter for security/UX
+    if (rest.resume_url && typeof rest.resume_url === 'string' && !rest.resume_url.includes('download=')) {
+        const separator = rest.resume_url.includes('?') ? '&' : '?';
+        rest.resume_url = `${rest.resume_url}${separator}download=`;
+    }
 
-    console.log("=== UPDATE PROFILE: social_links being saved ===", JSON.stringify(rest.social_links));
-
-    const { data: saved, error: upsertError } = await supabase
+    const { error: upsertError } = await supabase
         .from("profiles")
         .upsert({
             ...rest,
             id: user.id,
             updated_at: new Date().toISOString(),
-        })
-        .select("social_links")
-        .single();
+        });
 
     if (upsertError) {
         console.error("=== UPSERT ERROR ===", upsertError);
         return { error: upsertError.message };
     }
-
-    console.log("=== UPDATE PROFILE: social_links returned by DB after save ===", JSON.stringify(saved?.social_links));
 
     revalidatePath("/admin/profile");
     return { success: true };

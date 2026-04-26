@@ -5,7 +5,23 @@ import { Play } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const Hero = () => {
+interface HeroProps {
+    profile?: {
+        name?: string | null;
+        title?: string | null;
+        bio?: string | null;
+        avatar_url?: string | null;
+        resume_url?: string | null;
+    } | null;
+}
+
+const Hero = ({ profile }: HeroProps) => {
+    // Fallback data
+    const name = profile?.name || "Nikola";
+    const title = profile?.title || "Kotlin Multiplatform & Native Expert";
+    const bio = profile?.bio || "I architect high-performance mobile systems for startups, sharing up to 70% of code between Android and iOS without sacrificing native speed.";
+    const avatarUrl = profile?.avatar_url || "/nikola.jpeg";
+
     return (
        
 
@@ -16,12 +32,12 @@ const Hero = () => {
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter leading-[1.1] mb-6 text-brand-dark">
-                        I'm <span className="text-brand-orange">Nikola,</span><br />
-                        Mobile Developer (Android + iOS)<br />
+                        I'm <span className="text-brand-orange">{name},</span><br />
+                        {title}<br />
                     </h1>
 
                     <p className="text-brand-muted text-lg max-w-md mb-10 leading-relaxed">
-                        I'm an experienced App Developer with 5+ years in the field, collaborating with various startups to build high-performance architectures.
+                        {bio}
                     </p>
 
                     <div className="flex items-center gap-4">
@@ -37,8 +53,8 @@ const Hero = () => {
                 <div className="relative flex justify-center items-center h-[500px] reveal">
                     <div className="absolute right-0 w-[85%] h-[90%] bg-brand-orange blob-shape -z-10"></div>
 
-                    <Image src="/nikola.jpeg"
-                        alt="Nikola"
+                    <Image src={avatarUrl}
+                        alt={name}
                         width={800}
                         height={1000}
                         className="w-[75%] h-[90%] object-cover object-top blob-shape shadow-2xl grayscale hover:grayscale-0 transition-all duration-700" />
@@ -49,11 +65,11 @@ const Hero = () => {
                         </Link>
                     </div>
                     <div className="absolute bottom-24 right-10 bg-brand-orange text-brand-dark font-bold text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">
-                        Java & Kotlin
+                        {title.split(' & ')[0] || "Expert"}
                     </div>
                         <div className="absolute bottom-10 left-10 bg-brand-green text-white font-bold text-xs px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2">
                             <div className="w-0 h-0 border-t-[5px] border-t-transparent border-l-[8px] border-l-brand-orange border-b-[5px] border-b-transparent"></div>
-                            Mobile Dev Expert
+                            {title.split(' & ')[1] || "Mobile Dev Expert"}
                         </div>
                 </div>
             </header>

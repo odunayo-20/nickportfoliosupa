@@ -34,7 +34,7 @@ const Footer = () => {
                         </span>
                     </div>
                     <p className="text-gray-400 text-sm leading-relaxed mb-6">
-                        {siteSettings?.meta_description || 'Senior App Developer based in Nigeria, specializing in high-performance native architectures and robust web systems.'}
+                        {siteSettings?.meta_description || 'Expert Kotlin Multiplatform & Mobile Developer specializing in high-performance shared architectures and robust Supabase backends.'}
                     </p>
                     <div className="flex gap-3">
                         <a href="https://www.linkedin.com/in/nikola-srdoc-ab559962/" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">

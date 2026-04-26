@@ -1,4 +1,6 @@
-import { ArrowRight, Layers, Cpu, Layout } from 'lucide-react'
+"use client"
+
+import { ArrowRight, Smartphone, Cpu, Globe } from 'lucide-react'
 import { motion, Variants } from 'motion/react'
 import Link from 'next/link';
 
@@ -51,33 +53,33 @@ const Services = () => {
                     <div className="grid md:grid-cols-3 gap-8">
                         <motion.div variants={fadeInUp} className="p-8 bg-brand-offwhite rounded-sharp hover:shadow-xl hover:-translate-y-1 transition-all duration-300 reveal border border-transparent hover:border-brand-orange/20">
                             <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center mb-6 shadow-sm">
-                                <Layers className="w-6 h-6 text-brand-green" />
+                                <Smartphone className="w-6 h-6 text-brand-green" />
                             </div>
-                            <h3 className="text-xl font-bold mb-4 text-brand-dark">UI/UX Implementation</h3>
-                            <p className="text-brand-muted text-sm mb-6 leading-relaxed">Translating complex designs into pixel-perfect, performant native mobile interfaces with zero layout shift.</p>
-                            <a href="#" className="text-sm font-semibold text-brand-orange flex items-center gap-2 hover:gap-3 transition-all">
+                            <h3 className="text-xl font-bold mb-4 text-brand-dark">Multiplatform Apps</h3>
+                            <p className="text-brand-muted text-sm mb-6 leading-relaxed">Building high-performance Android and iOS apps from a single Kotlin codebase, sharing up to 70% of shared logic.</p>
+                            <Link href="/services" className="text-sm font-semibold text-brand-orange flex items-center gap-2 hover:gap-3 transition-all">
                                 Learn more <ArrowRight className="w-4 h-4" />
-                            </a>
+                            </Link>
                         </motion.div>
                         <motion.div variants={fadeInUp} className="p-8 bg-brand-offwhite rounded-sharp hover:shadow-xl hover:-translate-y-1 transition-all duration-300 reveal border border-transparent hover:border-brand-orange/20">
                             <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center mb-6 shadow-sm">
                                 <Cpu className="w-6 h-6 text-brand-green" />
                             </div>
-                            <h3 className="text-xl font-bold mb-4 text-brand-dark">Application Design</h3>
-                            <p className="text-brand-muted text-sm mb-6 leading-relaxed">Architecting robust Android applications focusing on Kotlin Coroutines, clean architecture, and memory safety.</p>
-                            <a href="#" className="text-sm font-semibold text-brand-orange flex items-center gap-2 hover:gap-3 transition-all">
+                            <h3 className="text-xl font-bold mb-4 text-brand-dark">Native Android</h3>
+                            <p className="text-brand-muted text-sm mb-6 leading-relaxed">Hardware-level performance with real-time streaming, ARCore, and deep sensor integrations.</p>
+                            <Link href="/services" className="text-sm font-semibold text-brand-orange flex items-center gap-2 hover:gap-3 transition-all">
                                 Learn more <ArrowRight className="w-4 h-4" />
-                            </a>
+                            </Link>
                         </motion.div>
                         <motion.div variants={fadeInUp} className="p-8 bg-brand-offwhite rounded-sharp hover:shadow-xl hover:-translate-y-1 transition-all duration-300 reveal border border-transparent hover:border-brand-orange/20">
                             <div className="w-12 h-12 bg-white rounded-md flex items-center justify-center mb-6 shadow-sm">
-                                <Layout className="w-6 h-6 text-brand-green" />
+                                <Globe className="w-6 h-6 text-brand-green" />
                             </div>
-                            <h3 className="text-xl font-bold mb-4 text-brand-dark">Website Design</h3>
-                            <p className="text-brand-muted text-sm mb-6 leading-relaxed">Developing robust web backends and high-performance frontends that scale seamlessly to millions of users.</p>
-                            <a href="#" className="text-sm font-semibold text-brand-orange flex items-center gap-2 hover:gap-3 transition-all">
+                            <h3 className="text-xl font-bold mb-4 text-brand-dark">Web Dashboards</h3>
+                            <p className="text-brand-muted text-sm mb-6 leading-relaxed">Backend-first admin panels powered by Supabase, PostGIS, and real-time data visualization.</p>
+                            <Link href="/services" className="text-sm font-semibold text-brand-orange flex items-center gap-2 hover:gap-3 transition-all">
                                 Learn more <ArrowRight className="w-4 h-4" />
-                            </a>
+                            </Link>
                         </motion.div>
                     </div>
                 </motion.section>

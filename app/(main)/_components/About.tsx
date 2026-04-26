@@ -1,9 +1,11 @@
-"use client"
+"use client";
 
+import { useState, useEffect } from "react";
 import { ArrowRight } from 'lucide-react'
 import { motion, Variants } from 'motion/react'
-
 import Image from 'next/image'
+import { getPublicProfile } from '@/actions/public_profile';
+
 
 
 const fadeInUp: Variants = {
@@ -26,7 +28,36 @@ const scaleIn: Variants = {
     visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" as const } }
 };
 
-const About = () => {
+interface AboutProps {
+    profile?: {
+        name?: string | null;
+        resume_url?: string | null;
+    } | null;
+}
+
+const About = ({ profile }: AboutProps) => {
+    const [isDownloading, setIsDownloading] = useState(false);
+    
+    // Use profile data with fallbacks
+    const name = profile?.name || "Nikola";
+    const cvUrl = profile?.resume_url || "";
+
+    const handleDownload = (e: React.MouseEvent) => {
+        if (!cvUrl) return;
+        setIsDownloading(true);
+        
+        // Trigger download without opening a new tab
+        const link = document.createElement('a');
+        link.href = cvUrl;
+        link.setAttribute('download', '');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Reset state after a delay to show the feedback
+        setTimeout(() => setIsDownloading(false), 3000);
+    };
+
   return (
     <>
     
@@ -44,18 +75,18 @@ const About = () => {
                         <div className="absolute inset-4 bg-brand-orange rounded-full -translate-x-6 -translate-y-6"></div>
 
                         <Image src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800"
-                            alt="Nikola Working"
+                            alt={`${name} Working`}
                             width={800}
                             height={800}
                             className="absolute inset-0 w-full h-full object-cover rounded-full z-10 border-8 border-brand-green grayscale" />
 
-                        <motion.div variants={scaleIn} className="absolute z-20 top-1/4 -left-8 bg-brand-dark text-brand-orange text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">UX/UI Design</motion.div>
-                        <motion.div variants={scaleIn} className="absolute z-20 top-1/2 -left-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light">Mobile App Design</motion.div>
-                        <motion.div variants={scaleIn} className="absolute z-20 bottom-1/4 -left-4 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Design System</motion.div>
+                        <motion.div variants={scaleIn} className="absolute z-20 top-1/4 -left-8 bg-brand-dark text-brand-orange text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">KMP Architecture</motion.div>
+                        <motion.div variants={scaleIn} className="absolute z-20 top-1/2 -left-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light">Kotlin Multiplatform</motion.div>
+                        <motion.div variants={scaleIn} className="absolute z-20 bottom-1/4 -left-4 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Offline-First</motion.div>
 
-                        <motion.div variants={scaleIn} className="absolute z-20 top-1/3 -right-6 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Website Design</motion.div>
-                        <motion.div variants={scaleIn} className="absolute z-20 bottom-1/3 right-0 bg-brand-dark text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Prototype</motion.div>
-                        <motion.div variants={scaleIn} className="absolute z-20 bottom-12 right-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light">Dashboard</motion.div>
+                        <motion.div variants={scaleIn} className="absolute z-20 top-1/3 -right-6 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Supabase Backend</motion.div>
+                        <motion.div variants={scaleIn} className="absolute z-20 bottom-1/3 right-0 bg-brand-dark text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Real-time Systems</motion.div>
+                        <motion.div variants={scaleIn} className="absolute z-20 bottom-12 right-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light">Native Android</motion.div>
                     </motion.div>
 
                     <motion.div variants={fadeInUp} className="reveal">
@@ -63,11 +94,11 @@ const About = () => {
                             <span className="w-4 h-[2px] bg-brand-orange"></span> About Me
                         </span>
                         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-6">
-                            Who is <span className="text-brand-orange font-normal italic">Nikola?</span>
+                            Who is <span className="text-brand-orange font-normal italic">{name}?</span>
                         </h2>
 
                         <p className="text-gray-300 text-base leading-relaxed mb-10 max-w-lg">
-                            I’m a mobile developer focused on Android and Kotlin Multiplatform. I’ve worked on commercial apps, startup products, and modern mobile systems using Kotlin, MVVM, APIs, Firebase, and cross-platform architecture. Currently building apps for both Android and iOS.
+                            I specialize in Kotlin Multiplatform (KMP) and high-performance native Android development. I help businesses ship one codebase to both Android and iOS, sharing up to 70% of logic while maintaining native speed. Expert in architecting real-time systems with Supabase, SQLDelight, and offline-first state management.
                         </p>
 
                         <div className="grid grid-cols-3 gap-6 mb-12 border-b border-gray-600/50 pb-10">
@@ -86,11 +117,18 @@ const About = () => {
                         </div>
 
                         <div className="flex flex-wrap items-center gap-8">
-                            <button className="px-6 py-3 bg-brand-light text-brand-dark font-bold text-sm rounded-full flex items-center gap-3 hover:bg-brand-orange transition-colors">
-                                Download CV <div className="w-6 h-6 bg-brand-dark rounded-full flex items-center justify-center"><ArrowRight className="w-3 h-3 text-brand-light" /></div>
+                            <button 
+                                onClick={handleDownload}
+                                disabled={isDownloading || !cvUrl}
+                                className="px-6 py-3 bg-brand-light text-brand-dark font-bold text-sm rounded-full flex items-center gap-3 hover:bg-brand-orange transition-all disabled:opacity-70 disabled:cursor-not-allowed group"
+                            >
+                                {isDownloading ? "Downloading..." : "Download CV"} 
+                                <div className="w-6 h-6 bg-brand-dark rounded-full flex items-center justify-center transition-transform group-hover:translate-x-1">
+                                    <ArrowRight className={`w-3 h-3 text-brand-light ${isDownloading ? "animate-pulse" : ""}`} />
+                                </div>
                             </button>
                             <div className="font-serif italic text-2xl text-brand-orange opacity-90">
-                                Nikola.
+                                {name}.
                             </div>
                         </div>
                     </motion.div>

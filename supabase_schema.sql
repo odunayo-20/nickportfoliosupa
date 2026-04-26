@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     bio TEXT,
     avatar_url TEXT,
     resume_url TEXT,
+    resume_name TEXT,
     skills TEXT[] DEFAULT '{}',
     social_links JSONB DEFAULT '{}'::jsonb
 );

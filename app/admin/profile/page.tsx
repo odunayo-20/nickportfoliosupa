@@ -80,6 +80,7 @@ export default function ProfilePage() {
         confirmPassword: ""
     });
     const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [isDownloadingCv, setIsDownloadingCv] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -150,8 +151,8 @@ export default function ProfilePage() {
                 title: data.title || "",
                 bio: data.bio || "",
                 avatar_url: data.avatar_url || "",
-                resume_url: sl.resume_url || "",
-                resume_name: sl.resume_name || "",
+                resume_url: data.resume_url || sl.resume_url || "",
+                resume_name: data.resume_name || sl.resume_name || "",
                 skills: data.skills || [],
                 social_links: {
                     github: sl.github || "",
@@ -206,15 +207,10 @@ export default function ProfilePage() {
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            const { email, resume_url, resume_name, ...rest } = formData;
-            // Embed resume fields inside social_links JSONB (reliable, no schema cache issues)
+            const { email, ...rest } = formData;
+            // Send the formData directly without embedding resume_url and resume_name into social_links
             const dataToSave = {
-                ...rest,
-                social_links: {
-                    ...rest.social_links,
-                    resume_url: resume_url || "",
-                    resume_name: resume_name || "",
-                },
+                ...rest
             };
             const result = await updateProfile(dataToSave);
             
@@ -270,6 +266,18 @@ export default function ProfilePage() {
         } finally {
             setIsChangingPassword(false);
         }
+    };
+    
+    const handleDownloadCv = () => {
+        if (!formData.resume_url) return;
+        setIsDownloadingCv(true);
+        const link = document.createElement('a');
+        link.href = formData.resume_url;
+        link.setAttribute('download', formData.resume_name || 'resume.pdf');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => setIsDownloadingCv(false), 2000);
     };
 
 
@@ -416,44 +424,58 @@ export default function ProfilePage() {
                                  </div>
                                 Resume
                             </h2>
-                            <div className="group flex items-center justify-between p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-white hover:border-primary/20 transition-all duration-300">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-white text-red-500 rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border border-slate-100">
-                                       <File className="w-6 h-6" />
+                            <div className="group flex flex-col gap-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-white hover:border-primary/20 transition-all duration-300">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 bg-white text-red-500 rounded-xl shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform border border-slate-100">
+                                           <File className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-900 truncate max-w-[200px]">
+                                                {formData.resume_name || (formData.resume_url ? formData.resume_url.split('/').pop() : "No document attached")}
+                                            </p>
+                                            <p className="text-[11px] text-slate-400 font-medium">
+                                                {formData.resume_url ? (
+                                                    <>Valid Document • {profileData?.updated_at ? `Updated ${formatDistanceToNow(new Date(profileData.updated_at), { addSuffix: true })}` : "Recently updated"}</>
+                                                ) : (
+                                                    "No resume attached"
+                                                )}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-slate-900 truncate max-w-[200px]">
-                                            {formData.resume_name || (formData.resume_url ? formData.resume_url.split('/').pop() : "No document attached")}
-                                        </p>
-                                        <p className="text-[11px] text-slate-400 font-medium">
-                                            {formData.resume_url ? (
-                                                <>Valid Document • {profileData?.updated_at ? `Updated ${formatDistanceToNow(new Date(profileData.updated_at), { addSuffix: true })}` : "Recently updated"}</>
-                                            ) : (
-                                                "No resume attached"
-                                            )}
-                                        </p>
+                                    <div className="flex gap-2">
+                                        {formData.resume_url && (
+                                            <>
+                                                <button 
+                                                    onClick={handleDownloadCv}
+                                                    disabled={isDownloadingCv}
+                                                    className="w-9 h-9 flex items-center justify-center bg-white hover:bg-slate-900 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all disabled:opacity-50"
+                                                >
+                                                    {isDownloadingCv ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download size={16} />}
+                                                </button>
+                                                <button 
+                                                    onClick={() => setFormData((prev) => ({ ...prev, resume_url: "", resume_name: "" }))}
+                                                    className="w-9 h-9 flex items-center justify-center bg-white hover:bg-red-500 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all font-bold"
+                                                >
+                                                     <Trash2 size={16} />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    {formData.resume_url && (
-                                        <>
-                                            <a 
-                                                href={formData.resume_url} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="w-9 h-9 flex items-center justify-center bg-white hover:bg-slate-900 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all"
-                                            >
-                                                <Download size={16} />
-                                            </a>
-                                            <button 
-                                                onClick={() => setFormData((prev) => ({ ...prev, resume_url: "" }))}
-                                                className="w-9 h-9 flex items-center justify-center bg-white hover:bg-red-500 hover:text-white rounded-lg text-slate-400 shadow-sm border border-slate-100 transition-all font-bold"
-                                            >
-                                                 <Trash2 size={16} />
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
+                                
+                                {formData.resume_url && (
+                                    <div className="space-y-2 pt-2 border-t border-slate-100">
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Display Name</label>
+                                        <input 
+                                            className="w-full bg-white border border-slate-100 rounded-xl p-2.5 text-xs font-bold text-slate-900 focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all" 
+                                            type="text" 
+                                            value={formData.resume_name}
+                                            onChange={(e) => handleInputChange("resume_name", e.target.value)}
+                                            placeholder="e.g. My Professional CV"
+                                        />
+                                    </div>
+                                )}
                             </div>
                             <button 
                                 onClick={() => {
@@ -628,7 +650,7 @@ export default function ProfilePage() {
                             selectionMode 
                             multiple={false} 
                             onSelect={handleLibrarySelect}
-                            confirmButtonText="Use as Profile Picture"
+                            confirmButtonText={pickerTarget === "avatar" ? "Use as Profile Picture" : "Use as Resume"}
                             hideHeader={true}
                         />
                     </div>

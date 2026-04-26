@@ -1,3 +1,5 @@
+"use client"
+
 import { Database } from 'lucide-react'
 import { motion, Variants } from 'motion/react'
 
@@ -66,7 +68,7 @@ const Skills = () => {
                                 <h3 className="text-lg font-bold text-brand-dark">Mobile</h3>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {["Kotlin", "Java", "Android SDK", "Jetpack Compose", "XML UI", "Kotlin Multiplatform"].map(s => (
+                                {["Kotlin", "Java", "Android SDK", "Jetpack Compose", "Compose Multiplatform", "Kotlin Multiplatform"].map(s => (
                                     <span key={s} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-orange/10 text-brand-orange border border-brand-orange/20">
                                         {s}
                                     </span>
@@ -88,7 +90,7 @@ const Skills = () => {
                                 <h3 className="text-lg font-bold text-brand-dark">Architecture</h3>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {["MVVM", "Clean Architecture", "Coroutines", "LiveData", "Repository Pattern"].map(s => (
+                                {["MVVM", "Clean Architecture", "Coroutines", "SQLDelight", "Offline-First", "Repository Pattern"].map(s => (
                                     <span key={s} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-green/10 text-brand-green border border-brand-green/20">
                                         {s}
                                     </span>
@@ -108,7 +110,7 @@ const Skills = () => {
                                 <h3 className="text-lg font-bold text-brand-dark">Backend / Services</h3>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {["Firebase", "Supabase", "REST APIs", "PostgreSQL", "Push Notifications"].map(s => (
+                                {["Supabase", "Edge Functions", "PostgreSQL", "PostGIS", "pg_cron", "REST APIs", "WebSockets"].map(s => (
                                     <span key={s} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-brand-dark/8 text-brand-dark border border-brand-dark/15">
                                         {s}
                                     </span>
@@ -131,7 +133,7 @@ const Skills = () => {
                                 <h3 className="text-lg font-bold text-white">Tools</h3>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {["Git", "Android Studio", "Xcode", "Gradle"].map(s => (
+                                {["Git", "Android Studio", "Xcode", "Figma", "Gradle"].map(s => (
                                     <span key={s} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/15 text-white border border-white/25">
                                         {s}
                                     </span>
