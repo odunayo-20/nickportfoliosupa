@@ -414,7 +414,7 @@ export function MediaLibrary({
                                                                         fetchData();
                                                                     }
                                                                 },
-                                                                cancel: { label: "Cancel" }
+                                                                cancel: { label: "Cancel", onClick: () => {} }
                                                             });
                                                         }}>
                                                             <Trash2 size={16} className="mr-2"/> Delete Folder
@@ -541,7 +541,7 @@ export function MediaLibrary({
                                                     fetchData();
                                                 }
                                             },
-                                            cancel: { label: "Cancel" }
+                                            cancel: { label: "Cancel", onClick: () => {} }
                                         });
                                     }}>
                                         <Trash2 size={16} /> Delete Permanently
