@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
 import { 
     getFolders, 
@@ -9,7 +10,8 @@ import {
     deleteFolder as deleteFolderAction, 
     renameFolder as renameFolderAction,
     createMedia as createMediaAction,
-    deleteMedia as deleteMediaAction
+    deleteMedia as deleteMediaAction,
+    deleteMultipleMedia as deleteMultipleMediaAction
 } from "@/actions/media";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -198,11 +200,53 @@ export function MediaLibrary({
         handleSelectionChange(newSet);
     };
 
+    const toggleSelectAll = () => {
+        if (selectedMedia.size === media.length) {
+            handleSelectionChange(new Set());
+        } else {
+            handleSelectionChange(new Set(media.map(m => m.id)));
+        }
+    };
+
+    const handleDeleteSelected = () => {
+        if (selectedMedia.size === 0) return;
+        
+        toast.warning("Confirm Bulk Deletion", {
+            description: `Are you sure you want to delete ${selectedMedia.size} items? This action cannot be undone.`,
+            action: {
+                label: "Delete All",
+                onClick: async () => {
+                    const itemsToDelete = media
+                        .filter(m => selectedMedia.has(m.id))
+                        .map(m => ({ id: m.id, storage_path: m.storage_path }));
+
+                    try {
+                        const promise = deleteMultipleMediaAction(itemsToDelete);
+                        toast.promise(promise, {
+                            loading: `Deleting ${itemsToDelete.length} items...`,
+                            success: "Items deleted successfully",
+                            error: "Failed to delete items",
+                        });
+                        await promise;
+                        handleSelectionChange(new Set());
+                        fetchData();
+                    } catch (error) {
+                        console.error("Failed to delete items:", error);
+                    }
+                },
+            },
+            cancel: {
+                label: "Cancel",
+                onClick: () => {},
+            },
+        });
+    };
+
     // Render logic
     const isDataLoading = isLoading;
 
     return (
-        <div className="flex flex-col gap-6 w-full h-full p-4 sm:p-6 md:p-8">
+        <div className={`flex flex-col w-full h-full min-h-0 ${hideHeader ? 'gap-4 p-3 sm:p-4' : 'gap-6 p-4 sm:p-6 md:p-8'}`}>
             {/* Header Toolbar */}
             {!hideHeader && (
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-0">
@@ -268,6 +312,14 @@ export function MediaLibrary({
                             </DialogContent>
                         </Dialog>
 
+                        <Button variant="outline" size="sm" className="h-9 px-3 gap-2" onClick={toggleSelectAll}>
+                            {selectedMedia.size === media.length && media.length > 0 ? (
+                                <><Check size={16} /> <span className="hidden sm:inline">Deselect All</span></>
+                            ) : (
+                                <><Plus size={16} /> <span className="hidden sm:inline">Select All</span></>
+                            )}
+                        </Button>
+
                         <Button size="sm" className="h-9 px-3 gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                             <UploadCloud size={16} /> <span className="hidden sm:inline">{isUploading ? "Uploading..." : "Upload Media"}</span>
                             <span className="sm:hidden">{isUploading ? "..." : "Upload"}</span>
@@ -305,21 +357,21 @@ export function MediaLibrary({
                 </Dialog>
             </div>
 
-            {/* Main Content Area */}
-            <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 min-h-[500px]">
+            {/* Main Content Area - CRITICAL: flex-1 and min-h-0 to enable internal scrolling */}
+            <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-6 overflow-hidden">
                 {/* Grid Area */}
-                <div className={`${activeMediaDetails ? 'lg:col-span-8 xl:col-span-9' : 'lg:col-span-12'} flex flex-col gap-6 order-2 lg:order-1`}>
+                <div className={`${activeMediaDetails ? 'lg:w-[65%] xl:w-[75%]' : 'w-full'} flex flex-col min-h-0 order-1`}>
                     {isDataLoading ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                            {[1,2,3,4].map(i => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            {[1,2,3,4,5,6,7,8].map(i => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
                         </div>
                     ) : (
-                        <ScrollArea className="h-full">
+                        <ScrollArea className="flex-1 min-h-0 pr-2">
                             {/* Folders */}
                             {folders && folders.length > 0 && (
                                 <div className="mb-8">
                                     <h3 className="text-[10px] font-bold mb-4 text-muted-foreground uppercase tracking-[0.2em] px-1">Folders</h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3">
                                         {folders.map(folder => (
                                             <div 
                                                 key={folder.id} 
@@ -345,10 +397,25 @@ export function MediaLibrary({
                                                         }}>
                                                             <Folder className="mr-2" size={16} /> Rename
                                                         </DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onClick={async (e) => {
+                                                        <DropdownMenuItem className="text-destructive focus:text-destructive cursor-pointer" onClick={(e) => {
                                                             e.stopPropagation();
-                                                            await deleteFolderAction(folder.id);
-                                                            fetchData();
+                                                            toast.warning("Delete Folder?", {
+                                                                description: "This will permanently delete the folder. Media inside will remain in the root or their respective locations if the database supports it (check implementation).",
+                                                                action: {
+                                                                    label: "Delete",
+                                                                    onClick: async () => {
+                                                                        const promise = deleteFolderAction(folder.id);
+                                                                        toast.promise(promise, {
+                                                                            loading: "Deleting folder...",
+                                                                            success: "Folder deleted",
+                                                                            error: "Failed to delete folder",
+                                                                        });
+                                                                        await promise;
+                                                                        fetchData();
+                                                                    }
+                                                                },
+                                                                cancel: { label: "Cancel" }
+                                                            });
                                                         }}>
                                                             <Trash2 size={16} className="mr-2"/> Delete Folder
                                                         </DropdownMenuItem>
@@ -373,7 +440,7 @@ export function MediaLibrary({
                                         <Button onClick={() => fileInputRef.current?.click()} className="rounded-xl shadow-lg border-2 border-primary/20">Upload Files</Button>
                                     </div>
                                 ) : (
-                                    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-4">
+                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4">
                                         {media?.map(file => {
                                             const isSelected = selectedMedia.has(file.id);
                                             const isImage = file.type === "image";
@@ -414,8 +481,8 @@ export function MediaLibrary({
 
                 {/* Sidebar Details Pane */}
                 {activeMediaDetails && (
-                    <div className="lg:col-span-4 xl:col-span-3 order-1 lg:order-2">
-                        <div className="sticky top-6 bg-card rounded-3xl p-5 md:p-6 border shadow-xl flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
+                    <div className="w-full lg:w-[35%] xl:w-[25%] order-2 lg:order-2 min-h-0">
+                        <div className="h-full bg-card rounded-3xl p-4 sm:p-6 border shadow-xl flex flex-col overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-right-4 duration-300">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-lg font-bold">Asset Details</h3>
                                 <Button variant="ghost" size="icon" onClick={() => setActiveMediaDetails(null)} className="h-8 w-8 rounded-full hover:bg-slate-100">
@@ -457,10 +524,25 @@ export function MediaLibrary({
                                     }}>
                                         <LinkIcon size={16} /> Copy Direct Link
                                     </Button>
-                                    <Button variant="destructive" className="w-full gap-2 rounded-xl h-11 text-xs font-bold shadow-sm" onClick={async () => {
-                                        await deleteMediaAction(activeMediaDetails.id, activeMediaDetails.storage_path);
-                                        setActiveMediaDetails(null);
-                                        fetchData();
+                                    <Button variant="destructive" className="w-full gap-2 rounded-xl h-11 text-xs font-bold shadow-sm" onClick={() => {
+                                        toast.warning("Delete Asset?", {
+                                            description: `Are you sure you want to delete ${activeMediaDetails.name}?`,
+                                            action: {
+                                                label: "Delete",
+                                                onClick: async () => {
+                                                    const promise = deleteMediaAction(activeMediaDetails.id, activeMediaDetails.storage_path);
+                                                    toast.promise(promise, {
+                                                        loading: "Deleting asset...",
+                                                        success: "Asset deleted",
+                                                        error: "Failed to delete asset",
+                                                    });
+                                                    await promise;
+                                                    setActiveMediaDetails(null);
+                                                    fetchData();
+                                                }
+                                            },
+                                            cancel: { label: "Cancel" }
+                                        });
                                     }}>
                                         <Trash2 size={16} /> Delete Permanently
                                     </Button>
@@ -471,15 +553,26 @@ export function MediaLibrary({
                 )}
             </div>
 
-            {/* Selection Toolbar (if in selection mode and items selected) */}
-            {selectionMode && selectedMedia.size > 0 && !hideConfirmBar && (
+            {/* Selection Toolbar */}
+            {selectedMedia.size > 0 && !hideConfirmBar && (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-foreground text-background px-6 py-4 rounded-full shadow-2xl flex items-center gap-6 z-50 animate-in slide-in-from-bottom-5">
                     <span className="font-semibold text-sm">{selectedMedia.size} asset(s) selected</span>
-                    <Button variant="secondary" onClick={() => {
-                        if (onSelect) onSelect(Array.from(selectedMedia));
-                    }}>
-                        {confirmButtonText}
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        {selectionMode ? (
+                            <Button variant="secondary" onClick={() => {
+                                if (onSelect) onSelect(Array.from(selectedMedia));
+                            }}>
+                                {confirmButtonText}
+                            </Button>
+                        ) : (
+                            <Button variant="destructive" size="sm" onClick={handleDeleteSelected} className="gap-2">
+                                <Trash2 size={16} /> Delete Selected
+                            </Button>
+                        )}
+                        <Button variant="ghost" size="sm" onClick={() => handleSelectionChange(new Set())} className="text-white hover:text-white/80">
+                            Cancel
+                        </Button>
+                    </div>
                 </div>
             )}
         </div>

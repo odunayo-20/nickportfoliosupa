@@ -68,41 +68,41 @@ export function MediaModal({ open, onClose, onSelect, initialSelection, multiple
     if (!mounted || !open) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-6 lg:p-8">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 md:p-6 lg:p-10">
             {/* Backdrop */}
             <div
-                className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
+                className={`absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300 ${visible ? "opacity-100" : "opacity-0"}`}
                 onClick={onClose}
             />
 
             {/* Modal Panel */}
             <div
-                className={`relative w-full h-full max-w-7xl bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
+                className={`relative w-full h-full sm:h-auto sm:max-h-[90vh] max-w-7xl bg-white sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 ${
                     visible 
                         ? "opacity-100 scale-100 translate-y-0" 
-                        : "opacity-0 scale-[0.97] translate-y-2"
+                        : "opacity-0 scale-[0.97] translate-y-8"
                 }`}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b bg-white">
+                <div className="flex items-center justify-between px-6 py-4 border-b bg-white/80 backdrop-blur-md sticky top-0 z-20">
                     <div className="min-w-0 pr-4">
-                        <h2 className="text-base sm:text-lg font-bold tracking-tight truncate">Media Library</h2>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                        <h2 className="text-xl font-extrabold tracking-tight text-slate-900 truncate">Asset Library</h2>
+                        <p className="text-xs font-medium text-slate-500 truncate mt-0.5">
                             {multiple 
-                                ? "Select one or more items."
-                                : "Select an image or upload one."}
+                                ? "Select multiple assets to add to your gallery."
+                                : "Pick a featured image for your project."}
                         </p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center hover:bg-slate-100 transition-colors text-slate-500 hover:text-slate-800"
+                        className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center hover:bg-slate-100 transition-all text-slate-400 hover:text-slate-900 active:scale-95"
                     >
-                        <X size={18} />
+                        <X size={20} strokeWidth={2.5} />
                     </button>
                 </div>
 
-                {/* Media Library Content */}
-                <div className="flex-1 overflow-hidden p-3 sm:p-6 bg-slate-50/30">
+                {/* Media Library Content - CRITICAL: flex-1 and min-h-0 for internal scrolling */}
+                <div className="flex-1 min-h-0 bg-slate-50/20 overflow-auto">
                     <MediaLibrary
                         selectionMode={true}
                         multiple={multiple}
@@ -114,7 +114,7 @@ export function MediaModal({ open, onClose, onSelect, initialSelection, multiple
                 </div>
 
                 {/* Footer */}
-                <div className="flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t bg-white gap-3 sm:gap-6">
+                <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-t bg-white gap-3 sm:gap-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                     <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
                         {selectedIds.length > 0 ? (
                             <span className="flex items-center gap-1.5 text-primary font-bold">

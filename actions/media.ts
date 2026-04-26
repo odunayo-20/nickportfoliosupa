@@ -49,6 +49,37 @@ export const deleteMedia = async (id: string, storagePath: string) => {
     revalidatePath("/admin/media", "page");
 };
 
+export const deleteMultipleMedia = async (mediaItems: { id: string, storage_path: string }[]) => {
+    const supabase = await createClient();
+    
+    if (!mediaItems || mediaItems.length === 0) return;
+
+    const storagePaths = mediaItems.map(item => item.storage_path);
+    const ids = mediaItems.map(item => item.id);
+
+    // 1. Delete from storage
+    const { error: storageError } = await supabase.storage
+        .from("media")
+        .remove(storagePaths);
+
+    if (storageError) {
+        console.error("Error deleting multiple files from storage:", storageError);
+    }
+
+    // 2. Delete from DB
+    const { error: dbError } = await supabase
+        .from("media")
+        .delete()
+        .in("id", ids);
+
+    if (dbError) {
+        console.error("Error deleting multiple media entries from DB:", dbError);
+        throw new Error(dbError.message);
+    }
+
+    revalidatePath("/admin/media", "page");
+};
+
 export const createFolder = async (name: string, parentId?: string) => {
     const supabase = await createClient();
     

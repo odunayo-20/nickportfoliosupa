@@ -17,7 +17,7 @@ export async function createProject(data: ProjectInsert) {
         .single();
 
     if (error) {
-        console.error("Error creating project:", error);
+        // console.error("Error creating project:", error);
         throw new Error(error.message);
     }
 
@@ -36,7 +36,7 @@ export async function updateProject(id: string, data: ProjectUpdate) {
         .single();
 
     if (error) {
-        console.error("Error updating project:", error);
+        // console.error("Error updating project:", error);
         throw new Error(error.message);
     }
 

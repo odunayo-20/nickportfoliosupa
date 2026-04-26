@@ -24,7 +24,7 @@ export async function createPost(data: PostInsert) {
         .single();
 
     if (error) {
-        console.error("Error creating post:", error);
+        // console.error("Error creating post:", error);
         throw new Error(error.message);
     }
 
@@ -43,7 +43,7 @@ export async function updatePost(id: string, data: PostUpdate) {
         .single();
 
     if (error) {
-        console.error("Error updating post:", error);
+        // console.error("Error updating post:", error);
         throw new Error(error.message);
     }
 
