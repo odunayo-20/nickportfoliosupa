@@ -5,6 +5,7 @@ import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Loader2 } from 'l
 import { sendMessage } from '@/actions/message'
 import { motion, Variants } from 'motion/react'
 import { LinkedinIcon, GithubIcon, XIcon } from '@/components/Icons'
+import { myAppHook } from '@/context/AppUtils'
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 40 },
@@ -40,6 +41,9 @@ const ContactClient = () => {
   const [formState, setFormState] = useState<FormState>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [isPending, startTransition] = useTransition()
+  const { profile } = myAppHook()
+
+  const socialLinks = profile?.social_links || {}
 
   const isLoading = formState === 'loading' || isPending
 
@@ -123,10 +127,10 @@ const ContactClient = () => {
                   <div>
                     <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-1">Email Address</span>
                     <a
-                      href="mailto:nikola.srdoc@gmail.com" target='_blank'
+                      href={`mailto:${profile?.email || 'nikola.srdoc@gmail.com'}`} target='_blank'
                       className="text-base sm:text-lg font-semibold text-brand-dark hover:text-brand-orange transition-colors break-all"
                     >
-                      nikola.srdoc@gmail.com
+                      {profile?.email || 'nikola.srdoc@gmail.com'}
                     </a>
                   </div>
                 </div>
@@ -160,30 +164,39 @@ const ContactClient = () => {
               <div className="pt-6 sm:pt-8 border-t border-gray-200">
                 <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-4">Social Profiles</span>
                 <div className="flex gap-3 flex-wrap">
-                  <a
-                    href="https://www.linkedin.com/in/nikola-srdoc-ab559962"
-                    target='_blank'
-                    aria-label="LinkedIn"
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
-                  >
-                    <LinkedinIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
-                  <a
-                    href="https://github.com/Aero51"
-                    target='_blank'
-                    aria-label="GitHub"
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
-                  >
-                    <GithubIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
-                  <a
-                    href="https://x.com/Aero0110"
-                    aria-label="Twitter"
-                    target='_blank'
-                    className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
-                  >
-                    <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </a>
+                  {socialLinks.linkedin && (
+                    <a
+                      href={socialLinks.linkedin}
+                      target='_blank'
+                      rel="noopener noreferrer"
+                      aria-label="LinkedIn"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
+                    >
+                      <LinkedinIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  )}
+                  {socialLinks.github && (
+                    <a
+                      href={socialLinks.github}
+                      target='_blank'
+                      rel="noopener noreferrer"
+                      aria-label="GitHub"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
+                    >
+                      <GithubIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  )}
+                  {(socialLinks.twitter || socialLinks.x) && (
+                    <a
+                      href={socialLinks.twitter || socialLinks.x}
+                      target='_blank'
+                      rel="noopener noreferrer"
+                      aria-label="Twitter"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
+                    >
+                      <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </a>
+                  )}
                 </div>
               </div>
             </motion.div>

@@ -1,5 +1,6 @@
 import CommentClient from "./CommentClient";
 import { Metadata } from "next";
+import { getAllCommentsAdmin } from "@/actions/interactions";
 
 export const metadata: Metadata = {
     title: "Comments | Nikola",
@@ -7,5 +8,6 @@ export const metadata: Metadata = {
 };
 
 export default async function Comments() {
-  return <CommentClient />;
+  const comments = await getAllCommentsAdmin();
+  return <CommentClient initialData={comments || []} />;
 }

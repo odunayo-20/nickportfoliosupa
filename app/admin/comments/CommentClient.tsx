@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { getAllCommentsAdmin, toggleCommentApproval, deleteComment } from '@/actions/interactions';
 
-export default function CommentClient() {
-    const [comments, setComments] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+export default function CommentClient({initialData = []}: {initialData?: any[]}) {
+    const [comments, setComments] = useState<any[]>(initialData);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isInitialMount, setIsInitialMount] = useState(true);
     const [statusFilter, setStatusFilter] = useState("pending");
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
@@ -27,11 +28,16 @@ export default function CommentClient() {
     }, []);
 
     useEffect(() => {
-        fetchComments();
-    }, [fetchComments]);
+        if (isInitialMount) {
+            setIsInitialMount(false);
+            if (initialData.length === 0) {
+                fetchComments();
+            }
+        }
+    }, [fetchComments, initialData.length, isInitialMount]);
 
     // Filter logic
-    const filteredComments = comments.filter(comment => {
+    const filteredComments = (comments || []).filter(comment => {
         if (statusFilter === "pending") return !comment.is_approved;
         if (statusFilter === "approved") return comment.is_approved;
         return true; // "all"
@@ -191,7 +197,7 @@ export default function CommentClient() {
                             </p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-slate-100">
+                        <div className="divide-y divide-slate-100 overflow-auto">
                             {paginatedComments.map(comment => (
                                 <div key={comment.id} className="p-5 md:p-8 flex flex-col lg:flex-row gap-6 lg:gap-10 hover:bg-slate-50/50 transition-all group">
                                     {/* Author & Context Info */}
@@ -206,7 +212,7 @@ export default function CommentClient() {
                                             )}
                                             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-300 mt-2 uppercase tracking-widest leading-none">
                                                 <div className="w-1 h-1 rounded-full bg-slate-200" />
-                                                {new Date(comment.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                {new Date(comment.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                             </div>
                                         </div>
                                     </div>

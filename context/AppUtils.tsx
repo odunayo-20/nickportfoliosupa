@@ -13,12 +13,23 @@ interface SiteSettings {
     og_image_url?: string;
 }
 
+interface Profile {
+    name: string | null;
+    title: string | null;
+    bio: string | null;
+    avatar_url: string | null;
+    resume_url: string | null;
+    social_links: any;
+    email: string | null;
+}
+
 
 interface AppUtilsType {
     isLoggedIn: boolean;
     user: User | null;
     session: Session | null;
     siteSettings: SiteSettings | null;
+    profile: Profile | null;
     setIsLoggedIn: (isLoggedIn: boolean) => void;
     setAuthToken: (id: string | null) => void;
     isLoading: boolean;
@@ -32,6 +43,7 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
     const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     const refreshSettings = async () => {
@@ -42,6 +54,35 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
             }
         } catch (error) {
             console.error("Error fetching settings:", error);
+        }
+    };
+
+    const refreshProfile = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("profiles")
+                .select("name, title, bio, avatar_url, resume_url, social_links")
+                .limit(1)
+                .maybeSingle();
+            
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (data) {
+                const profileData = { ...data, email: user?.email || null } as Profile;
+                // Handle resume_url fallback and formatting as in the server action
+                if (!profileData.resume_url && profileData.social_links?.resume_url) {
+                    profileData.resume_url = profileData.social_links.resume_url;
+                }
+                
+                if (profileData.resume_url && !profileData.resume_url.includes("download=")) {
+                    const separator = profileData.resume_url.includes("?") ? "&" : "?";
+                    profileData.resume_url = `${profileData.resume_url}${separator}download=`;
+                }
+                
+                setProfile(profileData);
+            }
+        } catch (error) {
+            console.error("Error fetching profile:", error);
         }
     };
 
@@ -70,6 +111,7 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
 
         initAuth();
         refreshSettings();
+        refreshProfile();
 
         // Safety timeout to prevent infinite loading
         const safetyRetry = setTimeout(() => {
@@ -94,6 +136,7 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
             user, 
             session, 
             siteSettings,
+            profile,
             setIsLoggedIn, 
             setAuthToken,
             isLoading,

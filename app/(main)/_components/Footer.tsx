@@ -4,14 +4,18 @@ import React from 'react'
 import { Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { NewsletterForm } from '@/components/NewsletterForm'
-import { LinkedinIcon, GithubIcon, TwitterIcon, XIcon } from '@/components/Icons'
+import { LinkedinIcon, GithubIcon, XIcon } from '@/components/Icons'
 import { myAppHook } from '@/context/AppUtils'
 import { useGDPR } from '@/context/GDPRContext'
 
 
 const Footer = () => {
-  const { siteSettings } = myAppHook()
+  const { siteSettings, profile } = myAppHook()
   const { setPreferenceModalOpen } = useGDPR()
+
+  const socialLinks = profile?.social_links || {
+
+  }
 
   return (
     <>
@@ -37,15 +41,21 @@ const Footer = () => {
                         {siteSettings?.meta_description || 'Expert Kotlin Multiplatform & Mobile Developer specializing in high-performance shared architectures and robust Supabase backends.'}
                     </p>
                     <div className="flex gap-3">
-                        <a href="https://www.linkedin.com/in/nikola-srdoc-ab559962/" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
-                            <LinkedinIcon className="w-4 h-4" />
-                        </a>
-                        <a href="https://github.com/Aero51" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
-                            <GithubIcon className="w-4 h-4" />
-                        </a>
-                        <a href="https://x.com/Aero0110" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
-                            <XIcon className="w-4 h-4" />
-                        </a>
+                        {socialLinks.linkedin && (
+                            <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                                <LinkedinIcon className="w-4 h-4" />
+                            </a>
+                        )}
+                        {socialLinks.github && (
+                            <a href={socialLinks.github} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                                <GithubIcon className="w-4 h-4" />
+                            </a>
+                        )}
+                        {(socialLinks.twitter || socialLinks.x) && (
+                            <a href={socialLinks.twitter || socialLinks.x} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all">
+                                <XIcon className="w-4 h-4" />
+                            </a>
+                        )}
                     </div>
                 </div>
 
@@ -69,8 +79,7 @@ const Footer = () => {
                             </div>
                             <div>
                                 <span className="block text-gray-400 text-xs uppercase tracking-wider mb-1">Email Me</span>
-                                <span className="font-medium">nikola.srdoc@gmail.com</span>
-                                {/* <span className="font-medium">hello@{siteSettings?.site_title?.toLowerCase().replace(/\s+/g, '') || 'nikola'}.dev</span> */}
+                                <span className="font-medium">{profile?.email || 'nikola.srdoc@gmail.com'}</span>
                             </div>
                         </li>
                         <li className="flex items-start gap-4">
