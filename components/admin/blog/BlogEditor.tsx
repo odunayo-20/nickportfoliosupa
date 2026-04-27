@@ -72,6 +72,7 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
     const [tagInput, setTagInput] = useState("");
     const [isMounted, setIsMounted] = useState(false);
     const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
+    const [isSlugCustomized, setIsSlugCustomized] = useState(false);
     
     // Auto-save states
     const [lastSaved, setLastSaved] = useState<Date | null>(initialData?.updated_at ? new Date(initialData.updated_at) : null);
@@ -101,23 +102,32 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
         defaultValues,
     });
 
-    const { register, handleSubmit, watch, setValue, control, formState: { errors, isSubmitting } } = form;
+    const { register, handleSubmit, watch, setValue, control, formState: { errors, isSubmitting, dirtyFields } } = form;
 
     const titleWatcher = watch("title");
     const tagsWatcher = watch("tags");
     const pubDateWatcher = watch("published_at");
     const featuredImageIdWatcher = watch("featured_image_id");
 
-    // Auto-slug
+    // Auto-slug logic
     useEffect(() => {
-        if (!isEditing && !postId && titleWatcher) {
+        const isTitleDirty = !!dirtyFields.title;
+        const currentSlug = watch("slug");
+        
+        // Auto-slug if:
+        // 1. Not manually customized
+        // 2. AND (it's a new post OR the user is currently editing the title)
+        if (!isSlugCustomized && (!isEditing || isTitleDirty) && titleWatcher) {
             const slug = titleWatcher
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/(^-|-$)+/g, "");
-            setValue("slug", slug, { shouldValidate: true });
+            
+            if (slug !== currentSlug) {
+                setValue("slug", slug, { shouldValidate: true });
+            }
         }
-    }, [titleWatcher, setValue, isEditing, postId]);
+    }, [titleWatcher, isSlugCustomized, isEditing, dirtyFields.title, setValue, watch]);
 
     // Auto-save logic
     const allValues = watch();
@@ -288,7 +298,7 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 border rounded-lg text-sm font-medium w-fit">
                         <span className="text-slate-400">yourdomain.com/blog/</span>
                         <input 
-                            {...register("slug")}
+                            {...register("slug", { onChange: () => setIsSlugCustomized(true) })}
                             className="bg-transparent border-none p-0 focus:ring-0 text-primary font-bold min-w-[50px]"
                         />
                     </div>

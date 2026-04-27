@@ -91,6 +91,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
     const [tagInput, setTagInput] = useState("");
     const [isMounted, setIsMounted] = useState(false);
     const [isEditingSlug, setIsEditingSlug] = useState(false);
+    const [isSlugCustomized, setIsSlugCustomized] = useState(false);
 
     // Media Previews State
     const [featuredImageDoc, setFeaturedImageDoc] = useState<any>(null);
@@ -125,7 +126,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
         watch,
         setValue,
         getValues,
-        formState: { errors },
+        formState: { errors, dirtyFields },
     } = useForm<ProjectFormValues>({
         resolver: zodResolver(projectSchema as any),
         defaultValues,
@@ -164,17 +165,23 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
         fetchGallery();
     }, [mediaIds]);
 
-    // Live slug generation if creating
+    // Live slug generation logic
     useEffect(() => {
-        if (!isEditing && !currentId && values.title) {
+        const isTitleDirty = !!dirtyFields.title;
+        const currentSlug = watch("slug");
+
+        if (!isSlugCustomized && (!isEditing || isTitleDirty) && values.title) {
             const slug = values.title
                 .toLowerCase()
                 .replace(/[^\w\s-]/g, "")
                 .replace(/[\s_-]+/g, "-")
                 .replace(/^-+|-+$/g, "");
-            setValue("slug", slug, { shouldValidate: true });
+            
+            if (slug !== currentSlug) {
+                setValue("slug", slug, { shouldValidate: true });
+            }
         }
-    }, [values.title, isEditing, currentId, setValue]);
+    }, [values.title, isSlugCustomized, isEditing, dirtyFields.title, setValue, watch]);
 
     // Auto-save logic
     const [isFirstRender, setIsFirstRender] = useState(true);
@@ -398,7 +405,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                                         <div className="flex items-center gap-2">
                                             <span className="text-slate-400">/project/</span>
                                             <input 
-                                                {...register("slug")}
+                                                {...register("slug", { onChange: () => setIsSlugCustomized(true) })}
                                                 className="bg-white border border-slate-200 rounded px-1 h-6 text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary w-40"
                                                 autoFocus
                                                 onBlur={() => setIsEditingSlug(false)}
