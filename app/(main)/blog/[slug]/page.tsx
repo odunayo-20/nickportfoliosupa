@@ -9,13 +9,37 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     if (!post) {
         return {
-            title: "Post Not Found | My Technical Journal",
+            title: "Post Not Found",
         };
     }
 
+    const title = post.title;
+    const description = post.summary || `Read ${post.title} on our blog.`;
+    const imageUrl = (post as any).imageUrl || (post as any).image_url || "/logo.png";
+
     return {
-        title: `${post.title} | My Technical Journal`,
-        description: post.excerpt || `Read ${post.title} on my technical journal.`,
+        title: title,
+        description: description,
+        openGraph: {
+            title: title,
+            description: description,
+            type: "article",
+            url: `/blog/${resolvedParams.slug}`,
+            images: [
+                {
+                    url: imageUrl,
+                    width: 1200,
+                    height: 630,
+                    alt: title,
+                },
+            ],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: title,
+            description: description,
+            images: [imageUrl],
+        },
     };
 }
 

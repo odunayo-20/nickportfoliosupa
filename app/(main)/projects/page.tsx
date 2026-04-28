@@ -6,6 +6,17 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Projects | Senior Software Engineer",
     description: "A collection of high-performance mobile applications, enterprise architectures, and robust web systems I've engineered.",
+    openGraph: {
+        title: "Projects | Senior Software Engineer",
+        description: "A collection of high-performance mobile applications, enterprise architectures, and robust web systems I've engineered.",
+        type: "website",
+        url: "/projects",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Projects | Senior Software Engineer",
+        description: "A collection of high-performance mobile applications, enterprise architectures, and robust web systems I've engineered.",
+    },
 };
 
 export default async function Projects() {

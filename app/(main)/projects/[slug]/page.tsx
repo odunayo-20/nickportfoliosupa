@@ -13,9 +13,33 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
+  const title = project.title;
+  const description = project.description || `Case study for ${project.title}`;
+  const imageUrl = (project as any).imageUrl || (project as any).image_url || "/logo.png";
+
   return {
-    title: `${project.title} | Case Study`,
-    description: project.description || `Case study for ${project.title}`,
+    title: `${title} | Case Study`,
+    description: description,
+    openGraph: {
+      title: `${title} | Case Study`,
+      description: description,
+      type: "article",
+      url: `/projects/${resolvedParams.slug}`,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | Case Study`,
+      description: description,
+      images: [imageUrl],
+    },
   };
 }
 

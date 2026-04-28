@@ -6,6 +6,17 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Blog | My Technical Journal",
     description: "A collection of articles detailing my experiences with architecture, clean code, and scaling systems.",
+    openGraph: {
+        title: "Blog | My Technical Journal",
+        description: "A collection of articles detailing my experiences with architecture, clean code, and scaling systems.",
+        type: "website",
+        url: "/blog",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Blog | My Technical Journal",
+        description: "A collection of articles detailing my experiences with architecture, clean code, and scaling systems.",
+    },
 };
 
 export default async function Blog() {

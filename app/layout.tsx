@@ -22,8 +22,11 @@ import { getSettings } from "@/actions/settings";
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
   return {
-    title: settings?.site_title || "Architect — Portfolio Manager",
+    metadataBase: new URL(baseUrl),
+    title: settings?.site_title || "Nikola — Portfolio Manager",
     description: settings?.meta_description || "Manage your portfolio, blog, and professional presence.",
     keywords: settings?.keywords || [],
     icons: {
