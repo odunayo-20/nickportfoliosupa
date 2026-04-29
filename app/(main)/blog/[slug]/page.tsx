@@ -1,11 +1,15 @@
 import { getPostBySlug, getPublishedPosts } from "@/actions/blog";
 import { getComments, getLikeCount } from "@/actions/interactions";
+import { getSettings } from "@/actions/settings";
 import BlogPostClient from "./BlogPostClient";
 import { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const resolvedParams = await params;
-    const post = await getPostBySlug(resolvedParams.slug);
+    const [post, settings] = await Promise.all([
+        getPostBySlug(resolvedParams.slug),
+        getSettings()
+    ]);
 
     if (!post) {
         return {
@@ -15,15 +19,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
     const title = post.title;
     const description = post.summary || `Read ${post.title} on our blog.`;
+    const siteTitle = settings?.site_title || "Nikola's Journal";
     const imageUrl = (post as any).imageUrl || (post as any).image_url || "/logo.png";
 
     return {
-        title: title,
+        title: `${title} | ${siteTitle}`,
         description: description,
         openGraph: {
-            title: title,
+            title: `${title} | ${siteTitle}`,
             description: description,
             type: "article",
+            siteName: siteTitle,
+            locale: "en_US",
             images: [
                 {
                     url: imageUrl,
@@ -35,7 +42,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         },
         twitter: {
             card: "summary_large_image",
-            title: title,
+            title: `${title} | ${siteTitle}`,
             description: description,
             images: [imageUrl],
         },

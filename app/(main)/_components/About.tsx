@@ -37,6 +37,7 @@ interface AboutProps {
 
 const About = ({ profile }: AboutProps) => {
     const [isDownloading, setIsDownloading] = useState(false);
+    const [currentImage, setCurrentImage] = useState("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800");
     
     // Use profile data with fallbacks
     const name = profile?.name || "Nikola";
@@ -74,19 +75,49 @@ const About = ({ profile }: AboutProps) => {
                     <motion.div variants={scaleIn} className="relative w-full max-w-md mx-auto aspect-square reveal">
                         <div className="absolute inset-4 bg-brand-orange rounded-full -translate-x-6 -translate-y-6"></div>
 
-                        <Image src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800"
+                        <Image 
+                            key={currentImage}
+                            src={currentImage}
                             alt={`${name} Working`}
                             width={800}
                             height={800}
                             className="absolute inset-0 w-full h-full object-cover rounded-full z-10 border-8 border-brand-green grayscale" />
 
-                        <motion.div variants={scaleIn} className="absolute z-20 top-1/4 -left-8 bg-brand-dark text-brand-orange text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">KMP Architecture</motion.div>
-                        <motion.div variants={scaleIn} className="absolute z-20 top-1/2 -left-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light">Kotlin Multiplatform</motion.div>
-                        <motion.div variants={scaleIn} className="absolute z-20 bottom-1/4 -left-4 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Offline-First</motion.div>
+                        <motion.div 
+                            variants={scaleIn} 
+                            onClick={() => setCurrentImage("/android.png")}
+                            className="absolute z-20 top-1/4 -left-8 bg-brand-dark text-brand-orange text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-orange hover:text-brand-dark transition-colors"
+                        >Android App Development</motion.div>
+                        
+                        <motion.div 
+                            variants={scaleIn} 
+                            onClick={() => setCurrentImage("/kmp.png")}
+                            className="absolute z-20 top-1/2 -left-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light cursor-pointer hover:bg-white hover:text-brand-green transition-colors"
+                        >Kotlin Multiplatform</motion.div>
+                        
+                        <motion.div 
+                            variants={scaleIn} 
+                            onClick={() => setCurrentImage("/ios.png")}
+                            className="absolute z-20 bottom-1/4 -left-4 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-dark hover:text-brand-orange transition-colors"
+                        >iOS App Development</motion.div>
 
-                        <motion.div variants={scaleIn} className="absolute z-20 top-1/3 -right-6 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Supabase Backend</motion.div>
-                        <motion.div variants={scaleIn} className="absolute z-20 bottom-1/3 right-0 bg-brand-dark text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green">Real-time Systems</motion.div>
-                        <motion.div variants={scaleIn} className="absolute z-20 bottom-12 right-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light">Native Android</motion.div>
+                        <motion.div 
+                            variants={scaleIn} 
+                            onClick={() => setCurrentImage("/backend.png")}
+                            className="absolute z-20 top-1/3 -right-6 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-dark hover:text-brand-orange transition-colors"
+                        >Backend Dev</motion.div>
+                        
+                        <motion.div 
+                            variants={scaleIn} 
+                            onClick={() => setCurrentImage("/ui.png")}
+                            className="absolute z-20 bottom-1/3 right-0 bg-brand-dark text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-white hover:text-brand-dark transition-colors"
+                        >Mobile Apps UI/UX</motion.div>
+                        
+                        <motion.div 
+                            variants={scaleIn} 
+                            onClick={() => setCurrentImage("/web.png")}
+                            className="absolute z-20 bottom-12 right-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light cursor-pointer hover:bg-white hover:text-brand-green transition-colors"
+                        >Web Apps Development</motion.div>
                     </motion.div>
 
                     <motion.div variants={fadeInUp} className="reveal">
@@ -94,7 +125,12 @@ const About = ({ profile }: AboutProps) => {
                             <span className="w-4 h-[2px] bg-brand-orange"></span> About Me
                         </span>
                         <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-6">
-                            Who is <span className="text-brand-orange font-normal italic">{name}?</span>
+                            Who is <span 
+                                className="text-brand-orange font-normal italic cursor-pointer hover:underline decoration-brand-light underline-offset-8"
+                                onClick={() => setCurrentImage("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800")}
+                            >
+                                {name}?
+                            </span>
                         </h2>
 
                         <p className="text-gray-300 text-base leading-relaxed mb-10 max-w-lg">
