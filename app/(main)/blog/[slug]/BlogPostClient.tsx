@@ -169,11 +169,13 @@ export default function BlogPostClient({
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
         >
-            <div className="w-full aspect-[16/9] md:aspect-[21/9] bg-brand-offwhite rounded-sharp overflow-hidden border border-gray-100">
+            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-sharp overflow-hidden border border-gray-100">
                 <Image src={post.image_url} 
                      alt={post.title} 
                      fill
-                     className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                     sizes='(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw'
+                     className="w-full h-full object-fill md:object-cover grayscale hover:grayscale-0 transition-all duration-700" 
+                     />
             </div>
         </motion.div>
     )}

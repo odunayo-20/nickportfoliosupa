@@ -110,11 +110,12 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
             </div>
 
             {(project.imageUrl || project.image_url) && (
-            <div className="w-full aspect-[21/9] md:aspect-[21/9] bg-brand-offwhite rounded-sharp overflow-hidden relative border border-gray-100">
+            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-sharp overflow-hidden relative border border-gray-100">
                 <Image src={project.imageUrl || project.image_url} 
                      alt={project.title} 
                      fill
-                     className="w-full h-full object-cover" />
+                     sizes='(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw'
+                     className="w-full h-full object-fill md:object-cover" />
             </div>
             )}
         </motion.div>
@@ -151,12 +152,13 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
             </motion.div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                 {project.additionalImages.map((img: string, idx: number) => (
-                    <motion.div key={idx} variants={fadeInUp} className="rounded-sharp overflow-hidden border border-gray-200 bg-white aspect-video relative group shadow-sm transition-all hover:shadow-md">
+                    <motion.div key={idx} variants={fadeInUp} className="rounded-sharp overflow-hidden border border-gray-200 bg-white aspect-video md:aspect-[16/9] round-shape relative group shadow-sm transition-all hover:shadow-md">
                         <Image 
                             src={img} 
                             alt={`${project.title} gallery image ${idx + 1}`} 
                             fill
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                            sizes='(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw'
+                            className="w-full h-full object-contain md:object-cover transition-transform duration-700 group-hover:scale-105" 
                         />
                     </motion.div>
                 ))}

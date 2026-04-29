@@ -24,7 +24,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             title: title,
             description: description,
             type: "article",
-            url: `/blog/${resolvedParams.slug}`,
             images: [
                 {
                     url: imageUrl,

@@ -15,6 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const title = project.title;
   const description = project.description || `Case study for ${project.title}`;
+  // Ensure we have a valid image URL, falling back to a default if necessary
   const imageUrl = (project as any).imageUrl || (project as any).image_url || "/logo.png";
 
   return {
@@ -24,7 +25,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       title: `${title} | Case Study`,
       description: description,
       type: "article",
-      url: `/projects/${resolvedParams.slug}`,
       images: [
         {
           url: imageUrl,
