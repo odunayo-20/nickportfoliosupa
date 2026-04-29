@@ -110,7 +110,7 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
             </div>
 
             {(project.imageUrl || project.image_url) && (
-            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-sharp overflow-hidden relative border border-gray-100">
+            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-sharp overflow-hidde relative border border-gray-100">
                 <Image src={project.imageUrl || project.image_url} 
                      alt={project.title} 
                      fill

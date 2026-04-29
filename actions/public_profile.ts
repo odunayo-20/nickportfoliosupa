@@ -7,6 +7,7 @@ export async function getPublicProfile() {
     const { data: profile, error } = await supabase
         .from("profiles")
         .select("name, title, bio, avatar_url, resume_url, social_links")
+        .eq("is_owner", true)
         .limit(1)
         .maybeSingle();
 
