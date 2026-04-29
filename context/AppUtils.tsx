@@ -61,14 +61,13 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
         try {
             const { data, error } = await supabase
                 .from("profiles")
-                .select("name, title, bio, avatar_url, resume_url, social_links")
+                .select("name, title, bio, avatar_url, resume_url, social_links, email")
+                .eq("is_owner", true)
                 .limit(1)
                 .maybeSingle();
-            
-            const { data: { user } } = await supabase.auth.getUser();
 
             if (data) {
-                const profileData = { ...data, email: user?.email || null } as Profile;
+                const profileData = { ...data } as Profile;
                 // Handle resume_url fallback and formatting as in the server action
                 if (!profileData.resume_url && profileData.social_links?.resume_url) {
                     profileData.resume_url = profileData.social_links.resume_url;

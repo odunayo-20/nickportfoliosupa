@@ -252,7 +252,9 @@ export interface Database {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          email: string | null
           id: string
+          is_owner: boolean | null
           name: string | null
           resume_name: string | null
           resume_url: string | null
@@ -265,7 +267,9 @@ export interface Database {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          email?: string | null
           id: string
+          is_owner?: boolean | null
           name?: string | null
           resume_name?: string | null
           resume_url?: string | null
@@ -278,7 +282,9 @@ export interface Database {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          is_owner?: boolean | null
           name?: string | null
           resume_name?: string | null
           resume_url?: string | null

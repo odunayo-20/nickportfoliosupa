@@ -151,7 +151,7 @@ export default function BlogPostClient({
                     className="w-12 h-12 rounded-full object-cover border-2 border-brand-green/10" />
                     <div>
                         <div className="font-bold text-brand-dark">{post.author?.name || "Nikola"}</div>
-                        <div className="text-sm text-brand-muted">{post.author?.role || "Senior App Developer"}</div>
+                        <div className="text-sm text-brand-muted">{post.author?.role || "Kotlin Multiplatform & Native Expert"}</div>
                     </div>
                 </div>
                 <div className="text-sm font-medium text-brand-muted flex items-center gap-2">
@@ -295,7 +295,7 @@ export default function BlogPostClient({
             <div>
                 <h4 className="text-xl font-extrabold text-brand-dark mb-2">Written by Nikola.</h4>
                 <p className="text-brand-muted text-sm leading-relaxed mb-6">
-                    Senior App Developer based in Nigeria. I specialize in building high-performance native architectures and solving complex engineering bottlenecks for global startups and enterprises.
+                   Kotlin Multiplatform & Native Engineer based in Croatia. I help startups and enterprises build scalable, high-performance systems while eliminating critical engineering bottlenecks.
                 </p>
                 <Link href="/about" className="inline-flex items-center gap-2 text-sm font-bold text-brand-green hover:text-brand-orange transition-colors">
                     More about me <ArrowRight className="w-4 h-4" />

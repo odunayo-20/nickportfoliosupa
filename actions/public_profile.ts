@@ -6,7 +6,7 @@ export async function getPublicProfile() {
     const supabase = await createClient();
     const { data: profile, error } = await supabase
         .from("profiles")
-        .select("name, title, bio, avatar_url, resume_url, social_links")
+        .select("name, title, bio, avatar_url, resume_url, social_links, email")
         .eq("is_owner", true)
         .limit(1)
         .maybeSingle();

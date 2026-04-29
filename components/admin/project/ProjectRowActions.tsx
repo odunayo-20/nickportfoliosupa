@@ -70,7 +70,7 @@ export function ProjectRowActions({
                 </DropdownMenuItem>
 
                 <DropdownMenuItem 
-                    onClick={() => onToggleFeatured(project.id, !!project.isFeatured)}
+                    onClick={() => onToggleFeatured(project.id, isFeatured)}
                     className="gap-2 text-[13px] font-medium cursor-pointer"
                 >
                     {isFeatured ? (

@@ -110,7 +110,7 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
             </div>
 
             {(project.imageUrl || project.image_url) && (
-            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-sharp overflow-hidde relative border border-gray-100">
+            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-sharp overflow-hidden relative border border-gray-100">
                 <Image src={project.imageUrl || project.image_url} 
                      alt={project.title} 
                      fill
@@ -130,10 +130,15 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
         variants={staggerContainer}
     >
         <div className="max-w-4xl mx-auto px-6">
-            <motion.div variants={fadeInUp} className="prose prose-lg max-w-none text-brand-muted prose-headings:text-brand-dark prose-a:text-brand-orange hover:prose-a:text-brand-dark prose-img:rounded-sharp">
-                <div dangerouslySetInnerHTML={{ __html: project.content }} />
-            </motion.div>
-        </div>
+  <motion.div
+    variants={fadeInUp}
+    className="
+      max-w-3xl mx-auto px-6 pb-20 reveal article-body prose prose-lg prose-slate
+    "
+  >
+    <div className='' dangerouslySetInnerHTML={{ __html: project.content }} />
+  </motion.div>
+</div>
     </motion.section>
     )}
 

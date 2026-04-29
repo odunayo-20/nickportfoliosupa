@@ -57,11 +57,13 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     name TEXT,
     title TEXT,
     bio TEXT,
+    email TEXT,
     avatar_url TEXT,
     resume_url TEXT,
     resume_name TEXT,
     skills TEXT[] DEFAULT '{}',
-    social_links JSONB DEFAULT '{}'::jsonb
+    social_links JSONB DEFAULT '{}'::jsonb,
+    is_owner BOOLEAN DEFAULT false
 );
 
 -- Create posts table (blog)

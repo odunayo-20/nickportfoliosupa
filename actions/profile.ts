@@ -38,7 +38,7 @@ export async function getProfile() {
 
     return {
         id: user.id,
-        email: user.email,
+        email: profile?.email || user.email || "",
         updated_at: profile?.updated_at || null,
         name: profile?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || "",
         title: profile?.title || "",
@@ -57,7 +57,7 @@ export async function updateProfile(data: Record<string, any>) {
     
     if (!user) return { error: "Unauthorized" };
 
-    const { email, id, ...rest } = data;
+    const { id, ...rest } = data;
     
     // Ensure resume_url has download parameter for security/UX
     if (rest.resume_url && typeof rest.resume_url === 'string' && !rest.resume_url.includes('download=')) {
