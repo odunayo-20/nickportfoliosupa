@@ -1,5 +1,5 @@
 "use client";
-import { Smartphone, Globe, Database, Cpu, Check, ArrowRight } from 'lucide-react'
+import { Smartphone, Globe, Database, Cpu, Layers, Check, ArrowRight } from 'lucide-react'
 import { motion, Variants } from 'motion/react'
 import Link from 'next/link';
 
@@ -58,6 +58,10 @@ const ServiceClient = () => {
                     <div className="h-32 border border-white/20 rounded-sharp flex flex-col items-center justify-center gap-2 bg-white/5 backdrop-blur-sm">
                         <Cpu className="w-8 h-8 text-brand-orange" />
                         <span className="text-xs font-bold uppercase tracking-widest text-white/50">Logic</span>
+                    </div>
+                    <div className="h-32 border border-white/20 rounded-sharp flex flex-col items-center justify-center gap-2 bg-white/5 backdrop-blur-sm -translate-y-10">
+                        <Layers className="w-8 h-8 text-brand-orange" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-white/50">Multiplatform</span>
                     </div>
                 </div>
             </motion.div>
