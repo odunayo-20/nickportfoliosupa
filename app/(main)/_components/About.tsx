@@ -85,37 +85,37 @@ const About = ({ profile }: AboutProps) => {
 
                         <motion.div 
                             variants={scaleIn} 
-                            onClick={() => setCurrentImage("/android.png")}
+                            onClick={() => setCurrentImage("/about/android.png")}
                             className="absolute z-20 top-1/4 -left-8 bg-brand-dark text-brand-orange text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-orange hover:text-brand-dark transition-colors"
                         >Android App Development</motion.div>
                         
                         <motion.div 
                             variants={scaleIn} 
-                            onClick={() => setCurrentImage("/kmp.png")}
+                            onClick={() => setCurrentImage("/about/kmp.png")}
                             className="absolute z-20 top-1/2 -left-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light cursor-pointer hover:bg-white hover:text-brand-green transition-colors"
                         >Kotlin Multiplatform</motion.div>
                         
                         <motion.div 
                             variants={scaleIn} 
-                            onClick={() => setCurrentImage("/ios.png")}
+                            onClick={() => setCurrentImage("/about/ios.png")}
                             className="absolute z-20 bottom-1/4 -left-4 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-dark hover:text-brand-orange transition-colors"
                         >iOS App Development</motion.div>
 
                         <motion.div 
                             variants={scaleIn} 
-                            onClick={() => setCurrentImage("/backend.png")}
+                            onClick={() => setCurrentImage("/about/backend.png")}
                             className="absolute z-20 top-1/3 -right-6 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-dark hover:text-brand-orange transition-colors"
                         >Backend Dev</motion.div>
                         
                         <motion.div 
                             variants={scaleIn} 
-                            onClick={() => setCurrentImage("/ui.png")}
+                            onClick={() => setCurrentImage("/about/ui.png")}
                             className="absolute z-20 bottom-1/3 right-0 bg-brand-dark text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-white hover:text-brand-dark transition-colors"
                         >Mobile Apps UI/UX</motion.div>
                         
                         <motion.div 
                             variants={scaleIn} 
-                            onClick={() => setCurrentImage("/web.png")}
+                            onClick={() => setCurrentImage("/about/web.png")}
                             className="absolute z-20 bottom-12 right-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light cursor-pointer hover:bg-white hover:text-brand-green transition-colors"
                         >Web Apps Development</motion.div>
                     </motion.div>
