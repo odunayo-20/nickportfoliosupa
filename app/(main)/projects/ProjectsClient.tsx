@@ -112,21 +112,24 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
 
             {featuredProjects.length > 0 && (
             <motion.section 
-                className="py-16"
+                className="py-10"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: "-100px" }}
                 variants={staggerContainer}
             >
                 <div className="max-w-7xl mx-auto px-6">
+                    <h2 className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Featured Projects</h2>
                     {featuredProjects.map((project) => (
-                    <motion.div key={project.id} variants={fadeInUp} className="grid lg:grid-cols-2 gap-12 items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-shadow project-card mb-12 last:mb-0">
-                        <Link href={`/projects/${project.slug}`} className="block overflow-hidden bg-brand-offwhite h-full min-h-[400px] relative hover:opacity-90 transition-opacity">
+                    <motion.div key={project.id} variants={fadeInUp} className="grid lg:grid-cols-2 gap-10 items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-shadow project-card mb-8 block">
+                        <Link href={`/projects/${project.slug}`} className="block overflow-hidden bg-brand-offwhite h-full min-h-[400px] relative hover:opacity-90 transition-opacity p-4 lg:p-2">
                             {project.imageUrl || project.image_url ? (
-                                <Image src={project.imageUrl || project.image_url} 
-                                     alt={project.title} 
-                                     fill
-                                     className="project-image absolute inset-0 w-full h-full object-cover" />
+                                <div className="relative w-full h-full">
+                                    <Image src={project.imageUrl || project.image_url} 
+                                         alt={project.title} 
+                                         fill
+                                         className="project-image object-contain drop-shadow-3xl" />
+                                </div>
                             ) : (
                                 <div className="absolute inset-0 bg-brand-green/10 flex items-center justify-center">
                                     <span className="text-brand-green text-opacity-50 text-xl font-bold">{project.title}</span>
@@ -143,9 +146,9 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
                             <Link href={`/projects/${project.slug}`}>
                                 <h2 className="text-4xl font-extrabold tracking-tight text-brand-dark mb-6 hover:text-brand-orange transition-colors">{project.title}</h2>
                             </Link>
-                            <p className="text-brand-muted leading-relaxed mb-8">
+                            {/* <p className="text-brand-muted leading-relaxed mb-8">
                                 {project.description}
-                            </p>
+                            </p> */}
                             
                             {project.tech_stack && project.tech_stack.length > 0 && (
                                 <div className="flex flex-wrap gap-3 mb-10 border-l-2 border-brand-orange pl-4">
@@ -176,58 +179,66 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
                 variants={staggerContainer}
             >
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="grid md:grid-cols-2 gap-10">
+                    {regularProjects.length > 0 && (
+                        <h2 className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">All Projects</h2>
+                    )}
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {regularProjects.map((project) => (
-                        <motion.div key={project.id} variants={fadeInUp} className="project-card flex flex-col bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-shadow reveal">
-                            <Link href={`/projects/${project.slug}`} className="aspect-[4/3] overflow-hidden relative bg-brand-offwhite block hover:opacity-90 transition-opacity">
+                        <motion.div key={project.id} variants={fadeInUp} className="project-card flex flex-col h-full bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all reveal group delay-100">
+                            <Link href={`/projects/${project.slug}`} className="aspect-[16/9] overflow-hidden relative bg-brand-offwhite block">
                                 {project.imageUrl || project.image_url ? (
                                     <Image src={project.imageUrl || project.image_url} 
                                          alt={project.title} 
                                          fill
-                                         className="project-image absolute inset-0 w-full h-full object-cover" />
+                                         className="project-image absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
                                 ) : (
-                                    <div className="absolute inset-0 bg-brand-green/90 flex items-center justify-center project-image">
-                                        <Fingerprint className="w-24 h-24 text-brand-orange opacity-50" />
+                                    <div className="absolute inset-0 bg-brand-green/10 flex items-center justify-center">
+                                        <Fingerprint className="w-16 h-16 text-brand-orange opacity-30" />
                                     </div>
                                 )}
                             </Link>
-                            <div className="p-8 flex-grow flex flex-col">
-                                {project.category && (
-                                    <span className="text-xs font-bold text-brand-orange mb-3 uppercase tracking-widest">{project.category}</span>
-                                )}
+                            <div className="p-6 flex-grow flex flex-col">
+                                <div className="flex items-center justify-between mb-4">
+                                    {project.category ? (
+                                        <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">{project.category}</span>
+                                    ) : (
+                                        <span className="hidden"></span>
+                                    )}
+                                </div>
                                 <Link href={`/projects/${project.slug}`}>
-                                    <h3 className="text-2xl font-bold text-brand-dark mb-4 hover:text-brand-orange transition-colors">{project.title}</h3>
+                                    <h3 className="text-xl font-bold text-brand-dark mb-4 group-hover:text-brand-green transition-colors">{project.title}</h3>
                                 </Link>
-                                <p className="text-brand-muted text-sm leading-relaxed mb-8 flex-grow">
+                                {/* <p className="text-brand-muted text-sm leading-relaxed mb-6 flex-grow">
                                     {project.description}
-                                </p>
-                                <div className="flex justify-between items-center pt-6 border-t border-gray-100">
-                                    <div className="flex gap-2 flex-wrap max-w-[60%]">
+                                </p> */}
+                                
+                                {project.tech_stack && project.tech_stack.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mb-6 flex-grow">
                                         {project.tech_stack?.slice(0, 3).map((tech: string, i: number) => (
-                                            <span key={i} className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded truncate max-w-[80px]" title={tech}>{tech}</span>
+                                            <span key={i} className="text-[10px] font-bold text-brand-muted bg-gray-100 px-2 py-1 rounded-full uppercase">{tech}</span>
                                         ))}
                                         {project.tech_stack && project.tech_stack.length > 3 && (
-                                            <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">+{project.tech_stack.length - 3}</span>
+                                            <span className="text-[10px] font-bold text-brand-muted bg-gray-100 px-2 py-1 rounded-full uppercase ">+{project.tech_stack.length - 3}</span>
                                         )}
                                     </div>
-                                    <Link href={`/projects/${project.slug}`} className="text-sm font-bold text-brand-green flex items-center gap-2 hover:text-brand-orange transition-colors cursor-pointer block z-10 shrink-0">
-                                        View Details <ArrowRight className="w-4 h-4" />
-                                    </Link>
+                                )}
+                                <div className="text-sm font-bold text-brand-orange flex items-center gap-2">
+                                    View Details <ArrowRight className="w-4 h-4" />
                                 </div>
                             </div>
                         </motion.div>
                         ))}
 
-                        {regularProjects.length % 2 === 0 && (
-                        <motion.div variants={fadeInUp} className="flex flex-col bg-brand-offwhite border-2 border-dashed border-gray-300 rounded-sharp overflow-hidden hover:border-brand-orange transition-colors reveal items-center justify-center text-center p-12 h-full min-h-[400px]">
+                        {regularProjects.length % 2 !== 0 && (
+                        <motion.div variants={fadeInUp} className="project-card flex flex-col h-full bg-brand-offwhite border border-dashed border-gray-300 rounded-sharp overflow-hidden hover:border-brand-orange transition-colors hover:shadow-lg reveal items-center justify-center text-center p-8">
                             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm">
                                 <Plus className="w-8 h-8 text-brand-orange" />
                             </div>
-                            <h3 className="text-2xl font-bold text-brand-dark mb-4">Your Project Here</h3>
-                            <p className="text-brand-muted text-sm leading-relaxed mb-8 max-w-xs mx-auto">
+                            <h3 className="text-xl font-bold text-brand-dark mb-3">Your Project Here</h3>
+                            <p className="text-brand-muted text-sm leading-relaxed mb-6 flex-grow max-w-xs">
                                 Currently accepting new freelance opportunities and full-time senior engineering roles. Let's build something phenomenal.
                             </p>
-                            <Link href="/contact" className="px-8 py-3 bg-brand-dark text-white font-bold rounded-full hover:bg-brand-orange transition-colors cursor-pointer z-10">
+                            <Link href="/contact" className="px-6 py-2 bg-brand-dark text-white font-bold rounded-full hover:bg-brand-orange transition-colors">
                                 Start a Conversation
                             </Link>
                         </motion.div>

@@ -1,6 +1,6 @@
 "use client";
-import { ArrowLeft, Clock, Calendar, Copy, Link as LinkIcon, ArrowRight, MailOpen, ThumbsUp, MessageSquare, Send } from 'lucide-react'
-import { motion, Variants } from 'motion/react'
+import { ArrowLeft, Clock, Calendar, Copy, Link as LinkIcon, ArrowRight, MailOpen, ThumbsUp, MessageSquare, Send, X } from 'lucide-react'
+import { motion, Variants, AnimatePresence } from 'motion/react'
 import Link from 'next/link'
 import { useState, useTransition, useRef } from 'react'
 import { likePost, addComment, unlikePost } from '@/actions/interactions'
@@ -23,6 +23,61 @@ const staggerContainer: Variants = {
   }
 };
 
+// Image Lightbox Component
+function ImageLightbox({ image, isOpen, onClose }: { image: string, isOpen: boolean, onClose: () => void }) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+          onKeyDown={handleKeyDown}
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          tabIndex={0}
+          autoFocus
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-5xl flex flex-col max-h-[95vh]"
+          >
+            {/* Close Button */}
+            <div className="flex justify-end mb-4 px-4">
+              <button
+                onClick={onClose}
+                className="text-white hover:text-brand-orange transition-colors hover:bg-white/10 p-2 rounded-full"
+                aria-label="Close lightbox"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Main Image Container */}
+            <div className="relative w-full min-h-[50vh] max-h-[80vh] bg-black rounded-lg overflow-hidden">
+              <Image
+                src={image}
+                alt="Full size image"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 
 export default function BlogPostClient({ 
   post, 
@@ -35,6 +90,8 @@ export default function BlogPostClient({
   initialComments?: any[],
   initialLikes?: { count: number, hasLiked: boolean }
 }) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  
   if (!post) {
       return (
           <div className="pt-32 pb-20 text-center">
@@ -121,6 +178,12 @@ export default function BlogPostClient({
 
   return (
     <>
+    <ImageLightbox 
+      image={post.image_url} 
+      isOpen={lightboxOpen} 
+      onClose={() => setLightboxOpen(false)} 
+    />
+
     <motion.header 
         className="pt-20 pb-12 bg-brand-light"
         initial="hidden"
@@ -163,19 +226,29 @@ export default function BlogPostClient({
 
     {post.image_url && (
         <motion.div 
-            className="max-w-6xl mx-auto px-6 mb-16 reveal"
+            className="max-w-6xl mx-auto px-6 mb-16 reveal cursor-pointer"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
+            onClick={() => setLightboxOpen(true)}
         >
-            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-sharp overflow-hidden border border-gray-100">
+            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-lg overflow-hidden border border-gray-200 shadow-lg hover:shadow-2xl transition-all group relative">
                 <Image src={post.image_url} 
                      alt={post.title} 
                      fill
                      sizes='(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw'
-                     className="w-full h-full object-fill md:object-cover grayscale hover:grayscale-0 transition-all duration-700" 
+                     className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" 
                      />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    whileHover={{ scale: 1, opacity: 1 }}
+                    className="bg-white/90 p-4 rounded-full backdrop-blur-sm"
+                  >
+                    <LinkIcon className="w-6 h-6 text-brand-orange" />
+                  </motion.div>
+                </div>
             </div>
         </motion.div>
     )}

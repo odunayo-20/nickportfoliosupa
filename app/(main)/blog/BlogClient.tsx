@@ -204,29 +204,7 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
         </motion.div>
     </AnimatePresence>
 
-    {/* <motion.section 
-        className="py-24 bg-brand-green text-white"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        variants={staggerContainer}
-    >
-        <motion.div variants={fadeInUp} className="max-w-4xl mx-auto px-6 text-center reveal">
-            <MailOpen className="w-12 h-12 text-brand-orange mx-auto mb-6" />
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-6">Stay in the Loop</h2>
-            <p className="text-gray-300 text-lg mb-10 max-w-xl mx-auto">
-                Join 2,500+ other developers receiving my monthly insights on software architecture, Kotlin patterns, and scaling mobile apps.
-            </p>
-            <form className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
-                <input type="email" placeholder="Enter your email address" required 
-                       className="flex-grow px-6 py-4 rounded-full bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange transition-all" />
-                <button type="submit" className="px-8 py-4 bg-brand-orange text-brand-dark font-bold rounded-full hover:bg-white transition-colors whitespace-nowrap shadow-lg">
-                    Subscribe Now
-                </button>
-            </form>
-            <p className="text-xs text-gray-400 mt-4">No spam. Unsubscribe at any time.</p>
-        </motion.div>
-    </motion.section> */}
+ 
     </>
   )
 }
