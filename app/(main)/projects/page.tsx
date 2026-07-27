@@ -3,14 +3,19 @@ import { getCategories } from "@/actions/categories";
 import ProjectsClient from "./ProjectsClient";
 import { Metadata } from "next";
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export const metadata: Metadata = {
-    title: "Projects | Senior Software Engineer",
+    title: "Projects",
     description: "A collection of high-performance mobile applications, enterprise architectures, and robust web systems I've engineered.",
+    alternates: {
+        canonical: `${BASE_URL}/projects`,
+    },
     openGraph: {
         title: "Projects | Senior Software Engineer",
         description: "A collection of high-performance mobile applications, enterprise architectures, and robust web systems I've engineered.",
         type: "website",
-        url: "/projects",
+        url: `${BASE_URL}/projects`,
     },
     twitter: {
         card: "summary_large_image",

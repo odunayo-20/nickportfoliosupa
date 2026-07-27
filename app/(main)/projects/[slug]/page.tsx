@@ -3,6 +3,8 @@ import ProjectDetailsClient from "./ProjectDetailsClient";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   const project = await getProjectBySlug(resolvedParams.slug);
@@ -15,16 +17,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
   const title = project.title;
   const description = project.description || `Case study for ${project.title}`;
-  // Ensure we have a valid image URL, falling back to a default if necessary
   const imageUrl = (project as any).imageUrl || (project as any).image_url || "/logo.png";
+  const projectUrl = `${BASE_URL}/projects/${resolvedParams.slug}`;
 
   return {
-    title: `${title} | Case Study`,
+    title,
     description: description,
+    alternates: {
+      canonical: projectUrl,
+    },
     openGraph: {
       title: `${title} | Case Study`,
       description: description,
       type: "article",
+      url: projectUrl,
       images: [
         {
           url: imageUrl,

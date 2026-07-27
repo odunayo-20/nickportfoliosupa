@@ -4,6 +4,8 @@ import { getSettings } from "@/actions/settings";
 import BlogPostClient from "./BlogPostClient";
 import { Metadata } from "next";
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const resolvedParams = await params;
     const [post, settings] = await Promise.all([
@@ -21,16 +23,21 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const description = post.summary || `Read ${post.title} on our blog.`;
     const siteTitle = settings?.site_title || "Nikola's Journal";
     const imageUrl = (post as any).imageUrl || (post as any).image_url || "/logo.png";
+    const postUrl = `${BASE_URL}/blog/${resolvedParams.slug}`;
 
     return {
-        title: `${title} | ${siteTitle}`,
+        title,
         description: description,
+        alternates: {
+            canonical: postUrl,
+        },
         openGraph: {
             title: `${title} | ${siteTitle}`,
             description: description,
             type: "article",
             siteName: siteTitle,
             locale: "en_US",
+            url: postUrl,
             images: [
                 {
                     url: imageUrl,
