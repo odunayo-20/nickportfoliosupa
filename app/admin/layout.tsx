@@ -6,6 +6,9 @@ import TopNavBar from "./_components/TopNavBar";
 import MobileNav from "./_components/MobileNav";
 
 
+// All admin pages fetch live data — never statically pre-render them at build time.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
     title: "Dashboard — Architect",
     description: "Manage your portfolio workspace.",
