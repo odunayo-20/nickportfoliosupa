@@ -4,25 +4,40 @@ import { headers } from 'next/headers';
 
 export async function POST(req: Request) {
   try {
-    const { page_url, visitor_id, user_id } = await req.json();
-    
+    const body = await req.json();
+
+    console.log('Track visit body:', body);
+
+    const { page_url, visitor_id, user_id } = body;
+
     if (!page_url || !visitor_id) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
 
     const headerList = await headers();
-    const userAgent = headerList.get('user-agent') || 'Unknown';
-    // Get IP from common headers
-    const ip = headerList.get('x-forwarded-for')?.split(',')[0] || 
-               headerList.get('x-real-ip') || 
-               'Unknown';
+
+    const userAgent =
+      headerList.get('user-agent') || 'Unknown';
+
+    const ip =
+      headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      headerList.get('x-real-ip') ||
+      'Unknown';
+
+    console.log('Creating Supabase admin client...');
 
     const supabase = createAdminClient();
 
-    // 5-minute duplicate prevention logic
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    console.log('Supabase client created');
 
-    const { data: existingVisit } = await supabase
+    const fiveMinutesAgo = new Date(
+      Date.now() - 5 * 60 * 1000
+    ).toISOString();
+
+    const { data: existingVisit, error: selectError } = await supabase
       .from('page_visits')
       .select('id')
       .eq('visitor_id', visitor_id)
@@ -30,11 +45,28 @@ export async function POST(req: Request) {
       .gt('visited_at', fiveMinutesAgo)
       .maybeSingle();
 
-    if (existingVisit) {
-      return NextResponse.json({ status: 'ignored', message: 'Duplicate visit within 5 mins' });
+    if (selectError) {
+      console.error('Supabase SELECT error:', selectError);
+
+      return NextResponse.json(
+        {
+          error: 'Failed to check existing visit',
+          details: selectError.message,
+        },
+        { status: 500 }
+      );
     }
 
-    const { error } = await supabase
+    if (existingVisit) {
+      return NextResponse.json({
+        status: 'ignored',
+        message: 'Duplicate visit within 5 mins',
+      });
+    }
+
+    console.log('Inserting visit...');
+
+    const { error: insertError } = await supabase
       .from('page_visits')
       .insert({
         page_url,
@@ -44,14 +76,33 @@ export async function POST(req: Request) {
         user_agent: userAgent,
       });
 
-    if (error) {
-      console.error('Supabase error tracking visit:', error);
-      return NextResponse.json({ error: 'Failed to record visit' }, { status: 500 });
+    if (insertError) {
+      console.error('Supabase INSERT error:', insertError);
+
+      return NextResponse.json(
+        {
+          error: 'Failed to record visit',
+          details: insertError.message,
+        },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ status: 'success' });
+    console.log('Visit recorded successfully');
+
+    return NextResponse.json({
+      status: 'success',
+    });
   } catch (error) {
     console.error('API Error in track-visit:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+
+    return NextResponse.json(
+      {
+        error: 'Internal Server Error',
+        details:
+          error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
   }
 }
