@@ -35,8 +35,8 @@ export function BlogTable({ posts, onToggleStatus, onDeleteRequest }: BlogTableP
                     >
                         {/* Thumbnail */}
                         <div className="w-[72px] h-[72px] rounded-lg bg-slate-100 flex-shrink-0 overflow-hidden border border-slate-200 flex items-center justify-center mt-0.5">
-                            {post.imageUrl ? (
-                                <Image src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" width={72} height={72} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                            {(post.coverImageUrl || post.cover_image_url || post.imageUrl || post.image_url) ? (
+                                <Image src={post.coverImageUrl || post.cover_image_url || post.imageUrl || post.image_url} alt={post.title} className="w-full h-full object-cover" width={72} height={72} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                             ) : (
                                 <ImageIcon size={24} className="text-slate-300" />
                             )}

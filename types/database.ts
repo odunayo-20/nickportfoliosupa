@@ -193,7 +193,9 @@ export interface Database {
           author_id: string | null
           category: string | null
           content: string | null
+          cover_image_id: string | null
           created_at: string
+          detail_image_id: string | null
           featured_image_id: string | null
           id: string
           published_at: string | null
@@ -209,7 +211,9 @@ export interface Database {
           author_id?: string | null
           category?: string | null
           content?: string | null
+          cover_image_id?: string | null
           created_at?: string
+          detail_image_id?: string | null
           featured_image_id?: string | null
           id?: string
           published_at?: string | null
@@ -225,7 +229,9 @@ export interface Database {
           author_id?: string | null
           category?: string | null
           content?: string | null
+          cover_image_id?: string | null
           created_at?: string
+          detail_image_id?: string | null
           featured_image_id?: string | null
           id?: string
           published_at?: string | null
@@ -241,6 +247,20 @@ export interface Database {
           {
             foreignKeyName: "posts_featured_image_id_fkey"
             columns: ["featured_image_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_cover_image_id_fkey"
+            columns: ["cover_image_id"]
+            isOneToOne: false
+            referencedRelation: "media"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_detail_image_id_fkey"
+            columns: ["detail_image_id"]
             isOneToOne: false
             referencedRelation: "media"
             referencedColumns: ["id"]

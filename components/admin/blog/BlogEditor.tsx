@@ -55,7 +55,9 @@ const formSchema = z.object({
     category: z.string().optional(),
     tags: z.array(z.string()),
     published_at: z.string().optional(),
-    featured_image_id: z.string().optional(),
+    featured_image_id: z.string().nullable().optional(),
+    cover_image_id: z.string().nullable().optional(),
+    detail_image_id: z.string().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -68,7 +70,7 @@ interface BlogEditorProps {
 export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) {
     const router = useRouter();
 
-    const [isMediaModalOpen, setIsMediaModalOpen] = useState(false);
+    const [activeMediaSelectField, setActiveMediaSelectField] = useState<"featured" | "cover" | "detail" | null>(null);
     const [tagInput, setTagInput] = useState("");
     const [isMounted, setIsMounted] = useState(false);
     const [categories, setCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
@@ -95,6 +97,8 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
         tags: initialData?.tags || [],
         published_at: initialData?.published_at || new Date().toISOString(),
         featured_image_id: initialData?.featured_image_id || undefined,
+        cover_image_id: initialData?.cover_image_id || undefined,
+        detail_image_id: initialData?.detail_image_id || undefined,
     };
 
     const form = useForm<FormValues>({
@@ -108,6 +112,8 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
     const tagsWatcher = watch("tags");
     const pubDateWatcher = watch("published_at");
     const featuredImageIdWatcher = watch("featured_image_id");
+    const coverImageIdWatcher = watch("cover_image_id");
+    const detailImageIdWatcher = watch("detail_image_id");
 
     // Auto-slug logic
     useEffect(() => {
@@ -149,7 +155,9 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                     visibility: data.visibility,
                     category: data.category,
                     published_at: data.published_at,
-                    featured_image_id: data.featured_image_id,
+                    featured_image_id: data.featured_image_id || null,
+                    cover_image_id: data.cover_image_id || null,
+                    detail_image_id: data.detail_image_id || null,
                     updated_at: new Date().toISOString()
                 });
             } else {
@@ -163,7 +171,9 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                     visibility: data.visibility,
                     category: data.category,
                     published_at: data.published_at,
-                    featured_image_id: data.featured_image_id,
+                    featured_image_id: data.featured_image_id || null,
+                    cover_image_id: data.cover_image_id || null,
+                    detail_image_id: data.detail_image_id || null,
                 });
                 setPostId(newPost.id);
                 // Update URL without full navigation
@@ -185,7 +195,7 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
 
         const timer = setTimeout(() => {
             handleAutoSave(allValues);
-        }, 5000); // 5 second debounce for auto-save
+        }, 60000); // 60 second debounce for auto-save
 
         return () => clearTimeout(timer);
     }, [allValues]);
@@ -206,7 +216,9 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                     visibility: data.visibility,
                     category: data.category,
                     published_at: data.published_at,
-                    featured_image_id: data.featured_image_id,
+                    featured_image_id: data.featured_image_id || null,
+                    cover_image_id: data.cover_image_id || null,
+                    detail_image_id: data.detail_image_id || null,
                     updated_at: new Date().toISOString()
                 });
                 toast.success("Post updated successfully");
@@ -221,7 +233,9 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                     visibility: data.visibility,
                     category: data.category,
                     published_at: data.published_at,
-                    featured_image_id: data.featured_image_id,
+                    featured_image_id: data.featured_image_id || null,
+                    cover_image_id: data.cover_image_id || null,
+                    detail_image_id: data.detail_image_id || null,
                 });
                 toast.success("Post created successfully");
             }
@@ -232,6 +246,13 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
             setSaveStatus("error");
             toast.error(isEditing ? "Failed to update post" : "Failed to create post");
         }
+    };
+
+    const updateFieldAndSave = async (field: keyof FormValues, value: any) => {
+        setValue(field, value, { shouldDirty: true, shouldTouch: true });
+        const currentValues = form.getValues();
+        const updatedValues = { ...currentValues, [field]: value };
+        await handleAutoSave(updatedValues);
     };
 
     const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -249,8 +270,8 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
         setValue("tags", tagsWatcher.filter(t => t !== tag));
     };
 
-    // Featured Image Preview
-    const FeaturedImagePreview = ({ mediaId }: { mediaId: string }) => {
+    // Generic Image Preview Component
+    const ImagePreview = ({ mediaId, onReplace, onRemove }: { mediaId: string; onReplace: () => void; onRemove: () => void }) => {
         const [media, setMedia] = useState<any>(null);
         
         useEffect(() => {
@@ -264,10 +285,10 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
         if (!media) return <div className="h-40 bg-slate-100 rounded-xl flex items-center justify-center animate-pulse"><ImageIcon className="text-slate-300" /></div>;
         return (
             <div className="relative group rounded-xl overflow-hidden border aspect-video">
-                <img src={media.url} alt="Featured" className="w-full h-full object-cover" />
+                <img src={media.url} alt="Preview" className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button type="button" size="sm" variant="secondary" onClick={() => setIsMediaModalOpen(true)}>Replace</Button>
-                    <Button type="button" size="sm" variant="destructive" onClick={() => setValue("featured_image_id", undefined)}>Remove</Button>
+                    <Button type="button" size="sm" variant="secondary" onClick={onReplace}>Replace</Button>
+                    <Button type="button" size="sm" variant="destructive" onClick={onRemove}>Remove</Button>
                 </div>
             </div>
         );
@@ -509,11 +530,15 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                     <h3 className="font-bold text-slate-800 uppercase tracking-widest text-[11px]">Featured Image</h3>
                     
                     {featuredImageIdWatcher ? (
-                        <FeaturedImagePreview mediaId={featuredImageIdWatcher} />
+                        <ImagePreview 
+                            mediaId={featuredImageIdWatcher} 
+                            onReplace={() => setActiveMediaSelectField("featured")}
+                            onRemove={() => updateFieldAndSave("featured_image_id", null)}
+                        />
                     ) : (
                         <button 
                             type="button"
-                            onClick={() => setIsMediaModalOpen(true)}
+                            onClick={() => setActiveMediaSelectField("featured")}
                             className="w-full aspect-video rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all text-slate-400 hover:text-primary"
                         >
                             <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center">
@@ -523,13 +548,89 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                         </button>
                     )}
                 </div>
+
+                {/* Cover Image Box */}
+                <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-4">
+                    <div className="flex flex-col gap-1">
+                        <h3 className="font-bold text-slate-800 uppercase tracking-widest text-[11px]">Cover Image</h3>
+                        <p className="text-[10px] text-slate-400">Used for blog card/thumbnails (e.g. 400x300 or aspect ratio 4:3)</p>
+                    </div>
+                    
+                    {coverImageIdWatcher ? (
+                        <ImagePreview 
+                            mediaId={coverImageIdWatcher} 
+                            onReplace={() => setActiveMediaSelectField("cover")}
+                            onRemove={() => updateFieldAndSave("cover_image_id", null)}
+                        />
+                    ) : (
+                        <button 
+                            type="button"
+                            onClick={() => setActiveMediaSelectField("cover")}
+                            className="w-full aspect-video rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all text-slate-400 hover:text-primary"
+                        >
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center">
+                                <Plus size={20} />
+                            </div>
+                            <span className="text-xs font-bold uppercase tracking-widest">Select Cover Image</span>
+                        </button>
+                    )}
+                </div>
+
+                {/* Detail Image Box */}
+                <div className="bg-white rounded-2xl border shadow-sm p-6 space-y-4">
+                    <div className="flex flex-col gap-1">
+                        <h3 className="font-bold text-slate-800 uppercase tracking-widest text-[11px]">Detail Header Image</h3>
+                        <p className="text-[10px] text-slate-400">Used for top of post details (e.g. 1200x630 or aspect ratio 16:9)</p>
+                    </div>
+                    
+                    {detailImageIdWatcher ? (
+                        <ImagePreview 
+                            mediaId={detailImageIdWatcher} 
+                            onReplace={() => setActiveMediaSelectField("detail")}
+                            onRemove={() => updateFieldAndSave("detail_image_id", null)}
+                        />
+                    ) : (
+                        <button 
+                            type="button"
+                            onClick={() => setActiveMediaSelectField("detail")}
+                            className="w-full aspect-video rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-all text-slate-400 hover:text-primary"
+                        >
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center">
+                                <Plus size={20} />
+                            </div>
+                            <span className="text-xs font-bold uppercase tracking-widest">Select Detail Image</span>
+                        </button>
+                    )}
+                </div>
             </div>
 
             <MediaModal 
-                open={isMediaModalOpen}
-                initialSelection={featuredImageIdWatcher}
-                onClose={() => setIsMediaModalOpen(false)}
-                onSelect={(id) => setValue("featured_image_id", id as string)}
+                open={activeMediaSelectField !== null}
+                initialSelection={
+                    (activeMediaSelectField === "featured" ? featuredImageIdWatcher :
+                    activeMediaSelectField === "cover" ? coverImageIdWatcher :
+                    activeMediaSelectField === "detail" ? detailImageIdWatcher : undefined) ?? undefined
+                }
+                onClose={() => setActiveMediaSelectField(null)}
+                onSelect={(id) => {
+                    const fieldMap = {
+                        featured: "featured_image_id",
+                        cover: "cover_image_id",
+                        detail: "detail_image_id"
+                    } as const;
+                    if (activeMediaSelectField) {
+                        const field = fieldMap[activeMediaSelectField];
+                        updateFieldAndSave(field, id as string);
+                    }
+                    setActiveMediaSelectField(null);
+                }}
+                convertOptions={
+                    activeMediaSelectField === "cover"
+                        ? { maxWidth: 1000, maxHeight: 750, quality: 0.85 }   // 4:3 card thumbnail
+                        : activeMediaSelectField === "detail"
+                        ? { maxWidth: 1920, maxHeight: 1080, quality: 0.90 }  // 16:9 full-width hero
+                        : { maxWidth: 1200, quality: 0.87 }                   // featured – general purpose
+                }
             />
         </form>
     );

@@ -85,17 +85,32 @@ export async function getPostById(id: string) {
         return null;
     }
 
-    // Hand-roll the featured image join since the relationship cache might be stale
-    if (post && post.featured_image_id) {
+    // Hand-roll the image joins since the relationship cache might be stale
+    const imageIds = [post.featured_image_id, post.cover_image_id, post.detail_image_id].filter(id => !!id) as string[];
+    if (post && imageIds.length > 0) {
         const { data: media } = await supabase
             .from("media")
             .select("*")
-            .eq("id", post.featured_image_id)
-            .single();
+            .in("id", imageIds);
         if (media) {
-            (post as any).featured_image = media;
-            (post as any).imageUrl = media.url;
-            (post as any).image_url = media.url;
+            const featured = media.find(m => m.id === post.featured_image_id);
+            const cover = media.find(m => m.id === post.cover_image_id);
+            const detail = media.find(m => m.id === post.detail_image_id);
+            if (featured) {
+                (post as any).featured_image = featured;
+                (post as any).imageUrl = featured.url;
+                (post as any).image_url = featured.url;
+            }
+            if (cover) {
+                (post as any).cover_image = cover;
+                (post as any).coverImageUrl = cover.url;
+                (post as any).cover_image_url = cover.url;
+            }
+            if (detail) {
+                (post as any).detail_image = detail;
+                (post as any).detailImageUrl = detail.url;
+                (post as any).detail_image_url = detail.url;
+            }
         }
     }
 
@@ -117,8 +132,8 @@ export const getAllPosts = cache(unstable_cache(
 
         if (posts && posts.length > 0) {
             const mediaIds = posts
-                .map(p => p.featured_image_id)
-                .filter(id => !!id);
+                .flatMap(p => [p.featured_image_id, p.cover_image_id, p.detail_image_id])
+                .filter((id): id is string => !!id);
             
             if (mediaIds.length > 0) {
                 const { data: media } = await supabase
@@ -129,11 +144,19 @@ export const getAllPosts = cache(unstable_cache(
                 if (media) {
                     return posts.map(post => {
                         const featured_image = media.find(m => m.id === post.featured_image_id);
+                        const cover_image = media.find(m => m.id === post.cover_image_id);
+                        const detail_image = media.find(m => m.id === post.detail_image_id);
                         return {
                             ...post,
                             featured_image,
                             imageUrl: featured_image?.url,
-                            image_url: featured_image?.url
+                            image_url: featured_image?.url,
+                            cover_image,
+                            coverImageUrl: cover_image?.url,
+                            cover_image_url: cover_image?.url,
+                            detail_image,
+                            detailImageUrl: detail_image?.url,
+                            detail_image_url: detail_image?.url,
                         };
                     });
                 }
@@ -162,8 +185,8 @@ export const getPublishedPosts = cache(unstable_cache(
 
         if (posts && posts.length > 0) {
             const mediaIds = posts
-                .map(p => p.featured_image_id)
-                .filter(id => !!id);
+                .flatMap(p => [p.featured_image_id, p.cover_image_id, p.detail_image_id])
+                .filter((id): id is string => !!id);
             
             if (mediaIds.length > 0) {
                 const { data: media } = await supabase
@@ -174,11 +197,19 @@ export const getPublishedPosts = cache(unstable_cache(
                 if (media) {
                     return posts.map(post => {
                         const featured_image = media.find(m => m.id === post.featured_image_id);
+                        const cover_image = media.find(m => m.id === post.cover_image_id);
+                        const detail_image = media.find(m => m.id === post.detail_image_id);
                         return {
                             ...post,
                             featured_image,
                             imageUrl: featured_image?.url,
-                            image_url: featured_image?.url
+                            image_url: featured_image?.url,
+                            cover_image,
+                            coverImageUrl: cover_image?.url,
+                            cover_image_url: cover_image?.url,
+                            detail_image,
+                            detailImageUrl: detail_image?.url,
+                            detail_image_url: detail_image?.url,
                         };
                     });
                 }
@@ -208,16 +239,31 @@ export const getPostBySlug = cache(async (slug: string) => {
                 return null;
             }
 
-            if (post && post.featured_image_id) {
+            const imageIds = [post.featured_image_id, post.cover_image_id, post.detail_image_id].filter(id => !!id) as string[];
+            if (post && imageIds.length > 0) {
                 const { data: media } = await supabase
                     .from("media")
                     .select("*")
-                    .eq("id", post.featured_image_id)
-                    .single();
+                    .in("id", imageIds);
                 if (media) {
-                    (post as any).featured_image = media;
-                    (post as any).imageUrl = media.url;
-                    (post as any).image_url = media.url;
+                    const featured = media.find(m => m.id === post.featured_image_id);
+                    const cover = media.find(m => m.id === post.cover_image_id);
+                    const detail = media.find(m => m.id === post.detail_image_id);
+                    if (featured) {
+                        (post as any).featured_image = featured;
+                        (post as any).imageUrl = featured.url;
+                        (post as any).image_url = featured.url;
+                    }
+                    if (cover) {
+                        (post as any).cover_image = cover;
+                        (post as any).coverImageUrl = cover.url;
+                        (post as any).cover_image_url = cover.url;
+                    }
+                    if (detail) {
+                        (post as any).detail_image = detail;
+                        (post as any).detailImageUrl = detail.url;
+                        (post as any).detail_image_url = detail.url;
+                    }
                 }
             }
 

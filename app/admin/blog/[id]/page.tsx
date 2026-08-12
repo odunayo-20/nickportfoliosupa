@@ -186,16 +186,16 @@ export default function BlogShowPage() {
             <div className="grid grid-cols-12 gap-8">
                 {/* Article Content */}
                 <article className="col-span-12 lg:col-span-8">
-                    {/* Featured Image */}
-                    {post.image_url ? (
+                    {/* Main Detail Image */}
+                    {(post.detail_image_url || post.image_url) ? (
                         <div className="aspect-[2/1] rounded-xl overflow-hidden mb-8 bg-slate-100 border">
-                            <Image src={post.image_url} alt={post.title} className="w-full h-full object-cover" width={1200} height={630} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
+                            <Image src={post.detail_image_url || post.image_url} alt={post.title} className="w-full h-full object-cover" width={1200} height={630} sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                         </div>
                     ) : (
                         <div className="aspect-[3/1] rounded-xl mb-8 bg-gradient-to-br from-slate-100 to-slate-50 border border-dashed border-slate-200 flex items-center justify-center">
                             <div className="text-center">
                                 <ImageIcon size={36} className="text-slate-300 mx-auto mb-2" />
-                                <p className="text-xs text-slate-400 font-medium">No featured image</p>
+                                <p className="text-xs text-slate-400 font-medium">No detail header image</p>
                             </div>
                         </div>
                     )}
@@ -236,6 +236,43 @@ export default function BlogShowPage() {
 
                 {/* Sidebar */}
                 <aside className="col-span-12 lg:col-span-4 space-y-5">
+                    {/* Images Card */}
+                    <div className="bg-white rounded-xl border p-5 space-y-4 shadow-sm">
+                        <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Post Images</h3>
+                        <div className="space-y-3">
+                            <div className="space-y-1">
+                                <span className="text-xs font-semibold text-slate-500">Featured Image (Default)</span>
+                                {post.image_url ? (
+                                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                                        <img src={post.image_url} alt="Featured" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-slate-400 italic">Not set</div>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-xs font-semibold text-slate-500">Cover Image</span>
+                                {post.cover_image_url ? (
+                                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                                        <img src={post.cover_image_url} alt="Cover" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-slate-400 italic">Not set</div>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-xs font-semibold text-slate-500">Detail Header Image</span>
+                                {post.detail_image_url ? (
+                                    <div className="relative aspect-video rounded-lg overflow-hidden border">
+                                        <img src={post.detail_image_url} alt="Detail" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="text-xs text-slate-400 italic">Not set</div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Status Card */}
                     <div className="bg-white rounded-xl border p-5 space-y-4 shadow-sm">
                         <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Status</h3>

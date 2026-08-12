@@ -81,6 +81,8 @@ CREATE TABLE IF NOT EXISTS public.posts (
     tags TEXT[] DEFAULT '{}',
     published_at TIMESTAMPTZ,
     featured_image_id UUID REFERENCES public.media(id) ON DELETE SET NULL,
+    cover_image_id UUID REFERENCES public.media(id) ON DELETE SET NULL,
+    detail_image_id UUID REFERENCES public.media(id) ON DELETE SET NULL,
     author_id UUID REFERENCES auth.users(id) ON DELETE SET NULL
 );
 

@@ -37,6 +37,15 @@ import {
     FolderPlus 
 } from "lucide-react";
 
+interface ConvertOptions {
+    /** Maximum width in pixels (height scales proportionally unless maxHeight is also set). */
+    maxWidth?: number;
+    /** Maximum height in pixels (only applied when both dimensions are constrained). */
+    maxHeight?: number;
+    /** WebP quality 0–1, e.g. 0.85 */
+    quality?: number;
+}
+
 interface MediaLibraryProps {
     onSelect?: (mediaIds: string[]) => void;
     selectionMode?: boolean;
@@ -48,6 +57,8 @@ interface MediaLibraryProps {
     onSelectionChange?: (ids: string[]) => void;
     hideConfirmBar?: boolean;
     hideHeader?: boolean;
+    /** Override WebP conversion settings for this library instance. */
+    convertOptions?: ConvertOptions;
 }
 
 export function MediaLibrary({ 
@@ -60,7 +71,8 @@ export function MediaLibrary({
     externalSelectedIds,
     onSelectionChange,
     hideConfirmBar = false,
-    hideHeader = false
+    hideHeader = false,
+    convertOptions,
 }: MediaLibraryProps) {
     const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined);
     const [folderPath, setFolderPath] = useState<{ id: string, name: string }[]>([]);
@@ -105,6 +117,7 @@ export function MediaLibrary({
         }
     };
     const [isUploading, setIsUploading] = useState(false);
+    const [uploadStatus, setUploadStatus] = useState<"idle" | "converting" | "uploading">("idle");
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [isNewFolderOpen, setIsNewFolderOpen] = useState(false);
     const [newFolderName, setNewFolderName] = useState("");
@@ -128,21 +141,81 @@ export function MediaLibrary({
         fetchData();
     };
 
+    /** Convert an image File to WebP using the Canvas API (browser-side, no deps). */
+    const convertToWebP = (
+        file: File,
+        maxWidth = convertOptions?.maxWidth ?? 1920,
+        maxHeight = convertOptions?.maxHeight,
+        quality = convertOptions?.quality ?? 0.88
+    ): Promise<File> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const objectUrl = URL.createObjectURL(file);
+            img.onload = () => {
+                URL.revokeObjectURL(objectUrl);
+                // Compute scale: constrain by maxWidth, then optionally by maxHeight too
+                let scale = img.width > maxWidth ? maxWidth / img.width : 1;
+                if (maxHeight && Math.round(img.height * scale) > maxHeight) {
+                    scale = maxHeight / img.height;
+                }
+                const w = Math.round(img.width * scale);
+                const h = Math.round(img.height * scale);
+
+                const canvas = document.createElement("canvas");
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return reject(new Error("Canvas not supported"));
+                ctx.drawImage(img, 0, 0, w, h);
+
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) return reject(new Error("Canvas toBlob failed"));
+                        // Derive a clean base name without the old extension
+                        const baseName = file.name.replace(/\.[^.]+$/, "");
+                        resolve(new File([blob], `${baseName}.webp`, { type: "image/webp" }));
+                    },
+                    "image/webp",
+                    quality
+                );
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error("Failed to load image"));
+            };
+            img.src = objectUrl;
+        });
+    };
+
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files || files.length === 0) return;
         setIsUploading(true);
 
         for (let i = 0; i < files.length; i++) {
-            const file = files[i];
+            const originalFile = files[i];
             try {
+                // Convert images to WebP; leave videos/PDFs untouched
+                const isImage = originalFile.type.startsWith("image/");
+                let file = originalFile;
+                if (isImage) {
+                    setUploadStatus("converting");
+                    file = await convertToWebP(
+                        originalFile,
+                        convertOptions?.maxWidth,
+                        convertOptions?.maxHeight,
+                        convertOptions?.quality
+                    );
+                }
+                setUploadStatus("uploading");
+
                 const fileExt = file.name.split('.').pop();
                 const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
                 const storagePath = currentFolderId ? `${currentFolderId}/${fileName}` : fileName;
 
-                const { data: uploadData, error: uploadError } = await supabase.storage
+                const { error: uploadError } = await supabase.storage
                     .from("media")
-                    .upload(storagePath, file);
+                    .upload(storagePath, file, { contentType: file.type });
 
                 if (uploadError) throw uploadError;
 
@@ -154,16 +227,18 @@ export function MediaLibrary({
                     name: file.name,
                     storage_path: storagePath,
                     url: publicUrl,
-                    type: file.type.split('/')[0],
+                    type: originalFile.type.split('/')[0],
                     size: file.size,
                     folder_id: currentFolderId,
-                    hash: file.name + file.size,
+                    hash: originalFile.name + originalFile.size,
                 });
             } catch (err) {
                 console.error("Upload failed", err);
+                toast.error(`Failed to upload ${originalFile.name}`);
             }
         }
         setIsUploading(false);
+        setUploadStatus("idle");
         if (fileInputRef.current) fileInputRef.current.value = "";
         fetchData();
     };
@@ -321,8 +396,13 @@ export function MediaLibrary({
                         </Button>
 
                         <Button size="sm" className="h-9 px-3 gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                            <UploadCloud size={16} /> <span className="hidden sm:inline">{isUploading ? "Uploading..." : "Upload Media"}</span>
-                            <span className="sm:hidden">{isUploading ? "..." : "Upload"}</span>
+                            <UploadCloud size={16} />
+                            <span className="hidden sm:inline">
+                                {uploadStatus === "converting" ? "Converting…" : uploadStatus === "uploading" ? "Uploading…" : "Upload Media"}
+                            </span>
+                            <span className="sm:hidden">
+                                {isUploading ? "…" : "Upload"}
+                            </span>
                         </Button>
                         <input 
                             type="file" 

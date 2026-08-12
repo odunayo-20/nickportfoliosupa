@@ -179,7 +179,7 @@ export default function BlogPostClient({
   return (
     <>
     <ImageLightbox 
-      image={post.image_url} 
+      image={post.detail_image_url || post.image_url} 
       isOpen={lightboxOpen} 
       onClose={() => setLightboxOpen(false)} 
     />
@@ -224,7 +224,7 @@ export default function BlogPostClient({
         </motion.div>
     </motion.header>
 
-    {post.image_url && (
+    {(post.detail_image_url || post.image_url) && (
         <motion.div 
             className="max-w-6xl mx-auto px-6 mb-16 reveal cursor-pointer"
             initial="hidden"
@@ -234,7 +234,7 @@ export default function BlogPostClient({
             onClick={() => setLightboxOpen(true)}
         >
             <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-lg overflow-hidden border border-gray-200 shadow-lg hover:shadow-2xl transition-all group relative">
-                <Image src={post.image_url} 
+                <Image src={post.detail_image_url || post.image_url} 
                      alt={post.title} 
                      fill
                      sizes='(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw'
@@ -397,7 +397,7 @@ export default function BlogPostClient({
                 {relatedPosts.slice(0, 2).map((relPost: any) => (
                     <Link href={`/blog/${relPost.slug}`} key={relPost.id} className="flex flex-col bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all group">
                         <div className="aspect-[16/9] overflow-hidden relative bg-brand-offwhite">
-                            <Image src={relPost.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} fill alt={relPost.title} className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 group-hover:scale-105 transition-transform duration-700" />
+                            <Image src={relPost.cover_image_url || relPost.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} fill alt={relPost.title} className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 group-hover:scale-105 transition-transform duration-700" />
                         </div>
                         <div className="p-8 flex-grow flex flex-col">
                             <div className="flex items-center justify-between mb-4">

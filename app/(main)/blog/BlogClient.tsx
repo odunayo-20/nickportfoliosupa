@@ -105,8 +105,8 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
             transition={{ duration: 0.3, ease: "easeOut" as const }}
             className="bg-brand-light pb-32"
         >
-            <section className="py-20">
-                <div className="max-w-7xl mx-auto px-6 reveal">
+            <section className="py-12 sm:py-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 reveal">
                     {filteredPosts.length === 0 && (
                         <div className="text-center py-20">
                             <p className="text-brand-muted text-lg font-medium">No posts in this category yet.</p>
@@ -115,32 +115,35 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
                     
                     {featuredPost && (
                         <>
-                            <h2 className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Featured Article</h2>
-                            <Link href={`/blog/${featuredPost.slug}`} className="group grid lg:grid-cols-2 gap-10 items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all article-card block">
-                                <div className="overflow-hidden bg-brand-offwhite h-full min-h-[350px] relative">
-                                    <Image src={featuredPost.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200"} 
-                                    fill
-                                        alt={featuredPost.title} 
-                                        className="article-image absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 grayscale hover:grayscale-0" />
+                            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-brand-dark mb-6 sm:mb-10 border-b border-gray-200 pb-4">Featured Article</h2>
+                            <Link href={`/blog/${featuredPost.slug}`} className="group flex flex-col lg:grid lg:grid-cols-2 gap-0 lg:gap-10 items-stretch bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all article-card block">
+                                <div className="aspect-[4/3] sm:aspect-[16/9] lg:aspect-auto lg:min-h-[380px] overflow-hidden bg-brand-offwhite relative flex-shrink-0">
+                                    <Image
+                                        src={featuredPost.cover_image_url || featuredPost.image_url || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=1200"}
+                                        fill
+                                        alt={featuredPost.title}
+                                        className="article-image absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 100vw, 50vw"
+                                    />
                                 </div>
-                                <div className="p-8 lg:p-12">
-                                    <div className="flex items-center gap-4 mb-6">
+                                <div className="p-5 sm:p-8 lg:p-12 flex flex-col justify-center">
+                                    <div className="flex flex-wrap items-center gap-3 mb-4 sm:mb-6">
                                         {featuredPost.category && (
-                                            <span className="text-xs font-bold text-brand-dark bg-brand-orange px-3 py-1 rounded-full uppercase tracking-widest">{featuredPost.category}</span>
+                                            <span className="text-[10px] sm:text-xs font-bold text-brand-dark bg-brand-orange px-3 py-1 rounded-full uppercase tracking-widest">{featuredPost.category}</span>
                                         )}
-                                        <span className="text-sm font-medium text-brand-muted flex items-center gap-1">
-                                            <Calendar className="w-4 h-4" /> 
+                                        <span className="text-xs sm:text-sm font-medium text-brand-muted flex items-center gap-1">
+                                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                                             {new Date(featuredPost.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                         </span>
                                     </div>
-                                    <h3 className="text-3xl md:text-4xl font-extrabold tracking-tight text-brand-dark mb-6 group-hover:text-brand-green transition-colors">
+                                    <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-brand-dark mb-4 sm:mb-6 group-hover:text-brand-green transition-colors leading-tight">
                                         {featuredPost.title}
                                     </h3>
-                                    <p className="text-brand-muted text-lg leading-relaxed mb-8 line-clamp-3">
+                                    <p className="text-brand-muted text-sm sm:text-base lg:text-lg leading-relaxed mb-6 sm:mb-8 line-clamp-3">
                                         {featuredPost.excerpt}
                                     </p>
-                                    <div className="inline-flex items-center gap-2 text-brand-green font-bold group-hover:gap-4 transition-all">
-                                        Read Full Article <ArrowRight className="w-5 h-5" />
+                                    <div className="inline-flex items-center gap-2 text-brand-green font-bold group-hover:gap-4 transition-all text-sm sm:text-base">
+                                        Read Full Article <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                                     </div>
                                 </div>
                             </Link>
@@ -148,38 +151,41 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
                     )}
                 </div>
             </section>
-
+ 
             {otherPosts.length > 0 && (
-                <section>
-                    <div className="max-w-7xl mx-auto px-6">
-                        <h2 className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Latest Posts</h2>
+                <section className="pb-16 sm:pb-32">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6">
+                        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-brand-dark mb-6 sm:mb-10 border-b border-gray-200 pb-4">Latest Posts</h2>
                         
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
                             {otherPosts.slice(0, visibleCount).map((post: any, index: number) => (
                                 <motion.div variants={fadeInUp} key={post.id || index} initial="hidden" animate="visible" custom={index}>
-                                    <Link href={`/blog/${post.slug}`} className="article-card flex flex-col h-full bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all reveal group delay-100 block">
-                                        <div className="aspect-[16/9] overflow-hidden relative bg-brand-offwhite">
-                                            <Image src={post.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} 
-                                            fill
-                                                alt={post.title} 
-                                                className="article-image absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" />
+                                    <Link href={`/blog/${post.slug}`} className="article-card flex flex-col h-full bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all group block">
+                                        <div className="aspect-[4/3] overflow-hidden relative bg-brand-offwhite flex-shrink-0">
+                                            <Image
+                                                src={post.cover_image_url || post.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"}
+                                                fill
+                                                alt={post.title}
+                                                className="article-image absolute inset-0 w-full h-full object-cover transition-all duration-700"
+                                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                            />
                                         </div>
-                                        <div className="p-8 flex-grow flex flex-col">
-                                            <div className="flex items-center justify-between mb-4">
+                                        <div className="p-5 sm:p-6 flex-grow flex flex-col">
+                                            <div className="flex items-center justify-between mb-3">
                                                 {post.category ? (
                                                     <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">{post.category}</span>
                                                 ) : (
-                                                    <span className="hidden"></span>
+                                                    <span className="hidden" />
                                                 )}
-                                                <span className="text-xs font-medium text-brand-muted">
+                                                <span className="text-xs font-medium text-brand-muted ml-auto">
                                                     {new Date(post.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                 </span>
                                             </div>
-                                            <h3 className="text-xl font-bold text-brand-dark mb-4 group-hover:text-brand-green transition-colors">{post.title}</h3>
-                                            <p className="text-brand-muted text-sm leading-relaxed mb-6 flex-grow line-clamp-3">
+                                            <h3 className="text-base sm:text-lg font-bold text-brand-dark mb-3 group-hover:text-brand-green transition-colors leading-snug">{post.title}</h3>
+                                            <p className="text-brand-muted text-sm leading-relaxed mb-5 flex-grow line-clamp-2">
                                                 {post.excerpt}
                                             </p>
-                                            <div className="text-sm font-bold text-brand-orange flex items-center gap-2">
+                                            <div className="text-sm font-bold text-brand-orange flex items-center gap-2 mt-auto">
                                                 Read More <ArrowRight className="w-4 h-4" />
                                             </div>
                                         </div>
@@ -189,7 +195,7 @@ export default function BlogClient({ posts, categories }: BlogClientProps) {
                         </div>
                         
                         {visibleCount < otherPosts.length && (
-                            <div className="mt-16 text-center reveal">
+                            <div className="mt-12 sm:mt-16 text-center reveal">
                                 <button 
                                     onClick={() => setVisibleCount(prev => prev + 6)}
                                     className="px-8 py-3 bg-brand-offwhite border border-gray-200 text-brand-dark font-bold rounded-full hover:bg-brand-green hover:text-white hover:border-brand-green transition-all shadow-sm"

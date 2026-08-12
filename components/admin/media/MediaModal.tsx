@@ -6,15 +6,22 @@ import { Button } from "@/components/ui/button";
 import { MediaLibrary } from "./MediaLibrary";
 import { X, CheckCircle } from "lucide-react";
 
+interface ConvertOptions {
+    maxWidth?: number;
+    maxHeight?: number;
+    quality?: number;
+}
+
 interface MediaModalProps {
     open: boolean;
     onClose: () => void;
     onSelect: (ids: string | string[]) => void;
     initialSelection?: string | string[];
     multiple?: boolean;
+    convertOptions?: ConvertOptions;
 }
 
-export function MediaModal({ open, onClose, onSelect, initialSelection, multiple = false }: MediaModalProps) {
+export function MediaModal({ open, onClose, onSelect, initialSelection, multiple = false, convertOptions }: MediaModalProps) {
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [mounted, setMounted] = useState(false);
     const [visible, setVisible] = useState(false);
@@ -110,6 +117,7 @@ export function MediaModal({ open, onClose, onSelect, initialSelection, multiple
                         onSelectionChange={setSelectedIds}
                         hideConfirmBar={true}
                         hideHeader={true}
+                        convertOptions={convertOptions}
                     />
                 </div>
 
