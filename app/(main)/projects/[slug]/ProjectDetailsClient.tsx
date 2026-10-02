@@ -179,10 +179,10 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
             </Link>
             
             <div className="flex flex-col mb-20 max-w-5xl">
-                <div className="flex gap-3 mb-8 flex-wrap">
-                    <span className="text-xs font-bold text-brand-dark bg-brand-orange px-4 py-2 rounded-full uppercase tracking-widest">Case Study</span>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+                    <span className="inline-flex items-center text-xs font-bold text-brand-dark bg-brand-orange px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full uppercase tracking-wider sm:tracking-widest shrink-0 self-start">Case Study</span>
                     {project.category && (
-                        <span className="text-xs font-bold text-brand-green border border-brand-green/20 px-4 py-2 rounded-full uppercase tracking-widest">{project.category}</span>
+                        <span className="inline-flex items-center text-xs font-bold text-brand-green border border-brand-green/20 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full uppercase tracking-wider sm:tracking-widest self-start">{project.category}</span>
                     )}
                 </div>
                 <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter text-brand-dark leading-[1.05] mb-8">

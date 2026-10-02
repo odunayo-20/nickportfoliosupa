@@ -121,8 +121,8 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
                 <div className="max-w-7xl mx-auto px-6">
                     <h2 className="text-2xl font-extrabold tracking-tighter text-brand-dark mb-10 border-b border-gray-200 pb-4">Featured Projects</h2>
                     {featuredProjects.map((project) => (
-                    <motion.div key={project.id} variants={fadeInUp} className="grid lg:grid-cols-2 gap-10 items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-shadow project-card mb-8 block">
-                        <Link href={`/projects/${project.slug}`} className="block overflow-hidden bg-brand-offwhite h-full min-h-[400px] relative hover:opacity-90 transition-opacity p-4 lg:p-2">
+                    <motion.div key={project.id} variants={fadeInUp} className="flex flex-col lg:grid lg:grid-cols-2 gap-0 lg:gap-10 items-stretch lg:items-center bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-shadow project-card mb-8">
+                        <Link href={`/projects/${project.slug}`} className="block overflow-hidden bg-brand-offwhite w-full h-[280px] sm:h-[350px] lg:h-full lg:min-h-[400px] relative hover:opacity-90 transition-opacity p-4 lg:p-6">
                             {project.imageUrl || project.image_url ? (
                                 <div className="relative w-full h-full">
                                     <Image src={project.imageUrl || project.image_url} 
@@ -136,33 +136,37 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
                                 </div>
                             )}
                         </Link>
-                        <div className="p-10 lg:p-16">
-                            <div className="flex gap-2 mb-6">
-                                <span className="text-xs font-bold text-brand-dark bg-brand-orange px-3 py-1 rounded-full uppercase tracking-widest">Featured</span>
+                        <div className="p-6 sm:p-10 lg:p-16 flex flex-col justify-center">
+                            <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
+                                <span className="inline-flex items-center text-[10px] sm:text-xs font-bold text-brand-dark bg-brand-orange px-3 py-1 rounded-full uppercase tracking-wider sm:tracking-widest shrink-0 self-start">
+                                    Featured
+                                </span>
                                 {project.category && (
-                                    <span className="text-xs font-bold text-brand-green border border-brand-green/20 px-3 py-1 rounded-full uppercase tracking-widest">{project.category}</span>
+                                    <span className="inline-flex items-center text-[10px] sm:text-xs font-bold text-brand-green border border-brand-green/20 px-3 py-1 rounded-full uppercase tracking-wider sm:tracking-widest self-start">
+                                        {project.category}
+                                    </span>
                                 )}
                             </div>
                             <Link href={`/projects/${project.slug}`}>
-                                <h2 className="text-4xl font-extrabold tracking-tight text-brand-dark mb-6 hover:text-brand-orange transition-colors">{project.title}</h2>
+                                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-brand-dark mb-4 sm:mb-6 hover:text-brand-orange transition-colors leading-tight">{project.title}</h2>
                             </Link>
                             {/* <p className="text-brand-muted leading-relaxed mb-8">
                                 {project.description}
                             </p> */}
                             
                             {project.tech_stack && project.tech_stack.length > 0 && (
-                                <div className="flex flex-wrap gap-3 mb-10 border-l-2 border-brand-orange pl-4">
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mb-8 sm:mb-10 border-l-2 border-brand-orange pl-4">
                                     {project.tech_stack.map((tech: string, i: number) => (
-                                        <span key={i} className="text-sm font-semibold text-brand-dark flex items-center">
+                                        <span key={i} className="text-xs sm:text-sm font-semibold text-brand-dark flex items-center">
                                             {tech}
-                                            {i < project.tech_stack.length - 1 && <span className="ml-3 text-sm text-brand-muted">•</span>}
+                                            {i < project.tech_stack.length - 1 && <span className="ml-3 text-xs sm:text-sm text-brand-muted">•</span>}
                                         </span>
                                     ))}
                                 </div>
                             )}
 
-                            <Link href={`/projects/${project.slug}`} className="inline-flex items-center gap-3 px-8 py-4 bg-brand-green text-white font-bold rounded-full hover:bg-brand-dark transition-colors">
-                                View Case Study <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center"><ArrowRight className="w-3 h-3 text-brand-green" /></div>
+                            <Link href={`/projects/${project.slug}`} className="inline-flex items-center justify-center gap-3 px-6 py-3.5 sm:px-8 sm:py-4 bg-brand-green text-white font-bold rounded-full hover:bg-brand-dark transition-colors text-sm sm:text-base w-full sm:w-auto">
+                                View Case Study <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center shrink-0"><ArrowRight className="w-3 h-3 text-brand-green" /></div>
                             </Link>
                         </div>
                     </motion.div>
@@ -198,13 +202,11 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
                                 )}
                             </Link>
                             <div className="p-6 flex-grow flex flex-col">
-                                <div className="flex items-center justify-between mb-4">
-                                    {project.category ? (
+                                {project.category && (
+                                    <div className="flex items-center justify-between mb-4">
                                         <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">{project.category}</span>
-                                    ) : (
-                                        <span className="hidden"></span>
-                                    )}
-                                </div>
+                                    </div>
+                                )}
                                 <Link href={`/projects/${project.slug}`}>
                                     <h3 className="text-xl font-bold text-brand-dark mb-4 group-hover:text-brand-green transition-colors">{project.title}</h3>
                                 </Link>
@@ -213,18 +215,21 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
                                 </p> */}
                                 
                                 {project.tech_stack && project.tech_stack.length > 0 && (
-                                    <div className="flex flex-wrap gap-2 mb-6 flex-grow">
+                                    <div className="flex flex-wrap items-center gap-2 mb-6">
                                         {project.tech_stack?.slice(0, 3).map((tech: string, i: number) => (
-                                            <span key={i} className="text-[10px] font-bold text-brand-muted bg-gray-100 px-2 py-1 rounded-full uppercase">{tech}</span>
+                                            <span key={i} className="text-[10px] font-bold text-brand-muted bg-gray-100 px-2.5 py-1 rounded-full uppercase self-start">{tech}</span>
                                         ))}
                                         {project.tech_stack && project.tech_stack.length > 3 && (
-                                            <span className="text-[10px] font-bold text-brand-muted bg-gray-100 px-2 py-1 rounded-full uppercase ">+{project.tech_stack.length - 3}</span>
+                                            <span className="text-[10px] font-bold text-brand-muted bg-gray-100 px-2.5 py-1 rounded-full uppercase self-start">+{project.tech_stack.length - 3}</span>
                                         )}
                                     </div>
                                 )}
-                                <div className="text-sm font-bold text-brand-orange flex items-center gap-2">
+                                <Link 
+                                    href={`/projects/${project.slug}`}
+                                    className="mt-auto text-sm font-bold text-brand-orange flex items-center gap-2 group-hover:text-brand-green transition-colors w-fit"
+                                >
                                     View Details <ArrowRight className="w-4 h-4" />
-                                </div>
+                                </Link>
                             </div>
                         </motion.div>
                         ))}
