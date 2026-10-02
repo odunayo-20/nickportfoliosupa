@@ -70,6 +70,10 @@
       }
 
       /* Custom Prose Styling for Article Body */
+      .article-body > :first-child,
+      .article-body :first-child { margin-top: 0 !important; }
+      .article-body p:empty,
+      .article-body p:has(> br:only-child) { display: none; }
       .article-body p { margin-bottom: 1.5rem; line-height: 1.8; color: #4b5563; font-size: 1.125rem; }
       .article-body h2 { font-size: 2rem; font-weight: 800; color: var(--color-brand-dark); margin-top: 3rem; margin-bottom: 1.25rem; letter-spacing: -0.025em; }
       .article-body h3 { font-size: 1.5rem; font-weight: 700; color: var(--color-brand-dark); margin-top: 2.5rem; margin-bottom: 1rem; }

@@ -168,32 +168,32 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
     />
 
     <motion.header 
-        className="pt-20 pb-24 bg-gradient-to-b from-brand-light to-white"
+        className="pt-16 sm:pt-20 pb-4 sm:pb-8 md:pb-12 bg-gradient-to-b from-brand-light to-white"
         initial="hidden"
         animate="visible"
         variants={staggerContainer}
     >
         <motion.div variants={fadeInUp} className="max-w-7xl mx-auto px-6 reveal">
-            <Link href="/projects" className="inline-flex items-center gap-2 text-sm font-bold text-brand-muted hover:text-brand-orange transition-colors mb-12">
+            <Link href="/projects" className="inline-flex items-center gap-2 text-sm font-bold text-brand-muted hover:text-brand-orange transition-colors mb-8 sm:mb-12">
                 <ArrowLeft className="w-4 h-4" /> Back to Projects
             </Link>
             
-            <div className="flex flex-col mb-20 max-w-5xl">
+            <div className="flex flex-col mb-10 sm:mb-16 md:mb-20 max-w-5xl">
                 <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
                     <span className="inline-flex items-center text-xs font-bold text-brand-dark bg-brand-orange px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full uppercase tracking-wider sm:tracking-widest shrink-0 self-start">Case Study</span>
                     {project.category && (
                         <span className="inline-flex items-center text-xs font-bold text-brand-green border border-brand-green/20 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full uppercase tracking-wider sm:tracking-widest self-start">{project.category}</span>
                     )}
                 </div>
-                <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter text-brand-dark leading-[1.05] mb-8">
+                <h1 className="text-4xl sm:text-6xl md:text-8xl font-extrabold tracking-tighter text-brand-dark leading-[1.05] mb-6 sm:mb-8">
                     {project.title}
                 </h1>
-                <p className="text-brand-muted text-xl leading-relaxed whitespace-pre-wrap max-w-3xl">
+                <p className="text-brand-muted text-lg sm:text-xl leading-relaxed whitespace-pre-wrap max-w-3xl">
                     {project.description}
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 py-6 border-t border-b border-gray-200 mb-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 py-6 border-t border-b border-gray-200 mb-8 sm:mb-14 md:mb-20">
                 {project.category && (
                 <div className="group">
                     <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-3">Category</span>
@@ -275,16 +275,16 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
 
     {project.content && (
     <motion.section 
-        className="py-24 bg-brand-light"
+        className="pt-4 sm:pt-8 md:pt-12 pb-16 sm:pb-20 md:pb-24 bg-brand-light"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
     >
-        <div className="max-w-4xl mx-auto px-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
   <motion.div
     variants={fadeInUp}
-    className="max-w-3xl mx-auto px-6 pb-20 reveal article-body prose prose-lg prose-slate dark:prose-invert"
+    className="max-w-3xl mx-auto px-2 sm:px-6 pb-12 sm:pb-20 reveal article-body prose prose-slate dark:prose-invert max-w-none"
   >
     <div className='' dangerouslySetInnerHTML={{ __html: project.content }} />
   </motion.div>
