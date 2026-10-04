@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS public.projects (
     status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
     is_featured BOOLEAN DEFAULT false,
     featured_image UUID REFERENCES public.media(id) ON DELETE SET NULL,
-    media_ids UUID[] DEFAULT '{}'
+    media_ids UUID[] DEFAULT '{}',
+    display_order INTEGER NOT NULL DEFAULT 0
 );
 
 -- Create profiles table

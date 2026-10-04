@@ -322,6 +322,7 @@ export interface Database {
           content: string | null
           created_at: string
           description: string | null
+          display_order: number
           featured_image: string | null
           github_url: string | null
           id: string
@@ -341,6 +342,7 @@ export interface Database {
           content?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number
           featured_image?: string | null
           github_url?: string | null
           id?: string
@@ -360,6 +362,7 @@ export interface Database {
           content?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number
           featured_image?: string | null
           github_url?: string | null
           id?: string

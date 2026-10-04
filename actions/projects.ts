@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient, createStaticClient } from "@/lib/server";
-import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { cache } from "react";
 import { Database } from "@/types/database";
 
@@ -22,7 +22,8 @@ export async function createProject(data: ProjectInsert) {
     }
 
     revalidatePath("/admin/project");
-    revalidateTag("projects", "max");
+    updateTag("projects");
+    revalidatePath("/projects");
     return project;
 }
 
@@ -43,7 +44,8 @@ export async function updateProject(id: string, data: ProjectUpdate) {
     revalidatePath("/admin/project");
     revalidatePath(`/admin/project/edit/${id}`);
     revalidatePath(`/admin/project/show/${id}`);
-    revalidateTag("projects", "max");
+    updateTag("projects");
+    revalidatePath("/projects");
     return project;
 }
 
@@ -60,7 +62,8 @@ export async function deleteProject(id: string) {
     }
 
     revalidatePath("/admin/project");
-    revalidateTag("projects", "max");
+    updateTag("projects");
+    revalidatePath("/projects");
 }
 
 export async function bulkDeleteProjects(ids: string[]) {
@@ -76,7 +79,8 @@ export async function bulkDeleteProjects(ids: string[]) {
     }
 
     revalidatePath("/admin/project");
-    revalidateTag("projects", "max");
+    updateTag("projects");
+    revalidatePath("/projects");
 }
 
 export async function bulkUpdateProjectStatus(ids: string[], status: "draft" | "published") {
@@ -92,7 +96,8 @@ export async function bulkUpdateProjectStatus(ids: string[], status: "draft" | "
     }
 
     revalidatePath("/admin/project");
-    revalidateTag("projects", "max");
+    updateTag("projects");
+    revalidatePath("/projects");
 }
 
 export async function getProjectById(id: string) {
@@ -131,6 +136,7 @@ export const getAllProjects = cache(unstable_cache(
         const { data: projects, error } = await supabase
             .from("projects")
             .select("*")
+            .order("display_order", { ascending: true })
             .order("created_at", { ascending: false });
 
         if (error) {
@@ -176,6 +182,7 @@ export const getPublishedProjects = cache(unstable_cache(
             .from("projects")
             .select("*")
             .eq("status", "published")
+            .order("display_order", { ascending: true })
             .order("created_at", { ascending: false });
 
         if (error) {

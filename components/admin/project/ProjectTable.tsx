@@ -67,6 +67,7 @@ export function ProjectTable({
                                 className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 cursor-pointer"
                             />
                         </th>
+                        <th className="w-16 px-4 md:px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Order</th>
                         <th className="px-4 md:px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Project</th>
                         <th className="px-4 md:px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider hidden lg:table-cell">Tech Stack</th>
                         <th className="px-4 md:px-6 py-4 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
@@ -94,6 +95,9 @@ export function ProjectTable({
                                         onChange={() => onSelectRow(project.id)}
                                         className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 cursor-pointer"
                                     />
+                                </td>
+                                <td className="px-4 md:px-6 py-4 text-[13px] font-bold text-slate-500 tabular-nums">
+                                    {project.display_order ?? 0}
                                 </td>
                                 <td className="px-4 md:px-6 py-4">
                                     <div className="flex items-center gap-3 md:gap-4">

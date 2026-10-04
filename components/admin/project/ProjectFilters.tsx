@@ -90,6 +90,7 @@ export function ProjectFilters({
                             <SelectValue placeholder="Sort By" />
                         </SelectTrigger>
                         <SelectContent>
+                            <SelectItem value="order-asc" className="text-xs font-semibold">Display Order</SelectItem>
                             <SelectItem value="date-desc" className="text-xs font-semibold">Newest First</SelectItem>
                             <SelectItem value="date-asc" className="text-xs font-semibold">Oldest First</SelectItem>
                             <SelectItem value="title-asc" className="text-xs font-semibold">Title (A-Z)</SelectItem>

@@ -67,6 +67,7 @@ const projectSchema = z.object({
     playStoreUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
     status: z.enum(["draft", "published"]),
     isFeatured: z.boolean(),
+    displayOrder: z.number({ message: "Enter a number" }).int().min(0, "Order can't be negative"),
     featuredImage: z.string().optional(),
     mediaIds: z.array(z.string()),
 });
@@ -116,6 +117,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
         playStoreUrl: initialData?.play_store_url || initialData?.playStoreUrl || "",
         status: (initialData?.status === "published" ? "published" : "draft") as "draft" | "published",
         isFeatured: initialData?.is_featured || initialData?.isFeatured || false,
+        displayOrder: initialData?.display_order ?? 0,
         featuredImage: initialData?.featured_image || initialData?.featured_image_id || initialData?.featuredImage || undefined,
         mediaIds: initialData?.media_ids || initialData?.mediaIds || [],
     };
@@ -204,6 +206,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                 play_store_url: data.playStoreUrl || undefined,
                 status: data.status,
                 is_featured: data.isFeatured,
+                display_order: data.displayOrder,
                 featured_image: data.featuredImage || undefined,
                 media_ids: data.mediaIds,
             };
@@ -307,6 +310,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                 play_store_url: data.playStoreUrl || undefined,
                 status: data.status,
                 is_featured: data.isFeatured,
+                display_order: data.displayOrder,
                 featured_image: data.featuredImage || undefined,
                 media_ids: data.mediaIds,
             };
@@ -754,6 +758,20 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                                     <Switch 
                                         checked={values.isFeatured}
                                         onCheckedChange={(checked) => setValue("isFeatured", checked, { shouldDirty: true })}
+                                    />
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2 gap-4">
+                                    <div className="space-y-0.5">
+                                        <div className="text-[13px] font-bold text-slate-900">Display Order</div>
+                                        <p className="text-[10px] text-slate-400 font-medium">Lower numbers appear first</p>
+                                    </div>
+                                    <Input
+                                        type="number"
+                                        min={0}
+                                        step={1}
+                                        className="w-20 text-right"
+                                        {...register("displayOrder", { valueAsNumber: true })}
                                     />
                                 </div>
                             </div>

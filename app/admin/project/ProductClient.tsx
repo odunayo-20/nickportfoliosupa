@@ -29,7 +29,7 @@ export default function ProjectClient() {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [categoryFilter, setCategoryFilter] = useState("all");
-    const [sortBy, setSortBy] = useState("date-desc");
+    const [sortBy, setSortBy] = useState("order-asc");
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [idsToDelete, setIdsToDelete] = useState<string[] | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -81,6 +81,10 @@ export default function ProjectClient() {
             const dateA = new Date(a.updated_at || a.created_at).getTime();
             const dateB = new Date(b.updated_at || b.created_at).getTime();
             switch (sortBy) {
+                case "order-asc": {
+                    const diff = (a.display_order ?? 0) - (b.display_order ?? 0);
+                    return diff !== 0 ? diff : dateB - dateA;
+                }
                 case "title-asc": return a.title.localeCompare(b.title);
                 case "title-desc": return b.title.localeCompare(a.title);
                 case "date-asc": return dateA - dateB;

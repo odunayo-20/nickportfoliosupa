@@ -31,8 +31,11 @@ export default function ProjectsClient({ projects, categories }: ProjectsClientP
     const [activeCategory, setActiveCategory] = useState<string>("all");
 
     const filteredProjects = useMemo(() => {
-        if (activeCategory === "all") return projects;
-        return projects.filter(p => p.category === activeCategory);
+        const ordered = [...projects].sort(
+            (a, b) => (a.display_order ?? 0) - (b.display_order ?? 0)
+        );
+        if (activeCategory === "all") return ordered;
+        return ordered.filter(p => p.category === activeCategory);
     }, [projects, activeCategory]);
 
     const featuredProjects = filteredProjects.filter(p => p.is_featured);
