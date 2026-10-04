@@ -29,6 +29,13 @@ const GithubIcon = ({ className }: { className?: string }) => (
 // Image Lightbox Component
 function ImageLightbox({ images, initialIndex, isOpen, onClose }: { images: string[], initialIndex: number, isOpen: boolean, onClose: () => void }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [wasOpen, setWasOpen] = useState(isOpen);
+
+  // The lightbox stays mounted, so re-sync to the clicked image each time it opens
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setCurrentIndex(initialIndex);
+  }
 
   const handleNext = () => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -153,10 +160,12 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
 
   if (!project) return null;
 
+  const mainImage = project.imageUrl || project.image_url;
   const allImages = [
-    project.imageUrl || project.image_url,
+    mainImage,
     ...(project.additionalImages || [])
   ].filter(Boolean);
+  const galleryOffset = mainImage ? 1 : 0;
 
   return (
     <>
@@ -315,7 +324,7 @@ export default function ProjectDetailsClient({ project }: { project: any }) {
                       variants={fadeInUp} 
                       className="group rounded-lg overflow-hidden border border-gray-200 bg-white aspect-video md:aspect-square relative shadow-md hover:shadow-xl transition-all duration-500 cursor-pointer"
                       onClick={() => {
-                        setLightboxIndex(idx + 1); // +1 because main image is at index 0
+                        setLightboxIndex(idx + galleryOffset); // main image (if any) is at index 0
                         setLightboxOpen(true);
                       }}
                     >
