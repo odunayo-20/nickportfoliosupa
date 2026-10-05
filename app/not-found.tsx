@@ -14,6 +14,7 @@ export default function NotFound() {
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
       {/* Decorative background blobs */}
+      {/* testing */}
       <div
         aria-hidden="true"
         style={{
