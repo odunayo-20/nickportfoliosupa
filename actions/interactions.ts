@@ -1,6 +1,9 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createClient } from "@/lib/server";
+import { createAdminClient } from "@/lib/admin";
+import { rateLimit, RATE_LIMITED } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { createHash } from "crypto";
@@ -47,9 +50,12 @@ async function getSessionFingerprint(allowSetCookie: boolean = false) {
 export async function likePost(postId: string) {
     const supabase = await createClient();
     const sessionId = await getSessionFingerprint(true);
+    if (!(await rateLimit("like", 30, 10 * 60_000))) return { success: false, error: RATE_LIMITED };
+    // Written with the service client: the public can no longer insert into post_likes directly.
+    const admin = createAdminClient();
 
     // The UNION of postId and sessionId is enforced unique at the database level by the migration.
-    const { error } = await supabase
+    const { error } = await admin
         .from("post_likes")
         .insert({
             post_id: postId,
@@ -73,7 +79,10 @@ export async function unlikePost(postId: string) {
     const supabase = await createClient();
     const sessionId = await getSessionFingerprint(true);
 
-    const { error } = await supabase
+    // post_likes has no public DELETE policy (so unlike silently did nothing). Delete server-side,
+    // scoped to this visitor's own HttpOnly session id.
+    const admin = createAdminClient();
+    const { error } = await admin
         .from("post_likes")
         .delete()
         .eq("post_id", postId)
@@ -121,7 +130,7 @@ export async function getComments(postId: string) {
     
     const { data: comments, error } = await supabase
         .from("comments")
-        .select("*")
+        .select("id, created_at, post_id, project_id, parent_id, author_name, content, is_approved")
         .eq("post_id", postId)
         .eq("is_approved", true)
         .order("created_at", { ascending: true });
@@ -150,6 +159,12 @@ export async function addComment(postId: string, formData: FormData) {
         return { success: false, error: "Comment must be between 5 and 2000 characters." };
     }
 
+    if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))) {
+        return { success: false, error: "Invalid email." };
+    }
+
+    if (!(await rateLimit("comment", 5, 15 * 60_000))) return { success: false, error: RATE_LIMITED };
+
     const { error } = await supabase
         .from("comments")
         .insert({
@@ -174,6 +189,7 @@ export async function addComment(postId: string, formData: FormData) {
 // ---------------- Admin Functions ----------------
 
 export async function getAllCommentsAdmin() {
+    await requireAdmin();
     const supabase = await createClient(); // will need admin privileges or just use anon if RLS allows. Actually, RLS on comments only allows read if is_approved=true OR auth.role() = 'authenticated'. Admin is authenticated.
     
     // Fetch all comments and heavily join the related post title for context
@@ -193,6 +209,7 @@ export async function getAllCommentsAdmin() {
 }
 
 export async function toggleCommentApproval(commentId: string, currentStatus: boolean) {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("comments")
@@ -210,6 +227,7 @@ export async function toggleCommentApproval(commentId: string, currentStatus: bo
 }
 
 export async function deleteComment(commentId: string) {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("comments")

@@ -1,26 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { unsubscribeFromNewsletter } from "@/actions/newsletter";
 import { Button } from "@/components/ui/button";
 import { Loader2, Mail, CheckCircle2, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "motion/react";
+import { m, AnimatePresence } from "motion/react";
 
 export default function UnsubscribeClient() {
     const searchParams = useSearchParams();
     const router = useRouter();
-    const [email, setEmail] = useState("");
+    const [email, setEmail] = useState(() => searchParams.get("email") ?? "");
+    // Signed token from the newsletter link. Without it we email a confirmation link instead.
+    const token = searchParams.get("token");
     const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
     const [message, setMessage] = useState("");
-
-    useEffect(() => {
-        const emailParam = searchParams.get("email");
-        if (emailParam) {
-            setEmail(emailParam);
-        }
-    }, [searchParams]);
 
     const handleUnsubscribe = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
@@ -33,13 +28,18 @@ export default function UnsubscribeClient() {
 
         setStatus("loading");
         try {
-            const result = await unsubscribeFromNewsletter(email);
-            if (result.success) {
+            const linkEmail = searchParams.get("email") ?? "";
+            const useToken = token && email.trim().toLowerCase() === linkEmail.trim().toLowerCase();
+            const result = await unsubscribeFromNewsletter(email, useToken ? token : null);
+            if (result.success && "confirmationSent" in result && result.confirmationSent) {
+                setStatus("success");
+                setMessage("If that address is subscribed, I've emailed it a confirmation link. Click it to finish unsubscribing.");
+            } else if (result.success) {
                 setStatus("success");
                 setMessage("You have been successfully unsubscribed from my newsletter.");
             } else {
                 setStatus("error");
-                setMessage(result.error || "Something went wrong. Please try again.");
+                setMessage(("error" in result && result.error) || "Something went wrong. Please try again.");
             }
         } catch (error) {
             setStatus("error");
@@ -54,7 +54,7 @@ export default function UnsubscribeClient() {
         <div className="max-w-md w-full mx-auto">
             <AnimatePresence mode="wait">
                 {status === "idle" || status === "loading" ? (
-                    <motion.div
+                    <m.div
                         key="idle"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -64,7 +64,7 @@ export default function UnsubscribeClient() {
                         <div className="text-center space-y-2">
                             <h1 className="text-3xl font-bold tracking-tight text-white">Unsubscribe</h1>
                             <p className="text-muted-foreground">
-                                We're sorry to see you go. Enter your email to confirm.
+                                We&apos;re sorry to see you go. Enter your email to confirm.
                             </p>
                         </div>
 
@@ -97,9 +97,9 @@ export default function UnsubscribeClient() {
                                 )}
                             </Button>
                         </form>
-                    </motion.div>
+                    </m.div>
                 ) : status === "success" ? (
-                    <motion.div
+                    <m.div
                         key="success"
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -119,9 +119,9 @@ export default function UnsubscribeClient() {
                         <Button asChild variant="outline" className="w-full">
                             <Link href="/">Back to Portfolio</Link>
                         </Button>
-                    </motion.div>
+                    </m.div>
                 ) : (
-                    <motion.div
+                    <m.div
                         key="error"
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -145,7 +145,7 @@ export default function UnsubscribeClient() {
                         >
                             Try Again
                         </Button>
-                    </motion.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </div>

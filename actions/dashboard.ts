@@ -1,8 +1,10 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createAdminClient } from "@/lib/admin";
 
 export async function getDashboardStats() {
+    await requireAdmin();
     const admin = createAdminClient();
 
     try {

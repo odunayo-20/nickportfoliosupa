@@ -7,7 +7,9 @@ import { GDPRProvider } from "@/context/GDPRContext";
 import GDPRBanner from "@/components/GDPRBanner";
 import VisitorTracker from "@/components/VisitorTracker";
 import JsonLd from "@/components/JsonLd";
+import MotionProvider from "@/components/motion/MotionProvider";
 import { getSettings } from "@/actions/settings";
+import { THEME_INIT_SCRIPT } from "@/components/theme/theme-script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -130,20 +132,25 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
+      // data-theme is set by THEME_INIT_SCRIPT before React hydrates
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <JsonLd data={personSchema} />
         <JsonLd data={websiteSchema} />
       </head>
       <body className="min-h-full flex flex-col tracking-tight bg-background text-foreground">
-        <AppUtilsProvider>
-          <GDPRProvider>
-            {children}
-            <GDPRBanner />
-            <VisitorTracker />
-          </GDPRProvider>
-        </AppUtilsProvider>
+        <MotionProvider>
+          <AppUtilsProvider initialSettings={settings ?? null}>
+            <GDPRProvider>
+              {children}
+              <GDPRBanner />
+              <VisitorTracker />
+            </GDPRProvider>
+          </AppUtilsProvider>
+        </MotionProvider>
         <Toaster />
       </body>
     </html>

@@ -1,26 +1,15 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react'
 import { sendMessage } from '@/actions/message'
-import { motion, Variants } from 'motion/react'
+import { m, useInView } from 'motion/react'
+import { SplitText } from '@/components/motion/SplitText'
+import { fadeInUp, staggerContainer } from '@/lib/motion'
 import { LinkedinIcon, GithubIcon, XIcon } from '@/components/Icons'
 import { myAppHook } from '@/context/AppUtils'
 
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
-};
 
-const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15
-    }
-  }
-};
 
 
 
@@ -36,6 +25,31 @@ const INITIAL_FORM = {
 }
 
 /* ── Component ───────────────────────────────────────────────── */
+/**
+ * The Google Maps embed pulls ~1.7 MB of JS (≈550 KB gzipped). Chrome's native iframe
+ * `loading="lazy"` starts it far too early, so mount it only when the map is near the viewport.
+ */
+function LazyMap() {
+  const ref = useRef<HTMLDivElement>(null)
+  const near = useInView(ref, { once: true, margin: '300px 0px' })
+  return (
+    <div ref={ref} className="w-full h-full bg-surface-alt">
+      {near && (
+        <iframe
+          title="Map of Zadar, Croatia"
+          src="https://maps.google.com/maps?q=Zadar,%20Croatia&t=&z=13&ie=UTF8&iwloc=&output=embed"
+          width="100%"
+          height="100%"
+          style={{ border: 0 }}
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      )}
+    </div>
+  )
+}
+
 const ContactClient = () => {
   const [form, setForm] = useState(INITIAL_FORM)
   const [formState, setFormState] = useState<FormState>('idle')
@@ -73,62 +87,62 @@ const ContactClient = () => {
   return (
     <>
 
-       <motion.header
+       <m.header
        initial="hidden"
         animate="visible"
         variants={staggerContainer}
-       className="bg-brand-offwhite pt-24 pb-16 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 text-center reveal">
+       className="bg-surface-alt pt-24 pb-16 border-b border-line">
+        <div className="max-w-7xl mx-auto px-6 text-center">
             <span className="text-brand-orange font-semibold flex items-center justify-center gap-2 text-sm mb-6">
                 <span className="w-4 h-[2px] bg-brand-orange"></span> Get In Touch
             </span>
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter text-brand-dark mb-6">
-                Let's build something <br/> <span className="text-brand-orange italic font-normal">phenomenal.</span>
-            </h1>
-            <p className="text-brand-muted text-lg max-w-2xl mx-auto leading-relaxed">
+            <SplitText as="h1" immediate delay={0.15} className="text-5xl md:text-7xl font-extrabold tracking-tighter text-ink mb-6">
+                Let&apos;s build something <br/> <span className="text-brand-orange italic font-normal">phenomenal.</span>
+            </SplitText>
+            <p className="text-ink-muted text-lg max-w-2xl mx-auto leading-relaxed">
                 Whether you need a massive architectural overhaul, a high-performance native app, or just want to discuss the finer points of Kotlin coroutines, my inbox is open.
             </p>
         </div>
-    </motion.header>
+    </m.header>
 
       {/* ── CONTACT DETAILS + FORM ───────────────────────────────── */}
-      <motion.section 
-        className="py-16 sm:py-24 bg-brand-light"
+      <m.section 
+        className="py-16 sm:py-24 bg-surface"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-24">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-14 xl:gap-24">
 
             {/* LEFT — Contact Details */}
-            <motion.div variants={fadeInUp} className="lg:col-span-5 reveal">
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-brand-dark mb-6 sm:mb-8">
+            <m.div variants={fadeInUp} className="lg:col-span-5 min-w-0">
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-ink mb-6 sm:mb-8">
                 Contact Details
               </h1>
 
               {/* Availability badge */}
-              <div className="inline-flex items-center gap-3 px-4 py-2 bg-[#f0f4f1] border border-brand-green/20 rounded-full mb-8 sm:mb-10">
+              <div className="inline-flex items-center gap-3 px-4 py-2 bg-surface-alt border border-accent-green/20 rounded-full mb-8 sm:mb-10">
                 <span className="relative flex h-3 w-3 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                 </span>
-                <span className="text-sm font-bold text-brand-green">Currently accepting new projects</span>
+                <span className="text-sm font-bold text-accent-green">Currently accepting new projects</span>
               </div>
 
               {/* Info rows */}
               <div className="space-y-6 sm:space-y-8 mb-8 sm:mb-12">
                 {/* Email */}
                 <div className="flex items-start gap-4 sm:gap-6">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-offwhite border border-gray-200 rounded-sharp flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-surface-alt border border-line rounded-sharp flex items-center justify-center shrink-0">
                     <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-brand-orange" />
                   </div>
                   <div>
-                    <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-1">Email Address</span>
+                    <span className="block text-xs font-bold text-ink-muted uppercase tracking-widest mb-1">Email Address</span>
                     <a
                       href={`mailto:${profile?.email || 'nikola.srdoc@gmail.com'}`} target='_blank'
-                      className="text-base sm:text-lg font-semibold text-brand-dark hover:text-brand-orange transition-colors break-all"
+                      className="text-base sm:text-lg font-semibold text-ink hover:text-brand-orange transition-colors break-all"
                     >
                       {profile?.email || 'nikola.srdoc@gmail.com'}
                     </a>
@@ -137,32 +151,32 @@ const ContactClient = () => {
 
                 {/* Location */}
                 <div className="flex items-start gap-4 sm:gap-6">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-offwhite border border-gray-200 rounded-sharp flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-surface-alt border border-line rounded-sharp flex items-center justify-center shrink-0">
                     <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-brand-orange" />
                   </div>
                   <div>
-                    <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-1">Location</span>
-                    <span className="text-base sm:text-lg font-semibold text-brand-dark">Zadar, Croatia (GMT+2)</span>
-                    <span className="block text-sm text-brand-muted mt-1">Available for remote collaboration worldwide.</span>
+                    <span className="block text-xs font-bold text-ink-muted uppercase tracking-widest mb-1">Location</span>
+                    <span className="text-base sm:text-lg font-semibold text-ink">Zadar, Croatia (GMT+2)</span>
+                    <span className="block text-sm text-ink-muted mt-1">Available for remote collaboration worldwide.</span>
                   </div>
                 </div>
 
                 {/* Hours */}
                 <div className="flex items-start gap-4 sm:gap-6">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-offwhite border border-gray-200 rounded-sharp flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-surface-alt border border-line rounded-sharp flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-brand-orange" />
                   </div>
                   <div>
-                    <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-1">Working Hours</span>
-                    <span className="text-base sm:text-lg font-semibold text-brand-dark">8:00 AM – 6:00 PM</span>
-                    <span className="block text-sm text-brand-muted mt-1">Monday through Friday</span>
+                    <span className="block text-xs font-bold text-ink-muted uppercase tracking-widest mb-1">Working Hours</span>
+                    <span className="text-base sm:text-lg font-semibold text-ink">8:00 AM – 6:00 PM</span>
+                    <span className="block text-sm text-ink-muted mt-1">Monday through Friday</span>
                   </div>
                 </div>
               </div>
 
               {/* Social links */}
-              <div className="pt-6 sm:pt-8 border-t border-gray-200">
-                <span className="block text-xs font-bold text-brand-muted uppercase tracking-widest mb-4">Social Profiles</span>
+              <div className="pt-6 sm:pt-8 border-t border-line">
+                <span className="block text-xs font-bold text-ink-muted uppercase tracking-widest mb-4">Social Profiles</span>
                 <div className="flex gap-3 flex-wrap">
                   {socialLinks.linkedin && (
                     <a
@@ -170,7 +184,7 @@ const ContactClient = () => {
                       target='_blank'
                       rel="noopener noreferrer"
                       aria-label="LinkedIn"
-                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-ink text-surface flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
                     >
                       <LinkedinIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </a>
@@ -181,7 +195,7 @@ const ContactClient = () => {
                       target='_blank'
                       rel="noopener noreferrer"
                       aria-label="GitHub"
-                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-ink text-surface flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
                     >
                       <GithubIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </a>
@@ -192,41 +206,41 @@ const ContactClient = () => {
                       target='_blank'
                       rel="noopener noreferrer"
                       aria-label="Twitter"
-                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-brand-dark text-white flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
+                      className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-ink text-surface flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all shadow-md"
                     >
                       <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                     </a>
                   )}
                 </div>
               </div>
-            </motion.div>
+            </m.div>
 
             {/* RIGHT — Form card */}
-            <motion.div variants={fadeInUp} className="lg:col-span-7 reveal delay-100">
-              <div className="bg-white p-6 sm:p-8 md:p-12 border border-gray-200 rounded-sharp shadow-xl shadow-gray-100/50 relative overflow-hidden">
+            <m.div variants={fadeInUp} className="lg:col-span-7 min-w-0 delay-100">
+              <div className="bg-surface p-6 sm:p-8 md:p-12 border border-line rounded-sharp shadow-xl shadow-gray-100/50 relative overflow-hidden">
                 {/* Decorative blob */}
                 <div className="absolute top-0 right-0 w-32 h-32 bg-brand-orange/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
                 {/* Success state */}
                 {formState === 'success' ? (
                   <div className="flex flex-col items-center text-center py-8 sm:py-12 relative z-10">
-                    <CheckCircle2 className="w-14 h-14 sm:w-16 sm:h-16 text-brand-green mb-5" strokeWidth={1.5} />
-                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-brand-dark mb-3">
+                    <CheckCircle2 className="w-14 h-14 sm:w-16 sm:h-16 text-accent-green mb-5" strokeWidth={1.5} />
+                    <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tighter text-ink mb-3">
                       Message sent!
                     </h2>
-                    <p className="text-brand-muted text-sm sm:text-base max-w-sm mb-8">
+                    <p className="text-ink-muted text-sm sm:text-base max-w-sm mb-8">
                       I read every message personally and will get back to you within 24 hours.
                     </p>
                     <button
                       onClick={() => setFormState('idle')}
-                      className="text-sm font-semibold text-brand-orange hover:text-brand-dark transition-colors underline underline-offset-4"
+                      className="text-sm font-semibold text-brand-orange hover:text-ink transition-colors underline underline-offset-4"
                     >
                       Send another message
                     </button>
                   </div>
                 ) : (
                   <>
-                    <h2 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-brand-dark mb-6 sm:mb-8 relative z-10">
+                    <h2 className="text-xl sm:text-2xl font-extrabold tracking-tighter text-ink mb-6 sm:mb-8 relative z-10">
                       Send a Message
                     </h2>
 
@@ -294,7 +308,7 @@ const ContactClient = () => {
 
                       {/* Budget */}
                       <div>
-                        <label htmlFor="budget" className="form-label">Estimated Budget <span className="normal-case font-normal text-brand-muted">(optional)</span></label>
+                        <label htmlFor="budget" className="form-label">Estimated Budget <span className="normal-case font-normal text-ink-muted">(optional)</span></label>
                         <input
                           type="text"
                           id="budget"
@@ -346,46 +360,37 @@ const ContactClient = () => {
                   </>
                 )}
               </div>
-            </motion.div>
+            </m.div>
 
           </div>
         </div>
-      </motion.section>
+      </m.section>
 
       {/* ── MAP SECTION ───────────────────────────────────────────── */}
-      <motion.section 
-        className="py-16 sm:py-24 bg-white"
+      <m.section 
+        className="py-16 sm:py-24 bg-surface"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <motion.div variants={fadeInUp} className="mb-12 text-center lg:text-left">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-brand-dark mb-4">
+          <m.div variants={fadeInUp} className="mb-12 text-center lg:text-left">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-ink mb-4">
               Where I&apos;m <span className="text-brand-orange">located</span>
             </h2>
-            <p className="text-brand-muted text-lg max-w-2xl">
+            <p className="text-ink-muted text-lg max-w-2xl">
               Based in the beautiful coastal city of Zadar, Croatia. While I work with clients globally, I&apos;m always happy to meet for coffee if you&apos;re in the neighborhood.
             </p>
-          </motion.div>
+          </m.div>
 
-          <motion.div 
+          <m.div 
             variants={fadeInUp}
-            className="relative h-[400px] sm:h-[500px] w-full rounded-sharp overflow-hidden border border-gray-200 shadow-2xl group"
+            className="relative h-[400px] sm:h-[500px] w-full rounded-sharp overflow-hidden border border-line shadow-2xl group"
           >
             {/* Grayscale Map Wrapper */}
             <div className="absolute inset-0 grayscale contrast-[1.1] brightness-[0.95] opacity-90 transition-all duration-700 group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100">
-              <iframe 
-                src="https://maps.google.com/maps?q=Zadar,%20Croatia&t=&z=13&ie=UTF8&iwloc=&output=embed" 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen={true} 
-                loading="lazy" 
-                referrerPolicy="no-referrer-when-downgrade"
-                className=""
-              />
+              <LazyMap />
             </div>
 
             {/* Overlay Gradient */}
@@ -393,77 +398,77 @@ const ContactClient = () => {
 
             {/* Central Pin */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <motion.div
+              <m.div
                 initial={{ y: 0 }}
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                 className="relative"
               >
-                <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center shadow-2xl border-4 border-white">
+                <div className="w-12 h-12 bg-brand-orange rounded-full flex items-center justify-center shadow-2xl border-4 border-surface">
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div className="absolute bottom-[-10px] left-1/2 -translate-x-1/2 w-4 h-1 bg-brand-dark/20 rounded-full blur-[2px]" />
-              </motion.div>
+              </m.div>
             </div>
 
             {/* Floating Info Card */}
-            <div className="absolute bottom-6 left-6 right-6 sm:left-10 sm:bottom-10 sm:right-auto max-w-sm bg-white/90 backdrop-blur-md p-6 rounded-sharp border border-white/50 shadow-xl z-10 reveal-card">
+            <div className="absolute bottom-6 left-6 right-6 sm:left-10 sm:bottom-10 sm:right-auto max-w-sm bg-surface/90 backdrop-blur-md p-6 rounded-sharp border border-line shadow-xl z-10 reveal-card">
                <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 bg-brand-orange/10 rounded-full flex items-center justify-center">
                     <MapPin className="w-6 h-6 text-brand-orange" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-brand-dark">Studio Location</h4>
-                    <p className="text-sm text-brand-muted">Zadar, Croatia</p>
+                    <h4 className="font-bold text-ink">Studio Location</h4>
+                    <p className="text-sm text-ink-muted">Zadar, Croatia</p>
                   </div>
                </div>
-               <p className="text-sm text-brand-muted leading-relaxed mb-6">
+               <p className="text-sm text-ink-muted leading-relaxed mb-6">
                  I operate from a high-performance home studio optimized for deep work and seamless remote collaboration across all time zones.
                </p>
                <a 
                  href="https://www.google.com/maps/search/?api=1&query=Zadar,+Croatia" 
                  target="_blank" 
                  rel="noopener noreferrer"
-                 className="inline-flex items-center gap-2 text-sm font-bold text-brand-orange hover:text-brand-dark transition-colors group/link"
+                 className="inline-flex items-center gap-2 text-sm font-bold text-brand-orange hover:text-ink transition-colors group/link"
                >
                  Open in Google Maps
                  <div className="w-4 h-[1px] bg-brand-orange group-hover/link:w-8 transition-all" />
                </a>
             </div>
-          </motion.div>
+          </m.div>
         </div>
-      </motion.section>
+      </m.section>
 
       {/* ── FAQ ──────────────────────────────────────────────────── */}
-      <motion.section 
-        className="py-16 sm:py-24 bg-brand-offwhite border-t border-gray-200"
+      <m.section 
+        className="py-16 sm:py-24 bg-surface-alt border-t border-line"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
       >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 reveal">
-          <motion.div variants={fadeInUp} className="text-center mb-10 sm:mb-16">
-            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-brand-dark mb-3 sm:mb-4">Client FAQ</h2>
-            <p className="text-brand-muted text-base sm:text-lg">Common questions regarding my workflow and availability.</p>
-          </motion.div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <m.div variants={fadeInUp} className="text-center mb-10 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tighter text-ink mb-3 sm:mb-4">Client FAQ</h2>
+            <p className="text-ink-muted text-base sm:text-lg">Common questions regarding my workflow and availability.</p>
+          </m.div>
 
           <div className="space-y-4 sm:space-y-6">
-            <motion.div variants={fadeInUp} className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
-              <h4 className="text-base sm:text-lg font-bold text-brand-dark mb-2 sm:mb-3">What is your typical project timeline?</h4>
-              <p className="text-brand-muted leading-relaxed text-sm sm:text-base">Depending on the scope, an enterprise mobile application architecture can take anywhere from 3 to 6 months. I prioritize clean, scalable code over rushed MVPs, ensuring your foundation is built for millions of users.</p>
-            </motion.div>
-            <motion.div variants={fadeInUp} className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
-              <h4 className="text-base sm:text-lg font-bold text-brand-dark mb-2 sm:mb-3">Do you work with startups for equity?</h4>
-              <p className="text-brand-muted leading-relaxed text-sm sm:text-base">I generally operate on a milestone-based flat fee or a retained consulting rate. However, I am open to hybrid compensation (cash + equity) for highly compelling products with strong founding teams.</p>
-            </motion.div>
-            <motion.div variants={fadeInUp} className="bg-white border border-gray-200 p-5 sm:p-8 rounded-sharp shadow-sm">
-              <h4 className="text-base sm:text-lg font-bold text-brand-dark mb-2 sm:mb-3">Do you handle UI/UX design as well?</h4>
-              <p className="text-brand-muted leading-relaxed text-sm sm:text-base">While my primary expertise is software architecture and engineering (Kotlin/Java/React), I have deep experience implementing complex design systems and can bridge the gap flawlessly between your design team and the codebase.</p>
-            </motion.div>
+            <m.div variants={fadeInUp} className="bg-surface border border-line p-5 sm:p-8 rounded-sharp shadow-sm">
+              <h4 className="text-base sm:text-lg font-bold text-ink mb-2 sm:mb-3">What is your typical project timeline?</h4>
+              <p className="text-ink-muted leading-relaxed text-sm sm:text-base">Depending on the scope, an enterprise mobile application architecture can take anywhere from 3 to 6 months. I prioritize clean, scalable code over rushed MVPs, ensuring your foundation is built for millions of users.</p>
+            </m.div>
+            <m.div variants={fadeInUp} className="bg-surface border border-line p-5 sm:p-8 rounded-sharp shadow-sm">
+              <h4 className="text-base sm:text-lg font-bold text-ink mb-2 sm:mb-3">Do you work with startups for equity?</h4>
+              <p className="text-ink-muted leading-relaxed text-sm sm:text-base">I generally operate on a milestone-based flat fee or a retained consulting rate. However, I am open to hybrid compensation (cash + equity) for highly compelling products with strong founding teams.</p>
+            </m.div>
+            <m.div variants={fadeInUp} className="bg-surface border border-line p-5 sm:p-8 rounded-sharp shadow-sm">
+              <h4 className="text-base sm:text-lg font-bold text-ink mb-2 sm:mb-3">Do you handle UI/UX design as well?</h4>
+              <p className="text-ink-muted leading-relaxed text-sm sm:text-base">While my primary expertise is software architecture and engineering (Kotlin/Java/React), I have deep experience implementing complex design systems and can bridge the gap flawlessly between your design team and the codebase.</p>
+            </m.div>
           </div>
         </div>
-      </motion.section>
+      </m.section>
     </>
   )
 }

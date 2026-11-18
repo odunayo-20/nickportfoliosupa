@@ -26,11 +26,12 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Create the user using Admin API (which auto-confirms if configured or we can set it)
-    const { data, error: signupError } = await admin.auth.admin.createUser({
+    // 2. Create the user UNCONFIRMED. Auto-confirming let anyone claim a whitelisted address
+    //    they don't own; the owner of the inbox must click the confirmation link first.
+    const { error: signupError } = await admin.auth.admin.createUser({
       email: email,
       password: password,
-      email_confirm: true, // Automatically confirm the email
+      email_confirm: false,
     });
 
     if (signupError) {
@@ -40,8 +41,23 @@ export async function POST(request: Request) {
       );
     }
 
+    // 3. Send the confirmation email (Supabase Auth mailer).
+    const origin = new URL(request.url).origin;
+    const { createClient } = await import('@supabase/supabase-js');
+    const anon = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    );
+    const { error: resendError } = await anon.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${origin}/auth/callback?next=/admin/dashboard` },
+    });
+    if (resendError) console.error('Signup confirmation email failed:', resendError.message);
+
     return NextResponse.json(
-      { message: 'User created successfully and auto-confirmed.' },
+      { message: 'Account created. Check your email to confirm it.', needsConfirmation: true },
       { status: 201 }
     );
   } catch (err: any) {

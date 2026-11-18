@@ -75,21 +75,9 @@ const SignUpPage = () => {
                 throw new Error(data.error || 'Failed to create account');
             }
             
-            toast.success("Account created successfully! Signing you in...");
-            
-            // Automatic Login after server-side signup
-            const { error: signInError } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-
-            if (signInError) {
-                toast.error("Account created, but automatic sign-in failed. Please sign in manually.");
-                router.push("/auth/login");
-            } else {
-                router.refresh();
-                router.push("/admin/dashboard");
-            }
+            // Accounts are created unconfirmed: the inbox owner must click the emailed link.
+            toast.success("Account created! Check your email and click the confirmation link to sign in.", { duration: 10000 });
+            router.push("/auth/login");
         } catch (error: any) {
             console.error('Sign up error:', error.message);
             

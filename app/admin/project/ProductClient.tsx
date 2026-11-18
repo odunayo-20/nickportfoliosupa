@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
     Plus, 
     LayoutGrid, 
@@ -23,6 +24,7 @@ import { deleteProject, bulkDeleteProjects, bulkUpdateProjectStatus, updateProje
 import { getCategories } from "@/actions/categories";
 
 export default function ProjectClient() {
+    const router = useRouter();
     // State
     const [projects, setProjects] = useState<any[]>([]);
     const [dbCategories, setDbCategories] = useState<{ id: string; name: string; slug: string }[]>([]);
@@ -102,9 +104,16 @@ export default function ProjectClient() {
         return filteredProjects.slice(start, start + ITEMS_PER_PAGE);
     }, [filteredProjects, currentPage]);
 
+    // New filter/sort -> back to page 1 and drop the selection (hidden rows must never stay selected).
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, statusFilter, categoryFilter]);
+        setSelectedIds(new Set());
+    }, [searchQuery, statusFilter, categoryFilter, sortBy]);
+
+    // After deletes the current page can be past the end.
+    useEffect(() => {
+        if (currentPage > 1 && currentPage > totalPages) setCurrentPage(Math.max(1, totalPages));
+    }, [currentPage, totalPages]);
 
     // Handlers
     const handleSelectRow = (id: string) => {
@@ -114,12 +123,11 @@ export default function ProjectClient() {
         setSelectedIds(next);
     };
 
+    // "Select all" = the rows on the current page (what the header checkbox shows), not every page.
     const handleSelectAll = () => {
-        if (selectedIds.size === filteredProjects.length) {
-            setSelectedIds(new Set());
-        } else {
-            setSelectedIds(new Set(filteredProjects.map(p => p.id)));
-        }
+        const pageIds = paginatedProjects.map(p => p.id);
+        const allOnPage = pageIds.length > 0 && pageIds.every(id => selectedIds.has(id));
+        setSelectedIds(allOnPage ? new Set() : new Set(pageIds));
     };
 
     const handleToggleStatus = async (id: string, currentStatus: string) => {
@@ -150,10 +158,14 @@ export default function ProjectClient() {
         try {
             if (isBulk) {
                 await bulkDeleteProjects(idsToDelete);
-                setSelectedIds(new Set());
             } else {
                 await deleteProject(idsToDelete[0]);
             }
+            setSelectedIds(prev => {
+                const next = new Set(prev);
+                idsToDelete.forEach(id => next.delete(id));
+                return next;
+            });
             toast.success(isBulk ? `${idsToDelete.length} projects deleted` : "Project deleted");
             fetchData();
         } catch (error) {
@@ -251,8 +263,8 @@ export default function ProjectClient() {
                         selectedIds={selectedIds}
                         onSelectRow={handleSelectRow}
                         onSelectAll={handleSelectAll}
-                        onEdit={(id) => window.location.href = `/admin/project/edit/${id}`}
-                        onView={(id) => window.location.href = `/admin/project/show/${id}`}
+                        onEdit={(id) => router.push(`/admin/project/edit/${id}`)}
+                        onView={(id) => router.push(`/admin/project/show/${id}`)}
                         onDelete={(id) => {
                             const project = projects.find(p => p.id === id);
                             toast(`Delete "${project?.title}"?`, {

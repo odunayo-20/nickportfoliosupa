@@ -1,14 +1,17 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createClient, createStaticClient } from "@/lib/server";
 import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { cache } from "react";
 import { Database } from "@/types/database";
+import { sanitizeRichText } from "@/lib/sanitize";
 
 type ProjectInsert = Database["public"]["Tables"]["projects"]["Insert"];
 type ProjectUpdate = Database["public"]["Tables"]["projects"]["Update"];
 
 export async function createProject(data: ProjectInsert) {
+    await requireAdmin();
     const supabase = await createClient();
     const { data: project, error } = await supabase
         .from("projects")
@@ -28,6 +31,7 @@ export async function createProject(data: ProjectInsert) {
 }
 
 export async function updateProject(id: string, data: ProjectUpdate) {
+    await requireAdmin();
     const supabase = await createClient();
     const { data: project, error } = await supabase
         .from("projects")
@@ -50,6 +54,7 @@ export async function updateProject(id: string, data: ProjectUpdate) {
 }
 
 export async function deleteProject(id: string) {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("projects")
@@ -67,6 +72,7 @@ export async function deleteProject(id: string) {
 }
 
 export async function bulkDeleteProjects(ids: string[]) {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("projects")
@@ -84,6 +90,7 @@ export async function bulkDeleteProjects(ids: string[]) {
 }
 
 export async function bulkUpdateProjectStatus(ids: string[], status: "draft" | "published") {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("projects")
@@ -101,6 +108,7 @@ export async function bulkUpdateProjectStatus(ids: string[], status: "draft" | "
 }
 
 export async function getProjectById(id: string) {
+    await requireAdmin();
     const supabase = await createClient();
     const { data: project, error } = await supabase
         .from("projects")
@@ -262,9 +270,10 @@ export const getProjectBySlug = cache(async (slug: string) => {
                 }
             }
 
+            if (project) project.content = sanitizeRichText(project.content);
             return project;
         },
-        [`project-${slug}`],
+        [`project-v2-${slug}`],
         { tags: ["projects", `project-${slug}`] }
     )();
 });

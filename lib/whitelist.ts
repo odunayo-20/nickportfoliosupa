@@ -18,15 +18,15 @@ export async function isEmailWhitelisted(email: string): Promise<boolean> {
         console.error('Error reading JSON whitelist:', e);
     }
 
-    // 2. Check Database table
+    // 2. Check Database table — case-insensitive EXACT match. (`ilike(email, input)` treated `_`
+    //    and `%` in the input as wildcards: `____@gmail.com` matched any 4-char gmail address.)
+    const escaped = lowerEmail.replace(/[\\%_]/g, (c) => `\\${c}`);
     const admin = createAdminClient();
-    const { data, error } = await admin
+    const { data } = await admin
         .from('allowed_users')
         .select('email')
-        .ilike('email', lowerEmail)
-        .single();
+        .ilike('email', escaped)
+        .limit(1);
 
-    if (data) return true;
-    
-    return false;
+    return !!data?.some((row) => row.email?.toLowerCase() === lowerEmail);
 }

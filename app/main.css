@@ -15,12 +15,50 @@
         --radius-sharp: 0.125rem; /* 2px */
         
         --font-sans: 'Inter', sans-serif;
+
+        /* Semantic theme colours: values below switch with <html data-theme> */
+        --color-surface: var(--surface);
+        --color-surface-alt: var(--surface-alt);
+        --color-surface-2: var(--surface-2);
+        --color-ink: var(--ink);
+        --color-ink-soft: var(--ink-soft);
+        --color-ink-muted: var(--ink-muted);
+        --color-line: var(--line);
+        --color-accent-green: var(--accent-green);
       }
+
+      /* Light (default) */
+      :root {
+        --surface: #ffffff;
+        --surface-alt: #f8f9fa;
+        --surface-2: #f1f3f4;
+        --ink: #1a1a1a;
+        --ink-soft: #4b5563;
+        --ink-muted: #6b7280;
+        --line: #e5e7eb;
+        --accent-green: #2a4736;
+      }
+      /* Dark: only on the public site (html.site), so /admin keeps its light UI */
+      :root.site[data-theme="dark"] {
+        --surface: #0e1311;
+        --surface-alt: #151c19;
+        --surface-2: #1d2622;
+        --ink: #eef2ef;
+        --ink-soft: #c3ccc7;
+        --ink-muted: #9aa8a1;
+        --line: #26302c;
+        --accent-green: #8cc5a2;
+        color-scheme: dark;
+      }
+      @custom-variant dark (&:where(:root.site[data-theme="dark"] *));
       
       @layer base {
+        /* motion's useScroll measures targets relative to the page scroll container (html);
+           it must be positioned or offsets can be off (and dev logs a warning). */
+        html { position: relative; }
         body {
-          background-color: var(--color-brand-light);
-          color: var(--color-brand-dark);
+          background-color: var(--surface);
+          color: var(--ink);
           font-family: var(--font-sans);
           overflow-x: hidden;
         }
@@ -48,45 +86,84 @@
         to { transform: translateX(-100%); }
       }
 
-      /* Subtle Reveal Animation */
-      @keyframes fadeInUp {
-        from {
-          opacity: 0;
-          transform: translateY(30px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
+      /* Entrance animations live in lib/motion.ts (motion/react), not CSS. */
+
+      /* Transition for elements that motion animates: covers hover effects
+         (translate/scale/shadow/colors) but NOT transform/opacity, which motion
+         drives per-frame — a CSS transition on those makes entrances sluggish. */
+      @utility transition-motion-safe {
+        transition-property: translate, scale, rotate, box-shadow, border-color, background-color, color, filter;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
       }
 
-      .reveal {
-        animation: fadeInUp 0.8s cubic-bezier(0.5, 0, 0, 1) both;
-      }
-      
       /* Custom Blob Shape for Hero */
       .blob-shape {
         border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
       }
+
+      /* Slowly morphing blob (pairs with .blob-shape) */
+      @keyframes blob-morph {
+        0%, 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+        33%      { border-radius: 65% 35% 45% 55% / 35% 45% 55% 65%; }
+        66%      { border-radius: 35% 65% 55% 45% / 55% 35% 65% 45%; }
+      }
+      .animate-blob      { animation: blob-morph 12s ease-in-out infinite; }
+      .animate-blob-slow { animation: blob-morph 18s ease-in-out infinite reverse; }
+
+      /* Gentle bob — uses `translate` so it composes with motion's `transform` */
+      @keyframes float {
+        0%, 100% { translate: 0 0; }
+        50%      { translate: 0 -10px; }
+      }
+      .animate-float { animation: float 5s ease-in-out infinite; }
+
+      /* Waving hand */
+      @keyframes wave {
+        0%, 60%, 100% { rotate: 0deg; }
+        10%, 30% { rotate: 14deg; }
+        20% { rotate: -8deg; }
+        40% { rotate: -4deg; }
+        50% { rotate: 10deg; }
+      }
+      .animate-wave { display: inline-block; transform-origin: 70% 70%; animation: wave 2.5s ease-in-out infinite; }
+
+      /* <Marquee> track: the visible copy slides exactly one copy-width + gap, then loops */
+      @keyframes marquee-x {
+        to { transform: translateX(calc(-100% - var(--marquee-gap, 1.5rem))); }
+      }
+      .marquee-track { animation: marquee-x var(--marquee-duration, 30s) linear infinite; }
+      /* Plain classes, not Tailwind utilities: utilities live in a cascade layer and would lose to the shorthand above */
+      .marquee-track.marquee-reverse { animation-direction: reverse; }
+      .marquee-pausable:hover .marquee-track { animation-play-state: paused; }
+
+      /* Scroll indicator dot */
+      @keyframes scroll-dot {
+        0%   { translate: 0 0; opacity: 1; }
+        80%  { translate: 0 12px; opacity: 0; }
+        100% { translate: 0 0; opacity: 0; }
+      }
+      .animate-scroll-dot { animation: scroll-dot 1.8s ease-in-out infinite; }
 
       /* Custom Prose Styling for Article Body */
       .article-body > :first-child,
       .article-body :first-child { margin-top: 0 !important; }
       .article-body p:empty,
       .article-body p:has(> br:only-child) { display: none; }
-      .article-body p { margin-bottom: 1.5rem; line-height: 1.8; color: #4b5563; font-size: 1.125rem; }
-      .article-body h2 { font-size: 2rem; font-weight: 800; color: var(--color-brand-dark); margin-top: 3rem; margin-bottom: 1.25rem; letter-spacing: -0.025em; }
-      .article-body h3 { font-size: 1.5rem; font-weight: 700; color: var(--color-brand-dark); margin-top: 2.5rem; margin-bottom: 1rem; }
-      .article-body blockquote { border-left: 4px solid var(--color-brand-orange); padding-left: 1.5rem; font-style: italic; font-size: 1.25rem; color: var(--color-brand-dark); margin: 2rem 0; font-weight: 500; background: var(--color-brand-offwhite); padding: 1.5rem; border-radius: var(--radius-sharp); }
-      .article-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; color: #4b5563; font-size: 1.125rem; line-height: 1.8; }
+      .article-body p { margin-bottom: 1.5rem; line-height: 1.8; color: var(--ink-soft); font-size: 1.125rem; }
+      .article-body h2 { font-size: 2rem; font-weight: 800; color: var(--ink); margin-top: 3rem; margin-bottom: 1.25rem; letter-spacing: -0.025em; }
+      .article-body h2, .article-body h3 { scroll-margin-top: 88px; }
+      .article-body h3 { font-size: 1.5rem; font-weight: 700; color: var(--ink); margin-top: 2.5rem; margin-bottom: 1rem; }
+      .article-body blockquote { border-left: 4px solid var(--color-brand-orange); padding-left: 1.5rem; font-style: italic; font-size: 1.25rem; color: var(--ink); margin: 2rem 0; font-weight: 500; background: var(--surface-alt); padding: 1.5rem; border-radius: var(--radius-sharp); }
+      .article-body ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; color: var(--ink-soft); font-size: 1.125rem; line-height: 1.8; }
       .article-body li { margin-bottom: 0.5rem; }
-      .article-body a { color: var(--color-brand-green); font-weight: 600; text-decoration: underline; text-decoration-color: var(--color-brand-orange); text-underline-offset: 4px; transition: all 0.2s; }
+      .article-body a { color: var(--accent-green); font-weight: 600; text-decoration: underline; text-decoration-color: var(--color-brand-orange); text-underline-offset: 4px; transition: all 0.2s; }
       .article-body a:hover { color: var(--color-brand-orange); }
       
       /* Code Block Styling */
       pre { background-color: #0d1117; color: #c9d1d9; padding: 1.5rem; border-radius: var(--radius-sharp); overflow-x: auto; margin: 2rem 0; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.5; border: 1px solid #30363d; }
       code { font-family: var(--font-mono); }
-      .inline-code { background-color: var(--color-brand-offwhite); color: var(--color-brand-green); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; font-weight: 600; border: 1px solid #e5e7eb; }
+      .inline-code { background-color: var(--surface-alt); color: var(--accent-green); padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.9em; font-weight: 600; border: 1px solid var(--line); }
     
 
       /* Projects start */
@@ -120,7 +197,7 @@
           transition: all 0.4s ease;
       }
       .service-row:hover {
-          background-color: var(--color-brand-offwhite);
+          background-color: var(--surface-alt);
           border-left-color: var(--color-brand-orange);
       }
       /* Services page end */
@@ -129,9 +206,180 @@
       /* Contact start */
         /* Input Styles */
       .form-input {
-          @apply w-full px-5 py-4 bg-brand-offwhite border border-gray-200 rounded-sharp focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange transition-all duration-200;
+          @apply w-full px-5 py-4 bg-surface-alt text-ink placeholder:text-ink-muted border border-line rounded-sharp focus:outline-none focus:border-brand-orange focus:ring-1 focus:ring-brand-orange transition-all duration-200;
       }
       .form-label {
-          @apply block text-xs font-bold text-brand-dark uppercase tracking-widest mb-2;
+          @apply block text-xs font-bold text-ink uppercase tracking-widest mb-2;
       }
       /* Contact end */
+
+
+      /* ── Motion round 2 (proposals) ───────────────────────────────── */
+
+      /* T2 SplitText: chars rise out of a per-word mask */
+      .split-word { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+      .split-char {
+        display: inline-block;
+        transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.8s;
+        transition-delay: calc(var(--split-delay, 0s) + var(--i, 0) * var(--split-stagger, 0.022s));
+      }
+      .split[data-split="out"] .split-char { transform: translateY(105%) rotate(6deg); opacity: 0; }
+
+      /* T4 ScrollHighlight */
+      .scroll-highlight [data-w] { opacity: 0.18; transition: opacity 0.25s, color 0.25s; }
+      .scroll-highlight [data-w][data-on="1"], .scroll-highlight.is-static [data-w] { opacity: 1; }
+      .scroll-highlight [data-w][data-hl][data-on="1"], .scroll-highlight.is-static [data-w][data-hl] { color: var(--color-brand-orange); }
+
+      /* I1 RollText: rolls on hover of itself or of a parent link/button */
+      .roll { display: inline-block; position: relative; overflow: hidden; height: 1.25em; line-height: 1.25em; vertical-align: bottom; }
+      .roll-inner { display: flex; flex-direction: column; transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1); }
+      .roll-inner > span { height: 1.25em; }
+      .roll-inner > span:last-child { color: var(--color-brand-orange); }
+      a:hover .roll-inner, a:focus-visible .roll-inner, button:hover .roll-inner, .roll:hover .roll-inner { transform: translateY(-50%); }
+
+      /* I1 fill-from-cursor buttons: add .btn-fill (+ optional --fill / --fill-ink) */
+      .btn-fill { position: relative; overflow: hidden; isolation: isolate; --x: 50%; --y: 50%; }
+      .btn-fill::before {
+        content: ""; position: absolute; z-index: -1; left: var(--x); top: var(--y); width: 0; height: 0; border-radius: 9999px;
+        background: var(--fill, var(--color-brand-orange)); translate: -50% -50%;
+        transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1), height 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      .btn-fill:hover::before, .btn-fill:focus-visible::before { width: 260%; height: 520%; }
+      .btn-fill:hover, .btn-fill:focus-visible { color: var(--fill-ink, var(--color-brand-dark)); }
+
+      /* I2 site cursor */
+      .site-cursor { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }
+      .site-cursor-dot, .site-cursor-ring { position: fixed; left: 0; top: 0; border-radius: 9999px; opacity: 0; transition: opacity 0.2s; }
+      :root[data-cursor="on"] .site-cursor-dot, :root[data-cursor="on"] .site-cursor-ring { opacity: 1; }
+      .site-cursor-dot { width: 6px; height: 6px; margin: -3px 0 0 -3px; background: var(--color-brand-orange); }
+      .site-cursor-ring {
+        width: 34px; height: 34px; margin: -17px 0 0 -17px; border: 1.5px solid color-mix(in srgb, var(--ink) 55%, transparent);
+        display: grid; place-items: center; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-brand-dark);
+        transition: opacity 0.2s, width 0.35s cubic-bezier(0.22, 1, 0.36, 1), height 0.35s cubic-bezier(0.22, 1, 0.36, 1), margin 0.35s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.25s, border-color 0.25s, scale 0.2s;
+      }
+      .site-cursor-ring span { opacity: 0; transition: opacity 0.2s; }
+      .site-cursor-ring[data-state="link"] { width: 54px; height: 54px; margin: -27px 0 0 -27px; border-color: var(--color-brand-orange); background: color-mix(in srgb, var(--color-brand-orange) 18%, transparent); }
+      .site-cursor-ring[data-state="media"] { width: 84px; height: 84px; margin: -42px 0 0 -42px; border-color: var(--color-brand-orange); background: var(--color-brand-orange); }
+      .site-cursor-ring[data-state="media"] span { opacity: 1; }
+      .site-cursor-ring[data-pressed] { scale: 0.85; }
+      :root[data-cursor="on"] [data-cursor], :root[data-cursor="on"] [data-cursor] * { cursor: none; }
+
+      /* C2 glow cards: put .glow-group on the grid and .glow-card on each card */
+      .glow-card { position: relative; isolation: isolate; --mx: -999px; --my: -999px; }
+      .glow-card::before {
+        content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; z-index: 20; pointer-events: none;
+        background: radial-gradient(260px circle at var(--mx) var(--my), var(--color-brand-orange), transparent 60%);
+        -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+        mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+      }
+      .glow-card::after {
+        content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none;
+        background: radial-gradient(320px circle at var(--mx) var(--my), color-mix(in srgb, var(--color-brand-orange) 9%, transparent), transparent 60%);
+      }
+
+      /* C3 Odometer */
+      .odo { display: inline-flex; align-items: baseline; font-variant-numeric: tabular-nums; }
+      .odo-col { display: inline-block; height: 1em; line-height: 1; overflow: hidden; }
+      .odo-strip { display: flex; flex-direction: column; transform: translateY(calc(var(--d) * -10%)); }
+      .odo-strip > span { height: 1em; line-height: 1; }
+      .odo-armed .odo-strip { transform: translateY(0); }
+      .odo-armed.odo-in .odo-strip { transform: translateY(calc(var(--d) * -10%)); transition: transform 1.6s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 0.15s); }
+
+      /* C4 quote progress */
+      @keyframes quote-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+      .quote-progress { animation: quote-progress linear forwards; transform: scaleX(0); }
+
+      /* S3 timeline */
+      .timeline-item { transition: opacity 0.4s; }
+      .timeline-item[data-on="0"] { opacity: 0.45; }
+      .timeline-dot { background: var(--surface); border-color: var(--line); transition: background-color 0.3s, border-color 0.3s, scale 0.3s; }
+      .timeline-item[data-on="1"] .timeline-dot { background: var(--color-brand-orange); border-color: var(--color-brand-orange); scale: 1.15; }
+
+      /* T1 theme switch: the circle reveal runs on the root snapshot only */
+      :root.theme-vt * { view-transition-name: none !important; }
+      body, .site-root { transition: background-color 0.3s, color 0.3s; }
+      :root.theme-vt body, :root.theme-vt .site-root { transition: none; }
+
+      /* ── Page transitions (View Transitions API via React <ViewTransition>) ── */
+      /* Only <main> animates; the rest of the page swaps instantly. */
+      ::view-transition-old(root),
+      ::view-transition-new(root) {
+        animation: none;
+      }
+      /* Navbar + progress bar stay put above the sliding content */
+      ::view-transition-group(site-header),
+      ::view-transition-group(scroll-progress) {
+        animation: none;
+        z-index: 100;
+      }
+      ::view-transition-old(site-header),
+      ::view-transition-old(scroll-progress) {
+        display: none;
+      }
+      ::view-transition-new(site-header),
+      ::view-transition-new(scroll-progress) {
+        animation: none;
+      }
+      ::view-transition-old(.page) {
+        animation: 160ms cubic-bezier(0.4, 0, 1, 1) both page-out;
+      }
+      ::view-transition-new(.page) {
+        animation: 380ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both page-in;
+      }
+      /* Shared element: project card image → case-study hero */
+      ::view-transition-group(.project-morph) {
+        animation-duration: 500ms;
+        animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+        z-index: 50;
+      }
+      ::view-transition-image-pair(.project-morph) {
+        animation-name: via-blur;
+      }
+      @keyframes via-blur {
+        30% { filter: blur(3px); }
+      }
+      @keyframes page-out {
+        to { opacity: 0; translate: 0 -12px; filter: blur(4px); }
+      }
+      @keyframes page-in {
+        from { opacity: 0; translate: 0 24px; filter: blur(6px); }
+      }
+
+      /* Reduced motion: stop decorative loops (marquee, spinning badge, pings). Motion-driven
+         animations are handled by <MotionConfig reducedMotion="user">. */
+      @media (prefers-reduced-motion: reduce) {
+        .marquee-content,
+        .marquee-track,
+        [class*="animate-[spin"],
+        .animate-ping,
+        .animate-blob,
+        .animate-blob-slow,
+        .animate-float,
+        .animate-wave,
+        .animate-scroll-dot,
+        .quote-progress {
+          animation: none !important;
+        }
+        html:focus-within {
+          scroll-behavior: auto;
+        }
+        ::view-transition-old(*),
+        ::view-transition-new(*),
+        ::view-transition-group(*) {
+          animation-duration: 0s !important;
+          animation-delay: 0s !important;
+        }
+      }
+
+
+/* Theme body: globals.css has an unlayered `body` rule, so override it here (public site only). */
+:root.site body { background-color: var(--surface); color: var(--ink); }
+
+/* Reduced motion: scroll-lit paragraphs show fully lit from the first paint. */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-highlight [data-w] { opacity: 1; }
+  .scroll-highlight [data-w][data-hl] { color: var(--color-brand-orange); }
+}
+
+/* Native #anchor jumps (touch devices, reduced motion — no Lenis) land below the sticky navbar. */
+section[id] { scroll-margin-top: 88px; }

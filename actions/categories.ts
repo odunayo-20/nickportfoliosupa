@@ -1,7 +1,8 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createClient, createStaticClient } from "@/lib/server";
-import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { cache } from "react";
 
 function toSlug(name: string) {
@@ -31,6 +32,7 @@ export const getCategories = cache(unstable_cache(
 ));
 
 export async function createCategory(name: string) {
+    await requireAdmin();
     const supabase = await createClient();
     const slug = toSlug(name);
 
@@ -46,11 +48,12 @@ export async function createCategory(name: string) {
     }
 
     revalidatePath("/admin/categories");
-    revalidateTag("categories", "max");
+    updateTag("categories");
     return data;
 }
 
 export async function updateCategory(id: string, name: string) {
+    await requireAdmin();
     const supabase = await createClient();
     const slug = toSlug(name);
 
@@ -67,11 +70,12 @@ export async function updateCategory(id: string, name: string) {
     }
 
     revalidatePath("/admin/categories");
-    revalidateTag("categories", "max");
+    updateTag("categories");
     return data;
 }
 
 export async function deleteCategory(id: string) {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("categories")
@@ -84,5 +88,5 @@ export async function deleteCategory(id: string) {
     }
 
     revalidatePath("/admin/categories");
-    revalidateTag("categories", "max");
+    updateTag("categories");
 }

@@ -1,9 +1,11 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createAdminClient } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
 
 export async function getAllowedUsers() {
+    await requireAdmin();
   const admin = createAdminClient();
   const { data, error } = await admin
     .from('allowed_users')
@@ -18,7 +20,9 @@ export async function getAllowedUsers() {
 }
 
 export async function addAllowedUser(email: string) {
-  if (!email) return { error: "Email is required" };
+    await requireAdmin();
+  email = String(email ?? "").trim().toLowerCase();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: "A valid email is required" };
   
   const admin = createAdminClient();
   const { error } = await admin
@@ -35,6 +39,7 @@ export async function addAllowedUser(email: string) {
 }
 
 export async function removeAllowedUser(id: string) {
+    await requireAdmin();
   const admin = createAdminClient();
   const { error } = await admin
     .from('allowed_users')

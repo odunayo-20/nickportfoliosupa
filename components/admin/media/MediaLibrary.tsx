@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabaseClient";
+import { prepareUpload, ACCEPT, randomId } from "@/lib/image-prep";
 import { 
     getFolders, 
     getMediaByFolder, 
@@ -141,81 +142,41 @@ export function MediaLibrary({
         fetchData();
     };
 
-    /** Convert an image File to WebP using the Canvas API (browser-side, no deps). */
-    const convertToWebP = (
-        file: File,
-        maxWidth = convertOptions?.maxWidth ?? 1920,
-        maxHeight = convertOptions?.maxHeight,
-        quality = convertOptions?.quality ?? 0.88
-    ): Promise<File> => {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            const objectUrl = URL.createObjectURL(file);
-            img.onload = () => {
-                URL.revokeObjectURL(objectUrl);
-                // Compute scale: constrain by maxWidth, then optionally by maxHeight too
-                let scale = img.width > maxWidth ? maxWidth / img.width : 1;
-                if (maxHeight && Math.round(img.height * scale) > maxHeight) {
-                    scale = maxHeight / img.height;
-                }
-                const w = Math.round(img.width * scale);
-                const h = Math.round(img.height * scale);
+    const [isDragging, setIsDragging] = useState(false);
 
-                const canvas = document.createElement("canvas");
-                canvas.width = w;
-                canvas.height = h;
-                const ctx = canvas.getContext("2d");
-                if (!ctx) return reject(new Error("Canvas not supported"));
-                ctx.drawImage(img, 0, 0, w, h);
-
-                canvas.toBlob(
-                    (blob) => {
-                        if (!blob) return reject(new Error("Canvas toBlob failed"));
-                        // Derive a clean base name without the old extension
-                        const baseName = file.name.replace(/\.[^.]+$/, "");
-                        resolve(new File([blob], `${baseName}.webp`, { type: "image/webp" }));
-                    },
-                    "image/webp",
-                    quality
-                );
-            };
-            img.onerror = () => {
-                URL.revokeObjectURL(objectUrl);
-                reject(new Error("Failed to load image"));
-            };
-            img.src = objectUrl;
-        });
-    };
-
-    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
-        if (!files || files.length === 0) return;
+    /**
+     * Prepare (per-format: resize/convert raster images, keep GIF/SVG/video/PDF, decode HEIC),
+     * skip exact duplicates (SHA-256), upload to storage and register in the media table.
+     */
+    const uploadFiles = async (files: File[]) => {
+        if (files.length === 0 || isUploading) return;
         setIsUploading(true);
+        let uploaded = 0;
 
-        for (let i = 0; i < files.length; i++) {
-            const originalFile = files[i];
+        for (const originalFile of files) {
             try {
-                // Convert images to WebP; leave videos/PDFs untouched
-                const isImage = originalFile.type.startsWith("image/");
-                let file = originalFile;
-                if (isImage) {
-                    setUploadStatus("converting");
-                    file = await convertToWebP(
-                        originalFile,
-                        convertOptions?.maxWidth,
-                        convertOptions?.maxHeight,
-                        convertOptions?.quality
-                    );
-                }
-                setUploadStatus("uploading");
+                setUploadStatus("converting");
+                const prepared = await prepareUpload(originalFile, convertOptions);
 
-                const fileExt = file.name.split('.').pop();
-                const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+                const { data: existing } = await supabase
+                    .from("media")
+                    .select("id, name")
+                    .eq("hash", prepared.hash)
+                    .limit(1);
+                if (existing && existing.length > 0) {
+                    toast.info(`${originalFile.name} is already in the library (${existing[0].name}) — skipped.`);
+                    continue;
+                }
+
+                setUploadStatus("uploading");
+                const { file } = prepared;
+                const fileExt = file.name.split('.').pop()?.toLowerCase() || "bin";
+                const fileName = `${randomId()}.${fileExt}`;
                 const storagePath = currentFolderId ? `${currentFolderId}/${fileName}` : fileName;
 
                 const { error: uploadError } = await supabase.storage
                     .from("media")
-                    .upload(storagePath, file, { contentType: file.type });
+                    .upload(storagePath, file, { contentType: file.type, cacheControl: "31536000" });
 
                 if (uploadError) throw uploadError;
 
@@ -223,25 +184,52 @@ export function MediaLibrary({
                     .from("media")
                     .getPublicUrl(storagePath);
 
-                await createMediaAction({
-                    name: file.name,
-                    storage_path: storagePath,
-                    url: publicUrl,
-                    type: originalFile.type.split('/')[0],
-                    size: file.size,
-                    folder_id: currentFolderId,
-                    hash: originalFile.name + originalFile.size,
-                });
+                try {
+                    await createMediaAction({
+                        name: file.name,
+                        storage_path: storagePath,
+                        url: publicUrl,
+                        type: prepared.kind,
+                        size: file.size,
+                        folder_id: currentFolderId,
+                        hash: prepared.hash,
+                    });
+                } catch (dbError) {
+                    // Don't leave an orphaned file in storage when the DB row can't be created.
+                    await supabase.storage.from("media").remove([storagePath]);
+                    throw dbError;
+                }
+                uploaded++;
+                if (prepared.note) toast.success(`${originalFile.name}: ${prepared.note}`);
             } catch (err) {
                 console.error("Upload failed", err);
-                toast.error(`Failed to upload ${originalFile.name}`);
+                toast.error(err instanceof Error && err.message ? err.message : `Failed to upload ${originalFile.name}`);
             }
         }
         setIsUploading(false);
         setUploadStatus("idle");
         if (fileInputRef.current) fileInputRef.current.value = "";
-        fetchData();
+        if (uploaded > 0) fetchData();
     };
+
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        uploadFiles(Array.from(event.target.files ?? []));
+    };
+
+    // Paste images (e.g. a screenshot) while the library is open.
+    useEffect(() => {
+        const onPaste = (e: ClipboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            if (target?.closest("input, textarea, [contenteditable=true]")) return;
+            const files = Array.from(e.clipboardData?.files ?? []);
+            if (files.length) {
+                e.preventDefault();
+                uploadFiles(files);
+            }
+        };
+        window.addEventListener("paste", onPaste);
+        return () => window.removeEventListener("paste", onPaste);
+    });
 
     const navigateToFolder = (folderId: string, name: string) => {
         setCurrentFolderId(folderId);
@@ -321,7 +309,28 @@ export function MediaLibrary({
     const isDataLoading = isLoading;
 
     return (
-        <div className={`flex flex-col w-full h-full min-h-0 ${hideHeader ? 'gap-4 p-3 sm:p-4' : 'gap-6 p-4 sm:p-6 md:p-8'}`}>
+        <div
+            className={`relative flex flex-col w-full h-full min-h-0 ${hideHeader ? 'gap-4 p-3 sm:p-4' : 'gap-6 p-4 sm:p-6 md:p-8'}`}
+            onDragOver={(e) => {
+                if (!Array.from(e.dataTransfer.types).includes("Files")) return;
+                e.preventDefault();
+                setIsDragging(true);
+            }}
+            onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setIsDragging(false);
+            }}
+            onDrop={(e) => {
+                if (!e.dataTransfer.files.length) return;
+                e.preventDefault();
+                setIsDragging(false);
+                uploadFiles(Array.from(e.dataTransfer.files));
+            }}
+        >
+            {isDragging && (
+                <div className="pointer-events-none absolute inset-2 z-50 flex items-center justify-center rounded-2xl border-2 border-dashed border-primary bg-primary/5 text-sm font-semibold text-primary">
+                    Drop files to upload
+                </div>
+            )}
             {/* Header Toolbar */}
             {!hideHeader && (
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-0">
@@ -410,7 +419,7 @@ export function MediaLibrary({
                             className="hidden" 
                             multiple 
                             onChange={handleFileUpload} 
-                            accept="image/*,video/*,.pdf"
+                            accept={ACCEPT}
                         />
                     </div>
                 </div>

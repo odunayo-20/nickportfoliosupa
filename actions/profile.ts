@@ -1,9 +1,11 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createClient } from "@/lib/server";
 import { revalidatePath } from "next/cache";
 
 export async function getProfile() {
+    await requireAdmin();
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -52,13 +54,20 @@ export async function getProfile() {
 }
 
 export async function updateProfile(data: Record<string, any>) {
+    await requireAdmin();
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) return { error: "Unauthorized" };
 
-    const { id, ...rest } = data;
-    
+    // Allow-list the editable columns. Spreading the raw client object let a caller set
+    // `is_owner`, `created_at`, etc.
+    const EDITABLE = ["name", "title", "bio", "avatar_url", "resume_url", "resume_name", "skills", "social_links"] as const;
+    const rest: Record<string, any> = {};
+    for (const key of EDITABLE) {
+        if (key in data) rest[key] = data[key];
+    }
+
     // Ensure resume_url has download parameter for security/UX
     if (rest.resume_url && typeof rest.resume_url === 'string' && !rest.resume_url.includes('download=')) {
         const separator = rest.resume_url.includes('?') ? '&' : '?';

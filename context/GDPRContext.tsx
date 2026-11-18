@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, useSyncExternalStore, ReactNode } from 'react';
 import { logConsent } from '@/actions/gdpr';
 
 interface GDPRConsent {
@@ -22,17 +22,28 @@ const GDPRContext = createContext<GDPRContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'gdpr_consent';
 const FINGERPRINT_KEY = 'gdpr_fingerprint';
+const CHANGE_EVENT = 'gdpr-consent-change';
+
+// Stored consent as an external store: no setState-in-effect, and other tabs stay in sync.
+const subscribeConsent = (cb: () => void) => {
+    window.addEventListener('storage', cb);
+    window.addEventListener(CHANGE_EVENT, cb);
+    return () => {
+        window.removeEventListener('storage', cb);
+        window.removeEventListener(CHANGE_EVENT, cb);
+    };
+};
+const readConsent = () => {
+    try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+};
 
 export const GDPRProvider = ({ children }: { children: ReactNode }) => {
-    const [consent, setConsent] = useState<GDPRConsent | null>(null);
+    const stored = useSyncExternalStore(subscribeConsent, readConsent, () => null);
+    const consent = useMemo<GDPRConsent | null>(() => {
+        if (!stored) return null;
+        try { return JSON.parse(stored) as GDPRConsent; } catch { return null; }
+    }, [stored]);
     const [isPreferenceModalOpen, setPreferenceModalOpen] = useState(false);
-
-    useEffect(() => {
-        const storedConsent = localStorage.getItem(STORAGE_KEY);
-        if (storedConsent) {
-            setConsent(JSON.parse(storedConsent));
-        }
-    }, []);
 
     const getFingerprint = () => {
         let fingerprint = localStorage.getItem(FINGERPRINT_KEY);
@@ -44,8 +55,8 @@ export const GDPRProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const updateConsent = async (newConsent: GDPRConsent) => {
-        setConsent(newConsent);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newConsent));
+        window.dispatchEvent(new Event(CHANGE_EVENT));
         setPreferenceModalOpen(false);
 
         await logConsent({

@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.188.3", "localhost:3000"],
 
+  // React <ViewTransition> integration — animates route changes (see app/(main)/layout.tsx).
+  experimental: {
+    viewTransition: true,
+  },
+
   images: {
     remotePatterns: [
       {

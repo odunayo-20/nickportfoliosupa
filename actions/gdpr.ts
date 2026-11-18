@@ -1,6 +1,7 @@
 "use server";
 
-import { createStaticClient } from "@/lib/server";
+import { createAdminClient } from "@/lib/admin";
+import { rateLimit } from "@/lib/rate-limit";
 
 interface ConsentPayload {
   fingerprint: string;
@@ -10,30 +11,23 @@ interface ConsentPayload {
 }
 
 export async function logConsent(data: ConsentPayload): Promise<void> {
-  const supabase = createStaticClient();
+  const fingerprint = String(data?.fingerprint ?? "");
+  if (!fingerprint || fingerprint.length > 128) return;
+  if (!(await rateLimit("consent", 20, 10 * 60_000))) return;
 
-  const { data: existing } = await supabase
-    .from("gdpr_consents")
-    .select("id")
-    .eq("session_fingerprint", data.fingerprint)
-    .maybeSingle();
-
-  if (existing) {
-    await supabase
-      .from("gdpr_consents")
-      .update({
-        necessary: data.necessary,
-        analytics: data.analytics,
-        marketing: data.marketing,
-      })
-      .eq("session_fingerprint", data.fingerprint);
-  } else {
-    await supabase.from("gdpr_consents").insert({
-      session_fingerprint: data.fingerprint,
-      necessary: data.necessary,
-      analytics: data.analytics,
-      marketing: data.marketing,
+  // Service client + upsert: the public role can't read gdpr_consents, so the old
+  // "select then update" never found the row, and repeat visits failed on the unique key.
+  const supabase = createAdminClient();
+  const { error } = await supabase.from("gdpr_consents").upsert(
+    {
+      session_fingerprint: fingerprint,
+      necessary: true,
+      analytics: !!data.analytics,
+      marketing: !!data.marketing,
       country_code: "HR",
-    });
-  }
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "session_fingerprint" }
+  );
+  if (error) console.error("Failed to log consent:", error.message);
 }

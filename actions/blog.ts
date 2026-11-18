@@ -1,14 +1,17 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createClient, createStaticClient } from "@/lib/server";
-import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { cache } from "react";
 import { Database } from "@/types/database";
+import { sanitizeRichText } from "@/lib/sanitize";
 
 type PostInsert = Database["public"]["Tables"]["posts"]["Insert"];
 type PostUpdate = Database["public"]["Tables"]["posts"]["Update"];
 
 export async function createPost(data: PostInsert) {
+    await requireAdmin();
     const supabase = await createClient();
     
     // Get current user to set as author
@@ -29,11 +32,12 @@ export async function createPost(data: PostInsert) {
     }
 
     revalidatePath("/admin/blog");
-    revalidateTag("posts", "max");
+    updateTag("posts");
     return post;
 }
 
 export async function updatePost(id: string, data: PostUpdate) {
+    await requireAdmin();
     const supabase = await createClient();
     const { data: post, error } = await supabase
         .from("posts")
@@ -50,11 +54,12 @@ export async function updatePost(id: string, data: PostUpdate) {
     revalidatePath("/admin/blog");
     revalidatePath(`/admin/blog/edit/${id}`);
     revalidatePath(`/admin/blog/show/${id}`);
-    revalidateTag("posts", "max");
+    updateTag("posts");
     return post;
 }
 
 export async function deletePost(id: string) {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("posts")
@@ -67,12 +72,12 @@ export async function deletePost(id: string) {
     }
 
     revalidatePath("/admin/blog");
-    revalidateTag("posts", "max");
+    updateTag("posts");
 }
 
 export async function getPostById(id: string) {
+    await requireAdmin();
     const supabase = await createClient();
-    console.log("Fetching post by ID:", id);
     
     const { data: post, error } = await supabase
         .from("posts")
@@ -278,9 +283,10 @@ export const getPostBySlug = cache(async (slug: string) => {
                 }
             }
 
+            if (post) post.content = sanitizeRichText(post.content);
             return post;
         },
-        [`post-${slug}`],
+        [`post-v2-${slug}`],
         { tags: ["posts", `post-${slug}`] }
     )();
 });

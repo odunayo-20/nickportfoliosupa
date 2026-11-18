@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createClient } from "@/lib/server";
 import { revalidatePath } from "next/cache";
 import { Database } from "@/types/database";
@@ -7,6 +8,7 @@ import { Database } from "@/types/database";
 type MediaInsert = Database["public"]["Tables"]["media"]["Insert"];
 
 export const createMedia = async (data: MediaInsert) => {
+    await requireAdmin();
     const supabase = await createClient();
     const { data: media, error } = await supabase
         .from("media")
@@ -24,6 +26,7 @@ export const createMedia = async (data: MediaInsert) => {
 };
 
 export const deleteMedia = async (id: string, storagePath: string) => {
+    await requireAdmin();
     const supabase = await createClient();
     
     // 1. Delete from storage
@@ -50,6 +53,7 @@ export const deleteMedia = async (id: string, storagePath: string) => {
 };
 
 export const deleteMultipleMedia = async (mediaItems: { id: string, storage_path: string }[]) => {
+    await requireAdmin();
     const supabase = await createClient();
     
     if (!mediaItems || mediaItems.length === 0) return;
@@ -81,11 +85,9 @@ export const deleteMultipleMedia = async (mediaItems: { id: string, storage_path
 };
 
 export const createFolder = async (name: string, parentId?: string) => {
+    await requireAdmin();
     const supabase = await createClient();
     
-    const { data: authData } = await supabase.auth.getUser();
-    console.log("SERVER ACTION AUTH USER:", authData?.user?.id || "NO USER FOUND");
-
     const { data: folder, error } = await supabase
         .from("folders")
         .insert({ name, parent_id: parentId })
@@ -102,6 +104,7 @@ export const createFolder = async (name: string, parentId?: string) => {
 };
 
 export const deleteFolder = async (id: string) => {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("folders")
@@ -117,6 +120,7 @@ export const deleteFolder = async (id: string) => {
 };
 
 export const renameFolder = async (id: string, name: string) => {
+    await requireAdmin();
     const supabase = await createClient();
     const { error } = await supabase
         .from("folders")
@@ -132,6 +136,7 @@ export const renameFolder = async (id: string, name: string) => {
 };
 
 export const getFolders = async (parentId?: string) => {
+    await requireAdmin();
     const supabase = await createClient();
     let query = supabase.from("folders").select("*");
     
@@ -152,6 +157,7 @@ export const getFolders = async (parentId?: string) => {
 };
 
 export const getMediaByFolder = async (folderId?: string) => {
+    await requireAdmin();
     const supabase = await createClient();
     let query = supabase.from("media").select("*");
     
@@ -172,6 +178,7 @@ export const getMediaByFolder = async (folderId?: string) => {
 };
 
 export const getMediaById = async (id: string) => {
+    await requireAdmin();
     const supabase = await createClient();
     const { data, error } = await supabase
         .from("media")
@@ -188,6 +195,7 @@ export const getMediaById = async (id: string) => {
 };
 
 export const getMediaByIds = async (ids: string[]) => {
+    await requireAdmin();
     if (!ids || ids.length === 0) return [];
     const supabase = await createClient();
     const { data, error } = await supabase

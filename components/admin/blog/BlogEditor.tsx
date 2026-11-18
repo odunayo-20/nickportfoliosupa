@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useAutosave } from "@/components/admin/useAutosave";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -67,6 +68,30 @@ interface BlogEditorProps {
     isEditing?: boolean;
 }
 
+// Generic Image Preview Component (module level, so it is not remounted on every editor render)
+const ImagePreview = ({ mediaId, onReplace, onRemove }: { mediaId: string; onReplace: () => void; onRemove: () => void }) => {
+    const [media, setMedia] = useState<any>(null);
+    
+    useEffect(() => {
+        const fetchMedia = async () => {
+            const { data } = await supabase.from("media").select("*").eq("id", mediaId).single();
+            setMedia(data);
+        };
+        fetchMedia();
+    }, [mediaId]);
+
+    if (!media) return <div className="h-40 bg-slate-100 rounded-xl flex items-center justify-center animate-pulse"><ImageIcon className="text-slate-300" /></div>;
+    return (
+        <div className="relative group rounded-xl overflow-hidden border aspect-video">
+            <img src={media.url} alt="Preview" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <Button type="button" size="sm" variant="secondary" onClick={onReplace}>Replace</Button>
+                <Button type="button" size="sm" variant="destructive" onClick={onRemove}>Remove</Button>
+            </div>
+        </div>
+    );
+};
+
 export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) {
     const router = useRouter();
 
@@ -77,9 +102,13 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
     const [isSlugCustomized, setIsSlugCustomized] = useState(false);
     
     // Auto-save states
-    const [lastSaved, setLastSaved] = useState<Date | null>(initialData?.updated_at ? new Date(initialData.updated_at) : null);
-    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-    const [postId, setPostId] = useState<string | undefined>(initialData?.id);
+    const initialSaved = initialData?.updated_at ? new Date(initialData.updated_at) : null;
+    // Ref, not state: a save that started before the new post's id was known must still see it,
+    // otherwise two saves each create a post.
+    const postIdRef = useRef<string | undefined>(initialData?.id);
+    // Live (saved) status. Autosave only runs while the post is a draft, so edits to a published
+    // post never go live until you click Update.
+    const savedStatusRef = useRef<"draft" | "published">(initialData?.status === "published" ? "published" : "draft");
 
     useEffect(() => {
         setIsMounted(true);
@@ -135,124 +164,69 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
         }
     }, [titleWatcher, isSlugCustomized, isEditing, dirtyFields.title, setValue, watch]);
 
-    // Auto-save logic
-    const allValues = watch();
-    const [isFirstRender, setIsFirstRender] = useState(true);
+    const buildPayload = (data: FormValues) => ({
+        title: data.title,
+        slug: data.slug,
+        summary: data.excerpt || "",
+        content: data.content,
+        tags: data.tags,
+        visibility: data.visibility,
+        category: data.category || null,
+        published_at: data.published_at || null,
+        featured_image_id: data.featured_image_id || null,
+        cover_image_id: data.cover_image_id || null,
+        detail_image_id: data.detail_image_id || null,
+    });
 
-    const handleAutoSave = async (data: FormValues) => {
-        if (!data.title && !data.content) return;
-        
-        setSaveStatus("saving");
-        try {
-            if (postId) {
-                await updatePost(postId, {
-                    title: data.title,
-                    slug: data.slug,
-                    summary: data.excerpt || "",
-                    content: data.content,
-                    tags: data.tags,
-                    status: data.status,
-                    visibility: data.visibility,
-                    category: data.category,
-                    published_at: data.published_at,
-                    featured_image_id: data.featured_image_id || null,
-                    cover_image_id: data.cover_image_id || null,
-                    detail_image_id: data.detail_image_id || null,
-                    updated_at: new Date().toISOString()
-                });
+    // Autosave: drafts only, only when something changed and the form is valid; never changes status.
+    const autosave = useAutosave<FormValues>({
+        form,
+        schema: formSchema,
+        delay: 30000,
+        ignore: ["status"],
+        save: async (data) => {
+            if (savedStatusRef.current !== "draft") return;
+            if (postIdRef.current) {
+                await updatePost(postIdRef.current, { ...buildPayload(data), updated_at: new Date().toISOString() });
             } else {
-                const newPost = await createPost({
-                    title: data.title || "Untitled Draft",
-                    slug: data.slug || `draft-${Date.now()}`,
-                    summary: data.excerpt || "",
-                    content: data.content || "",
-                    tags: data.tags,
-                    status: "draft",
-                    visibility: data.visibility,
-                    category: data.category,
-                    published_at: data.published_at,
-                    featured_image_id: data.featured_image_id || null,
-                    cover_image_id: data.cover_image_id || null,
-                    detail_image_id: data.detail_image_id || null,
-                });
-                setPostId(newPost.id);
+                const newPost = await createPost({ ...buildPayload(data), status: "draft" });
+                postIdRef.current = newPost.id;
                 // Update URL without full navigation
                 window.history.replaceState(null, "", `/admin/blog/edit/${newPost.id}`);
             }
-            setLastSaved(new Date());
-            setSaveStatus("saved");
-        } catch (error) {
-            console.error("Auto-save failed:", error);
-            setSaveStatus("error");
-        }
-    };
-
-    useEffect(() => {
-        if (isFirstRender) {
-            setIsFirstRender(false);
-            return;
-        }
-
-        const timer = setTimeout(() => {
-            handleAutoSave(allValues);
-        }, 60000); // 60 second debounce for auto-save
-
-        return () => clearTimeout(timer);
-    }, [allValues]);
+        },
+    });
+    const saveStatus = autosave.status;
+    const lastSaved = autosave.lastSaved ?? initialSaved;
 
     const onSubmit = async (data: FormValues) => {
         try {
-            setSaveStatus("saving");
-            const finalPostId = postId || (isEditing ? initialData?.id : null);
-            
+            await autosave.settle();
+            autosave.setStatus("saving");
+            const finalPostId = postIdRef.current;
+
             if (finalPostId) {
-                await updatePost(finalPostId, {
-                    title: data.title,
-                    slug: data.slug,
-                    summary: data.excerpt || "",
-                    content: data.content,
-                    tags: data.tags,
-                    status: data.status,
-                    visibility: data.visibility,
-                    category: data.category,
-                    published_at: data.published_at,
-                    featured_image_id: data.featured_image_id || null,
-                    cover_image_id: data.cover_image_id || null,
-                    detail_image_id: data.detail_image_id || null,
-                    updated_at: new Date().toISOString()
-                });
+                await updatePost(finalPostId, { ...buildPayload(data), status: data.status, updated_at: new Date().toISOString() });
                 toast.success("Post updated successfully");
             } else {
-                await createPost({
-                    title: data.title,
-                    slug: data.slug,
-                    summary: data.excerpt || "",
-                    content: data.content,
-                    tags: data.tags,
-                    status: data.status,
-                    visibility: data.visibility,
-                    category: data.category,
-                    published_at: data.published_at,
-                    featured_image_id: data.featured_image_id || null,
-                    cover_image_id: data.cover_image_id || null,
-                    detail_image_id: data.detail_image_id || null,
-                });
+                const newPost = await createPost({ ...buildPayload(data), status: data.status });
+                postIdRef.current = newPost.id;
                 toast.success("Post created successfully");
             }
-            setSaveStatus("saved");
+            savedStatusRef.current = data.status;
+            autosave.markSaved(data);
             router.push("/admin/blog");
         } catch (error) {
             console.error(error);
-            setSaveStatus("error");
+            autosave.setStatus("error");
             toast.error(isEditing ? "Failed to update post" : "Failed to create post");
         }
     };
 
+    // Image pick/remove: set the field and save right away (drafts) instead of waiting for the debounce.
     const updateFieldAndSave = async (field: keyof FormValues, value: any) => {
         setValue(field, value, { shouldDirty: true, shouldTouch: true });
-        const currentValues = form.getValues();
-        const updatedValues = { ...currentValues, [field]: value };
-        await handleAutoSave(updatedValues);
+        await autosave.flush();
     };
 
     const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -268,30 +242,6 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
 
     const removeTag = (tag: string) => {
         setValue("tags", tagsWatcher.filter(t => t !== tag));
-    };
-
-    // Generic Image Preview Component
-    const ImagePreview = ({ mediaId, onReplace, onRemove }: { mediaId: string; onReplace: () => void; onRemove: () => void }) => {
-        const [media, setMedia] = useState<any>(null);
-        
-        useEffect(() => {
-            const fetchMedia = async () => {
-                const { data } = await supabase.from("media").select("*").eq("id", mediaId).single();
-                setMedia(data);
-            };
-            fetchMedia();
-        }, [mediaId]);
-
-        if (!media) return <div className="h-40 bg-slate-100 rounded-xl flex items-center justify-center animate-pulse"><ImageIcon className="text-slate-300" /></div>;
-        return (
-            <div className="relative group rounded-xl overflow-hidden border aspect-video">
-                <img src={media.url} alt="Preview" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <Button type="button" size="sm" variant="secondary" onClick={onReplace}>Replace</Button>
-                    <Button type="button" size="sm" variant="destructive" onClick={onRemove}>Remove</Button>
-                </div>
-            </div>
-        );
     };
 
     return (
@@ -380,6 +330,12 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                                     </span>
                                 </>
                             )}
+                            {saveStatus === "invalid" && (
+                                <span className="text-[9px] font-bold text-amber-600 uppercase tracking-tighter" title="Autosave is paused until required fields are valid">Fix errors to autosave</span>
+                            )}
+                            {saveStatus === "dirty" && savedStatusRef.current === "published" && (
+                                <span className="text-[9px] font-bold text-amber-600 uppercase tracking-tighter">Unsaved — click Update</span>
+                            )}
                             {saveStatus === "error" && (
                                 <>
                                     <AlertCircle className="h-3 w-3 text-red-500" />
@@ -448,7 +404,7 @@ export function BlogEditor({ initialData, isEditing = false }: BlogEditorProps) 
                                     <Calendar
                                         mode="single"
                                         selected={pubDateWatcher ? new Date(pubDateWatcher) : undefined}
-                                        onSelect={(date) => setValue("published_at", date?.toISOString())}
+                                        onSelect={(date) => setValue("published_at", date ? `${format(date, "yyyy-MM-dd")}T12:00:00.000Z` : undefined, { shouldDirty: true })}
                                         initialFocus
                                     />
                                 </PopoverContent>

@@ -39,22 +39,17 @@ const ForgotPasswordPage = () => {
         
         try {
             // Check if email exists in whitelist
-            const { exists, error: checkError } = await checkEmailExists(email);
-            
-            if (!exists) {
-                setErrors({ email: checkError || "Email not found in our records." });
-                setIsSubmitting(false);
-                return;
+            // Same message whether or not the address has an account (no account enumeration).
+            const { exists } = await checkEmailExists(email);
+
+            if (exists) {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
+                });
+                if (error) throw error;
             }
 
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
-            });
-
-
-            if (error) throw error;
-            
-            toast.success("Password reset link sent to your email!");
+            toast.success("If that address has an account, a reset link is on its way.");
             setEmail('');
         } catch (error: any) {
             console.error('Reset error:', error.message);

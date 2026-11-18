@@ -5,7 +5,12 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get("code");
-    const next = searchParams.get("next") ?? "/admin/dashboard";
+    // Only same-site paths: "@evil.com" or "//evil.com" would turn `${origin}${next}` into an open redirect.
+    const rawNext = searchParams.get("next") ?? "/admin/dashboard";
+    const next =
+        rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.includes("\\")
+            ? rawNext
+            : "/admin/dashboard";
 
     if (code) {
         const supabase = await createClient();

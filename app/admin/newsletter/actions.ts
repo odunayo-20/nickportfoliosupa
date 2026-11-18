@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
+import { unsubscribeUrl } from "@/lib/unsubscribe";
 import { createAdminClient } from "@/lib/admin";
 import { revalidatePath } from "next/cache";
 import { sendBrevoEmail } from "@/lib/brevo";
@@ -18,6 +20,7 @@ export async function sendNewsletter(payload: {
     subject: string;
     content: string;
 }) {
+    await requireAdmin();
     const admin = createAdminClient();
 
     // 1. Get all active subscribers
@@ -31,19 +34,18 @@ export async function sendNewsletter(payload: {
         return { error: "No active subscribers found." };
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     try {
         // 2. Send individual emails to include personalized unsubscribe link
         const sendPromises = subscribers.map(async (sub) => {
-            const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(sub.email)}`;
+            const unsubscribeLink = unsubscribeUrl(sub.email);
             const personalizedContent = `
                 <div style="font-family: sans-serif;">
                     ${payload.content}
                     <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center;">
                         <p>You are receiving this because you are subscribed to my newsletter.</p>
                         <p>
-                            <a href="${unsubscribeUrl}" style="color: #6366f1; text-decoration: underline;">Unsubscribe</a> 
+                            <a href="${unsubscribeLink}" style="color: #6366f1; text-decoration: underline;">Unsubscribe</a> 
                             from these emails.
                         </p>
                     </div>
@@ -83,6 +85,7 @@ export async function sendNewsletter(payload: {
 }
 
 export async function getNewsletterCampaigns(): Promise<NewsletterCampaign[]> {
+    await requireAdmin();
     const admin = createAdminClient();
     const { data, error } = await admin
         .from("newsletter_campaigns")
@@ -101,15 +104,15 @@ export async function sendTestNewsletter(payload: {
     content: string;
     email: string;
 }) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const unsubscribeUrl = `${appUrl}/unsubscribe?email=${encodeURIComponent(payload.email)}`;
+    await requireAdmin();
+    const unsubscribeLink = unsubscribeUrl(payload.email);
     const personalizedContent = `
         <div style="font-family: sans-serif;">
             ${payload.content}
             <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; text-align: center;">
                 <p>You are receiving this because you are subscribed to my newsletter.</p>
                 <p>
-                    <a href="${unsubscribeUrl}" style="color: #6366f1; text-decoration: underline;">Unsubscribe</a> 
+                    <a href="${unsubscribeLink}" style="color: #6366f1; text-decoration: underline;">Unsubscribe</a> 
                     from these emails.
                 </p>
                 <p style="margin-top: 10px; color: #f43f5e; font-weight: bold;">[TEST EMAIL]</p>
@@ -131,6 +134,7 @@ export async function sendTestNewsletter(payload: {
 }
 
 export async function deleteNewsletterCampaign(id: string) {
+    await requireAdmin();
     const admin = createAdminClient();
     const { error } = await admin
         .from("newsletter_campaigns")

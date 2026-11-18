@@ -1,15 +1,71 @@
 'use client'
 
-import React from 'react'
-import { Mail, MapPin } from 'lucide-react'
+import { useRef } from 'react'
+import { ArrowUp, ArrowUpRight, Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { m, useScroll, useTransform } from 'motion/react'
+import { useHydratedReducedMotion } from '@/components/motion/useHydratedReducedMotion'
+import { useLenis } from 'lenis/react'
+import { Magnetic } from '@/components/motion/Magnetic'
+import { FlowField } from '@/components/motion/FlowField'
+import { RollText } from '@/components/motion/RollText'
 import { NewsletterForm } from '@/components/NewsletterForm'
 import { LinkedinIcon, GithubIcon, XIcon } from '@/components/Icons'
 import { myAppHook } from '@/context/AppUtils'
 import { useGDPR } from '@/context/GDPRContext'
 
 
+/** Oversized "let's work together" band whose two lines slide in opposite directions on scroll. */
+const FooterCta = () => {
+  const ref = useRef<HTMLDivElement>(null)
+  const reduce = useHydratedReducedMotion()
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const x1 = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['8%', '-18%'])
+  const x2 = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['-18%', '6%'])
+
+  return (
+    <div ref={ref} className="relative isolate border-b border-white/10 pb-16 mb-16 overflow-hidden">
+      {/* H1 flow field, faded toward the edges */}
+      <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-70 [mask-image:radial-gradient(ellipse_70%_80%_at_70%_50%,black_20%,transparent_80%)]">
+        <FlowField density={180} max={600} tone="dark" />
+      </div>
+      <p className="text-brand-orange font-semibold flex items-center gap-2 text-sm mb-6">
+        <span className="w-4 h-[2px] bg-brand-orange"></span> Have a project in mind?
+      </p>
+      <div aria-hidden="true" className="select-none font-extrabold tracking-tighter leading-[0.9] text-[clamp(3rem,11vw,10rem)] whitespace-nowrap">
+        <m.div style={{ x: x1 }}>Let&apos;s build something</m.div>
+        <m.div style={{ x: x2 }} className="text-transparent [-webkit-text-stroke:2px_var(--color-brand-orange)]">
+          great together — great together
+        </m.div>
+      </div>
+      <h2 className="sr-only">Let&apos;s build something great together</h2>
+
+      <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-6 sm:justify-between">
+        <p className="text-gray-400 max-w-md">
+          Freelance projects, partnerships or a full-time role — tell me what you&apos;re building and I&apos;ll get back to you within a day.
+        </p>
+        <Magnetic strength={0.4}>
+          <Link
+            href="/contact"
+            className="group relative w-36 h-36 rounded-full bg-brand-orange text-brand-dark font-extrabold flex flex-col items-center justify-center gap-1 shadow-2xl transition-[scale,background-color] duration-300 hover:scale-105 hover:bg-white"
+          >
+            <ArrowUpRight className="w-7 h-7 transition-transform duration-300 group-hover:rotate-45" />
+            Get in touch
+          </Link>
+        </Magnetic>
+      </div>
+    </div>
+  )
+}
+
 const Footer = () => {
+  const pathname = usePathname()
+  const lenis = useLenis()
+  const scrollToTop = () => {
+    if (lenis) lenis.scrollTo(0, { duration: 1.4 })
+    else window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
   const { siteSettings, profile } = myAppHook()
   const { setPreferenceModalOpen } = useGDPR()
 
@@ -21,6 +77,8 @@ const Footer = () => {
     <>
      <footer className="bg-[#1e3628] text-white pt-20 pb-10 border-t-8 border-brand-orange">
         <div className="max-w-7xl mx-auto px-6">
+            {pathname !== '/contact' && <FooterCta />}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
                 
                 <div className="lg:col-span-3">
@@ -62,11 +120,11 @@ const Footer = () => {
                 <div className="lg:col-span-2">
                     <h4 className="text-white font-bold mb-6 text-lg tracking-tight">Navigation</h4>
                     <ul className="space-y-4 text-sm font-medium text-gray-400">
-                        <li><Link href="/" className="hover:text-brand-orange transition-colors">Home</Link></li>
-                        <li><Link href="/services" className="hover:text-brand-orange transition-colors">Services</Link></li>
-                        <li><Link href="/about" className="hover:text-brand-orange transition-colors">About Me</Link></li>
-                        <li><Link href="/projects" className="hover:text-brand-orange transition-colors">Featured Projects</Link></li>
-                        <li><Link href="/blog" className="hover:text-brand-orange transition-colors">Blog</Link></li>
+                        <li><Link href="/" className="inline-block"><RollText>Home</RollText></Link></li>
+                        <li><Link href="/services" className="inline-block"><RollText>Services</RollText></Link></li>
+                        <li><Link href="/about" className="inline-block"><RollText>About Me</RollText></Link></li>
+                        <li><Link href="/projects" className="inline-block"><RollText>Featured Projects</RollText></Link></li>
+                        <li><Link href="/blog" className="inline-block"><RollText>Blog</RollText></Link></li>
                     </ul>
                 </div>
 
@@ -115,6 +173,15 @@ const Footer = () => {
                     </button>
                     <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
                 </div>
+                <button
+                    onClick={scrollToTop}
+                    className="group inline-flex items-center gap-2 text-gray-400 hover:text-brand-orange transition-colors"
+                >
+                    Back to top
+                    <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center transition-[translate,background-color] duration-300 group-hover:-translate-y-1 group-hover:bg-brand-orange group-hover:text-brand-dark">
+                        <ArrowUp className="w-4 h-4" />
+                    </span>
+                </button>
             </div>
         </div>
     </footer>

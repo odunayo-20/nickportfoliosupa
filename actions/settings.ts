@@ -1,7 +1,8 @@
 "use server";
 
+import { requireAdmin } from '@/lib/auth-guard';
 import { createClient, createStaticClient } from "@/lib/server";
-import { revalidatePath, unstable_cache, revalidateTag } from "next/cache";
+import { revalidatePath, unstable_cache, updateTag } from "next/cache";
 import { cache } from "react";
 
 // Try to find the first settings row, or fallback to the master ID
@@ -33,6 +34,7 @@ export const getSettings = cache(unstable_cache(
 ));
 
 export async function updateSettings(data: Record<string, any>) {
+    await requireAdmin();
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -74,6 +76,6 @@ export async function updateSettings(data: Record<string, any>) {
     }
 
     revalidatePath("/", "layout");
-    revalidateTag("settings", "max");
+    updateTag("settings");
     return { success: true };
 }

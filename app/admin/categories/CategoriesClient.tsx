@@ -55,6 +55,8 @@ export function CategoriesClient({ initialCategories }: { initialCategories: Cat
     }
 
     async function handleDelete(id: string) {
+        const name = categories.find((c) => c.id === id)?.name ?? "this category";
+        if (!window.confirm(`Delete "${name}"? This can't be undone.`)) return;
         setDeletingId(id);
         try {
             await deleteCategory(id);

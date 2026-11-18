@@ -40,9 +40,14 @@ const MessagesClient = () => {
 
     const fetchMessages = async () => {
         setLoading(true)
-        const data = await getMessages()
-        setMessages(data)
-        setLoading(false)
+        try {
+            setMessages(await getMessages())
+        } catch (error) {
+            console.error(error)
+            toast.error("Couldn't load messages")
+        } finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -53,9 +58,9 @@ const MessagesClient = () => {
     const filteredMessages = useMemo(() => {
         return messages.filter(m => {
             const matchesSearch = 
-                m.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                m.email.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                m.message.toLowerCase().includes(searchQuery.toLowerCase())
+                (m.name ?? "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+                (m.email ?? "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+                (m.message ?? "").toLowerCase().includes(searchQuery.toLowerCase())
             
             const matchesFilter = 
                 filter === 'all' || 

@@ -22,7 +22,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const title = post.title;
     const description = post.summary || `Read ${post.title} on our blog.`;
     const siteTitle = settings?.site_title || "Nikola's Journal";
-    const imageUrl = (post as any).imageUrl || (post as any).image_url || "/logo.png";
     const postUrl = `${BASE_URL}/blog/${resolvedParams.slug}`;
 
     return {
@@ -38,20 +37,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
             siteName: siteTitle,
             locale: "en_US",
             url: postUrl,
-            images: [
-                {
-                    url: imageUrl,
-                    width: 1200,
-                    height: 630,
-                    alt: title,
-                },
-            ],
+            // images come from ./opengraph-image.tsx (branded card)
         },
         twitter: {
             card: "summary_large_image",
             title: `${title} | ${siteTitle}`,
             description: description,
-            images: [imageUrl],
         },
     };
 }
@@ -66,7 +57,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     const allPublished = await getPublishedPosts();
     const relatedPosts = allPublished.filter(p => p.id !== post?.id).slice(0, 2);
 
-    let comments = [];
+    let comments: Awaited<ReturnType<typeof getComments>> = [];
     let likesData = { count: 0, hasLiked: false };
 
     if (post) {

@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 whitelisted_emails.json
+
+# QA runs (see TESTING.md)
+/test-runs/

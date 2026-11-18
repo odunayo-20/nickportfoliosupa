@@ -1,96 +1,80 @@
 "use client"
 
-import { motion, Variants } from 'motion/react'
 import Image from 'next/image'
+import { m } from 'motion/react'
+import { Marquee } from '@/components/motion/Marquee'
+import { SplitText } from '@/components/motion/SplitText'
+import { fadeInUp, staggerContainer, VIEWPORT } from '@/lib/motion'
 
+const DEVICON = 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons'
 
-const fadeInUp: Variants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
-};
+const TOOLS = [
+    { name: 'Kotlin', href: 'https://kotlinlang.org', icon: `${DEVICON}/kotlin/kotlin-original.svg` },
+    { name: 'Java', href: 'https://www.java.com/en/', icon: `${DEVICON}/java/java-original.svg` },
+    { name: 'Android Studio', href: 'https://developer.android.com/studio', icon: `${DEVICON}/android/android-original.svg` },
+    { name: 'Xcode', href: 'https://developer.apple.com/xcode/', icon: `${DEVICON}/xcode/xcode-original.svg` },
+    { name: 'Firebase', href: 'https://firebase.google.com/', icon: `${DEVICON}/firebase/firebase-original.svg` },
+    { name: 'Supabase', href: 'https://supabase.com/', icon: `${DEVICON}/supabase/supabase-original.svg` },
+    { name: 'Git', href: 'https://git-scm.com/', icon: `${DEVICON}/git/git-original.svg` },
+]
 
-const staggerContainer: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.15
-        }
-    }
-};
-
-const scaleIn: Variants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" as const } }
-};
-
-
+const KEYWORDS = [
+    'Kotlin Multiplatform', 'Jetpack Compose', 'Compose Multiplatform', 'Coroutines & Flow',
+    'SQLDelight', 'Ktor', 'Offline-First', 'PostgreSQL', 'Edge Functions', 'Realtime', 'Clean Architecture',
+]
 
 const Tools = () => {
-  return (
-    <>
-    
-            <motion.section
-                id="tools"
-                className="max-w-4xl mx-auto px-6 py-24 text-center reveal"
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: "-100px" }}
-                variants={staggerContainer}
-            >
-                <motion.span variants={fadeInUp} className="text-brand-orange font-semibold flex items-center justify-center gap-2 text-sm mb-2">
+    return (
+        <m.section
+            id="tools"
+            className="py-24 text-center overflow-hidden"
+            initial="hidden"
+            whileInView="visible"
+            viewport={VIEWPORT}
+            variants={staggerContainer}
+        >
+            <div className="max-w-4xl mx-auto px-6">
+                <m.span variants={fadeInUp} className="text-brand-orange font-semibold flex items-center justify-center gap-2 text-sm mb-2">
                     <span className="w-4 h-[2px] bg-brand-orange"></span> My Favorite Tools
-                </motion.span>
-                <motion.h2 variants={fadeInUp} className="text-4xl md:text-5xl font-extrabold tracking-tighter text-brand-dark mb-16">
+                </m.span>
+                <SplitText className="text-4xl md:text-5xl font-extrabold tracking-tighter text-ink mb-16">
                     Exploring the Tools<br />Behind My Designs
-                </motion.h2>
+                </SplitText>
+            </div>
 
-                <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-                    <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                        <a href="https://kotlinlang.org" target='_blank'>
-                        
-                        <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kotlin/kotlin-original.svg" alt="Kotlin" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all" />
+            <m.div variants={fadeInUp} className="flex flex-col gap-6">
+                {/* Row 1 — tool logos */}
+                <Marquee duration={32} className="py-3">
+                    {TOOLS.map((tool) => (
+                        <a
+                            key={tool.name}
+                            href={tool.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group flex items-center gap-3 pl-2 pr-5 py-2 bg-surface rounded-full shadow-sm border border-line hover:border-brand-orange hover:shadow-md hover:-translate-y-1 transition-[translate,box-shadow,border-color] duration-300 whitespace-nowrap"
+                        >
+                            <span className="w-11 h-11 rounded-full bg-surface-alt flex items-center justify-center">
+                                <Image src={tool.icon} alt="" width={28} height={28} className="w-7 h-7 grayscale group-hover:grayscale-0 transition-[filter] duration-300" />
+                            </span>
+                            <span className="text-sm font-bold text-ink">{tool.name}</span>
                         </a>
-                    </motion.div>
-                    <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                         <a href="https://www.java.com/en/" target='_blank'>
-                        <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/java/java-original.svg" alt="Java" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all" />
-                         </a>
-                    </motion.div>
-                    <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                         <a href="https://developer.android.com/studio" target='_blank'>
-                        <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/android/android-original.svg" alt="Android Studio" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all" />
-                         </a>
-                    </motion.div>
-                    <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                         <a href="https://developer.apple.com/xcode/" target='_blank'>
-                        <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/xcode/xcode-original.svg" alt="Android Studio" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all" />
-                         </a>
-                    </motion.div>
-                    <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                         <a href="https://firebase.google.com/" target='_blank'>
-                        <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/firebase/firebase-original.svg" alt="Firebase" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all" />
-                         </a>
-                    </motion.div>
-                    <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                        <a href='https://supabase.com/' target='_blank'>
-                        <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/supabase/supabase-original.svg" alt="Supabase" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all" />
-                        </a>
-                    </motion.div>
-                    <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                        <a href='https://git-scm.com/' target='_blank'>
-                        <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" alt="Git" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all" />
-                        </a>
-                    </motion.div>
-                    {/* <motion.div variants={fadeInUp} className="w-20 h-20 bg-white rounded-full shadow-sm border border-gray-100 flex items-center justify-center hover:-translate-y-2 hover:shadow-md hover:border-brand-orange transition-all cursor-pointer">
-                        <Image src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg" alt="Figma" width={40} height={40} className="w-10 h-10 grayscale hover:grayscale-0 transition-all" />
-                    </motion.div> */}
-                  
-                </div>
-            </motion.section>
-    
-    </>
-  )
+                    ))}
+                </Marquee>
+
+                {/* Row 2 — skills keywords, opposite direction */}
+                <Marquee duration={40} reverse>
+                    {KEYWORDS.map((k, i) => (
+                        <span key={k} className="flex items-center gap-6 whitespace-nowrap">
+                            <span className={`text-2xl md:text-4xl font-extrabold tracking-tighter ${i % 2 ? 'text-ink/15' : 'text-ink'}`}>
+                                {k}
+                            </span>
+                            <span className="w-2.5 h-2.5 rounded-full bg-brand-orange shrink-0" aria-hidden="true" />
+                        </span>
+                    ))}
+                </Marquee>
+            </m.div>
+        </m.section>
+    )
 }
 
 export default Tools

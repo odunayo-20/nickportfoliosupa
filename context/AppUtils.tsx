@@ -19,7 +19,7 @@ interface Profile {
     bio: string | null;
     avatar_url: string | null;
     resume_url: string | null;
-    social_links: any;
+    social_links: Record<string, string | undefined> | null;
     email: string | null;
 }
 
@@ -38,11 +38,15 @@ interface AppUtilsType {
 
 const AppUtilsContext = createContext<AppUtilsType | undefined>(undefined);
 
-export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
+/**
+ * `initialSettings` comes from the server (root layout) so the navbar logo/title render in the
+ * first HTML instead of flashing fallbacks until a client fetch finishes.
+ */
+export const AppUtilsProvider = ({ children, initialSettings = null }: { children: ReactNode; initialSettings?: SiteSettings | null }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
-    const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+    const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(initialSettings);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -89,7 +93,6 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
         // Initial session check
         const initAuth = async () => {
             try {
-                console.log("Initializing auth...");
                 const { data: { session } } = await supabase.auth.getSession();
                 setSession(session);
                 setUser(session?.user ?? null);
@@ -109,7 +112,7 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
         });
 
         initAuth();
-        refreshSettings();
+        if (!initialSettings) refreshSettings();
         refreshProfile();
 
         // Safety timeout to prevent infinite loading
@@ -147,10 +150,13 @@ export const AppUtilsProvider = ({ children }: { children: ReactNode }) => {
 };
 
 
-export const myAppHook = () => {
+export const useAppUtils = () => {
     const context = useContext(AppUtilsContext);
     if (!context) {
-        throw new Error("myAppHook must be used within an AppUtilsProvider");
+        throw new Error("useAppUtils must be used within an AppUtilsProvider");
     }
     return context;
 };
+
+/** @deprecated use `useAppUtils` — kept so existing callers keep working. */
+export const myAppHook = useAppUtils;

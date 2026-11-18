@@ -1,48 +1,47 @@
 "use client";
 import { ArrowLeft, Clock, Calendar, Copy, Link as LinkIcon, ArrowRight, MailOpen, ThumbsUp, MessageSquare, Send, X } from 'lucide-react'
-import { motion, Variants, AnimatePresence } from 'motion/react'
+import { m, AnimatePresence } from 'motion/react'
+import { useScrollLock } from '@/components/motion/SmoothScroll'
+import { SplitText } from '@/components/motion/SplitText'
+import { fadeInUp, staggerContainer } from '@/lib/motion'
 import Link from 'next/link'
-import { useState, useTransition, useRef } from 'react'
+import { useEffect, useMemo, useState, useTransition, useRef } from 'react'
 import { likePost, addComment, unlikePost } from '@/actions/interactions'
 import { toast } from 'sonner'
 import Image from 'next/image';
+import { addHeadingIds } from '@/lib/toc'
+import { TableOfContents } from '@/components/blog/TableOfContents'
 import { LinkedinIcon, TwitterIcon } from '@/components/Icons';
+import { formatDate, type CommentItem, type PostDetail, type PostSummary } from '@/types/content'
 
-const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
-};
 
-const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15
-    }
-  }
-};
 
 // Image Lightbox Component
 function ImageLightbox({ image, isOpen, onClose }: { image: string, isOpen: boolean, onClose: () => void }) {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') onClose();
-  };
+  useScrollLock(isOpen);
+  // Window-level Escape: the overlay div never reliably receives focus, so onKeyDown didn't fire
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isOpen, onClose]);
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          onKeyDown={handleKeyDown}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Image viewer"
+          data-lenis-prevent
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          tabIndex={0}
-          autoFocus
         >
-          <motion.div
+          <m.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
@@ -67,12 +66,13 @@ function ImageLightbox({ image, isOpen, onClose }: { image: string, isOpen: bool
                 src={image}
                 alt="Full size image"
                 fill
+                sizes="100vw"
                 className="object-contain"
-                priority
+                preload
               />
             </div>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       )}
     </AnimatePresence>
   );
@@ -85,24 +85,13 @@ export default function BlogPostClient({
   initialComments = [],
   initialLikes = { count: 0, hasLiked: false }
 }: { 
-  post: any, 
-  relatedPosts?: any[],
-  initialComments?: any[],
+  post: PostDetail | null, 
+  relatedPosts?: PostSummary[],
+  initialComments?: CommentItem[],
   initialLikes?: { count: number, hasLiked: boolean }
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   
-  if (!post) {
-      return (
-          <div className="pt-32 pb-20 text-center">
-              <h1 className="text-2xl font-bold text-brand-dark mb-4">Post not found</h1>
-              <Link href="/blog" className="text-brand-orange inline-flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" /> Back to Blog
-              </Link>
-          </div>
-      );
-  }
-
   // Calculate read time (naive approach: 200 words per minute)
   const calculateReadTime = (htmlContent: string) => {
     if (!htmlContent) return 1;
@@ -111,7 +100,7 @@ export default function BlogPostClient({
     return Math.max(1, Math.ceil(words / 200));
   };
 
-  const readTime = calculateReadTime(post.content || "");
+  const readTime = calculateReadTime(post?.content || "");
 
   const [likes, setLikes] = useState(initialLikes.count);
   const [hasLiked, setHasLiked] = useState(initialLikes.hasLiked);
@@ -121,6 +110,21 @@ export default function BlogPostClient({
   const [isCommenting, startCommenting] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const [commentError, setCommentError] = useState("");
+
+  // Heading ids + table of contents for the article body
+  const toc = useMemo(() => addHeadingIds(post?.content || ""), [post?.content]);
+
+  if (!post) {
+      return (
+          <div className="pt-32 pb-20 text-center">
+              <h1 className="text-2xl font-bold text-ink mb-4">Post not found</h1>
+              <Link href="/blog" className="text-brand-orange inline-flex items-center gap-2">
+                  <ArrowLeft className="w-4 h-4" /> Back to Blog
+              </Link>
+          </div>
+      );
+  }
+
 
   const handleLike = () => {
       if (isLiking) return;
@@ -176,22 +180,24 @@ export default function BlogPostClient({
       });
   };
 
+  const heroImage = post.detail_image_url || post.image_url || null;
+
   return (
     <>
     <ImageLightbox 
-      image={post.detail_image_url || post.image_url} 
+      image={heroImage ?? ''} 
       isOpen={lightboxOpen} 
       onClose={() => setLightboxOpen(false)} 
     />
 
-    <motion.header 
-        className="pt-20 pb-12 bg-brand-light"
+    <m.header 
+        className="pt-20 pb-12 bg-surface"
         initial="hidden"
         animate="visible"
         variants={staggerContainer}
     >
-        <motion.div variants={fadeInUp} className="max-w-4xl mx-auto px-6 reveal">
-            <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-brand-muted hover:text-brand-orange transition-colors mb-10">
+        <m.div variants={fadeInUp} className="max-w-4xl mx-auto px-6">
+            <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-bold text-ink-muted hover:text-brand-orange transition-colors mb-10">
                 <ArrowLeft className="w-4 h-4" /> Back to Journal
             </Link>
             
@@ -199,135 +205,132 @@ export default function BlogPostClient({
                 {post.category && (
                     <span className="text-xs font-bold text-brand-dark bg-brand-orange px-3 py-1 rounded-full uppercase tracking-widest">{post.category}</span>
                 )}
-                <span className="text-sm font-medium text-brand-muted flex items-center gap-1 ml-auto"><Clock className="w-4 h-4" /> {readTime} min read</span>
+                <span className="text-sm font-medium text-ink-muted flex items-center gap-1 ml-auto"><Clock className="w-4 h-4" /> {readTime} min read</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-brand-dark leading-[1.1] mb-8">
+            <SplitText as="h1" immediate delay={0.15} stagger={0.016} className="text-4xl md:text-6xl font-extrabold tracking-tighter text-ink leading-[1.1] mb-8">
                 {post.title}
-            </h1>
+            </SplitText>
             
-            <div className="flex items-center justify-between py-6 border-y border-gray-100 border">
+            <div className="flex items-center justify-between py-6 border-y border-line border">
                 <div className="flex items-center gap-4">
-                    <Image src={post.author?.avatar_url || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=150"} alt={post.author?.name || "Author"}
+                    <Image src={post.author?.avatar_url || "/nikola.jpeg"} alt={post.author?.name || "Author"}
                     width={150}
                     height={150}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-brand-green/10" />
+                    className="w-12 h-12 rounded-full object-cover border-2 border-accent-green/10" />
                     <div>
-                        <div className="font-bold text-brand-dark">{post.author?.name || "Nikola"}</div>
-                        <div className="text-sm text-brand-muted">{post.author?.role || "Kotlin Multiplatform & Native Expert"}</div>
+                        <div className="font-bold text-ink">{post.author?.name || "Nikola"}</div>
+                        <div className="text-sm text-ink-muted">{post.author?.role || "Kotlin Multiplatform & Native Expert"}</div>
                     </div>
                 </div>
-                <div className="text-sm font-medium text-brand-muted flex items-center gap-2">
-                    <Calendar className="w-4 h-4" /> Published {new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                <div className="text-sm font-medium text-ink-muted flex items-center gap-2">
+                    <Calendar className="w-4 h-4" /> Published {formatDate(post.created_at, 'long')}
                 </div>
             </div>
-        </motion.div>
-    </motion.header>
+        </m.div>
+    </m.header>
 
-    {(post.detail_image_url || post.image_url) && (
-        <motion.div 
-            className="max-w-6xl mx-auto px-6 mb-16 reveal cursor-pointer"
+    {heroImage && (
+        <m.div 
+            className="max-w-6xl mx-auto px-6 mb-16 cursor-pointer"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeInUp}
             onClick={() => setLightboxOpen(true)}
         >
-            <div className="w-full aspect-video md:aspect-[16/9] bg-brand-offwhite rounded-lg overflow-hidden border border-gray-200 shadow-lg hover:shadow-2xl transition-all group relative">
-                <Image src={post.detail_image_url || post.image_url} 
+            <div className="w-full aspect-video md:aspect-[16/9] bg-surface-alt rounded-lg overflow-hidden border border-line shadow-lg hover:shadow-2xl transition-all group relative">
+                <Image src={heroImage} 
                      alt={post.title} 
                      fill
                      sizes='(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw'
                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" 
                      />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                  <motion.div 
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    whileHover={{ scale: 1, opacity: 1 }}
-                    className="bg-white/90 p-4 rounded-full backdrop-blur-sm"
-                  >
+                  <div className="bg-surface/90 p-4 rounded-full backdrop-blur-sm opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-[opacity,scale] duration-300">
                     <LinkIcon className="w-6 h-6 text-brand-orange" />
-                  </motion.div>
+                  </div>
                 </div>
             </div>
-        </motion.div>
+        </m.div>
     )}
 
-    <motion.article 
-        className="max-w-3xl mx-auto px-6 pb-20 reveal article-body prose prose-lg prose-slate"
+    <m.article 
+        className="relative max-w-3xl mx-auto px-6 pb-20 article-body prose prose-lg prose-slate"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={fadeInUp}
     >
-        <div dangerouslySetInnerHTML={{ __html: post.content || "" }} />
+        <TableOfContents headings={toc.headings} />
+        <div dangerouslySetInnerHTML={{ __html: toc.html }} />
 
-        <div className="mt-16 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6 not-prose">
+        <div className="mt-16 pt-8 border-t border-line flex flex-col md:flex-row justify-between items-center gap-6 not-prose">
             <div className="flex gap-2">
                 {post.category && (
-                    <span className="text-xs font-bold text-brand-muted bg-brand-offwhite px-3 py-1 rounded-full">#{post.category.toLowerCase()}</span>
+                    <span className="text-xs font-bold text-ink-muted bg-surface-alt px-3 py-1 rounded-full">#{post.category.toLowerCase()}</span>
                 )}
             </div>
             <div className="flex items-center gap-4">
-                <span className="text-sm font-bold text-brand-dark uppercase tracking-widest">Share:</span>
-                <button onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`, '_blank')} className="w-10 h-10 rounded-full bg-brand-offwhite flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all text-brand-muted">
+                <span className="text-sm font-bold text-ink uppercase tracking-widest">Share:</span>
+                <button onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`, '_blank')} className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all text-ink-muted">
                     <TwitterIcon className="w-4 h-4" />
                 </button>
-                <button onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank')} className="w-10 h-10 rounded-full bg-brand-offwhite flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all text-brand-muted">
+                <button onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank')} className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all text-ink-muted">
                     <LinkedinIcon className="w-4 h-4" />
                 </button>
-                <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Link copied!"); }} className="w-10 h-10 rounded-full bg-brand-offwhite flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all text-brand-muted">
+                <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert("Link copied!"); }} className="w-10 h-10 rounded-full bg-surface-alt flex items-center justify-center hover:bg-brand-orange hover:text-brand-dark transition-all text-ink-muted">
                     <LinkIcon className="w-4 h-4" />
                 </button>
             </div>
         </div>
-    </motion.article>
+    </m.article>
 
-    <motion.div 
-        className="max-w-3xl mx-auto px-6 mb-16 reveal"
+    <m.div 
+        className="max-w-3xl mx-auto px-6 mb-16"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={fadeInUp}
     >
-        <div className="flex items-center gap-6 py-6 border-b border-gray-200">
+        <div className="flex items-center gap-6 py-6 border-b border-line">
             <button 
                 onClick={handleLike}
                 disabled={isLiking}
-                className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all ${hasLiked ? 'bg-brand-green/10 text-brand-green' : 'bg-brand-offwhite text-brand-dark hover:bg-gray-100'}`}
+                className={`flex items-center gap-2 px-6 py-3 rounded-full font-bold transition-all ${hasLiked ? 'bg-brand-green/10 text-accent-green' : 'bg-surface-alt text-ink hover:bg-surface-2'}`}
             >
                 <ThumbsUp className={`w-5 h-5 ${hasLiked ? 'fill-current' : ''}`} /> 
                 {hasLiked ? 'Liked' : 'Like'} ({likes})
             </button>
-            <div className="flex items-center gap-2 text-brand-muted font-bold">
+            <div className="flex items-center gap-2 text-ink-muted font-bold">
                 <MessageSquare className="w-5 h-5" /> {comments.length} Comments
             </div>
         </div>
 
         {/* Comments Section */}
         <div className="mt-12">
-            <h3 className="text-2xl font-bold text-brand-dark mb-8">Discussion</h3>
+            <h3 className="text-2xl font-bold text-ink mb-8">Discussion</h3>
             
             {/* Comment Form */}
-            <form ref={formRef} onSubmit={handleCommentSubmit} className="mb-12 bg-brand-offwhite p-6 md:p-8 rounded-sharp border border-gray-100">
-                <h4 className="text-lg font-bold text-brand-dark mb-6">Leave a comment</h4>
+            <form ref={formRef} onSubmit={handleCommentSubmit} className="mb-12 bg-surface-alt p-6 md:p-8 rounded-sharp border border-line">
+                <h4 className="text-lg font-bold text-ink mb-6">Leave a comment</h4>
                 {commentError && <p className="text-red-500 text-sm mb-4 font-bold">{commentError}</p>}
                 
                 <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
-                        <label className="block text-sm font-bold text-brand-dark mb-2">Name *</label>
-                        <input type="text" name="name" required disabled={isCommenting} className="w-full px-4 py-3 rounded-md border border-gray-200 focus:outline-none focus:border-brand-orange bg-white disabled:opacity-50" placeholder="Your name" />
+                        <label className="block text-sm font-bold text-ink mb-2">Name *</label>
+                        <input type="text" name="name" required disabled={isCommenting} className="w-full px-4 py-3 rounded-md border border-line focus:outline-none focus:border-brand-orange bg-surface disabled:opacity-50" placeholder="Your name" />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-brand-dark mb-2">Email (optional)</label>
-                        <input type="email" name="email" disabled={isCommenting} className="w-full px-4 py-3 rounded-md border border-gray-200 focus:outline-none focus:border-brand-orange bg-white disabled:opacity-50" placeholder="Your email (will not be published)" />
+                        <label className="block text-sm font-bold text-ink mb-2">Email (optional)</label>
+                        <input type="email" name="email" disabled={isCommenting} className="w-full px-4 py-3 rounded-md border border-line focus:outline-none focus:border-brand-orange bg-surface disabled:opacity-50" placeholder="Your email (will not be published)" />
                     </div>
                 </div>
                 <div className="mb-6">
-                    <label className="block text-sm font-bold text-brand-dark mb-2">Comment *</label>
-                    <textarea name="content" required disabled={isCommenting} rows={4} className="w-full px-4 py-3 rounded-md border border-gray-200 focus:outline-none focus:border-brand-orange bg-white resize-none disabled:opacity-50" placeholder="Join the discussion..."></textarea>
+                    <label className="block text-sm font-bold text-ink mb-2">Comment *</label>
+                    <textarea name="content" required disabled={isCommenting} rows={4} className="w-full px-4 py-3 rounded-md border border-line focus:outline-none focus:border-brand-orange bg-surface resize-none disabled:opacity-50" placeholder="Join the discussion..."></textarea>
                 </div>
-                <button type="submit" disabled={isCommenting} className="flex items-center gap-2 px-8 py-3 bg-brand-dark text-white font-bold rounded-full hover:bg-brand-orange transition-colors disabled:opacity-75 shadow-sm">
+                <button type="submit" disabled={isCommenting} className="flex items-center gap-2 px-8 py-3 bg-ink text-surface font-bold rounded-full hover:bg-brand-orange transition-colors disabled:opacity-75 shadow-sm">
                     {isCommenting ? 'Posting...' : <><Send className="w-4 h-4" /> Post Comment</>}
                 </button>
             </form>
@@ -336,96 +339,96 @@ export default function BlogPostClient({
             <div className="space-y-8">
                 {comments.length > 0 ? comments.map((comment, i) => (
                     <div key={comment.id || i} className="flex gap-4">
-                        <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center font-bold text-brand-muted shrink-0 text-xl overflow-hidden uppercase">
+                        <div className="w-12 h-12 bg-surface-2 rounded-full flex items-center justify-center font-bold text-ink-muted shrink-0 text-xl overflow-hidden uppercase">
                             {comment.author_name?.charAt(0) || "U"}
                         </div>
                         <div>
                             <div className="flex flex-wrap items-baseline gap-2 mb-2">
-                                <h5 className="font-bold text-brand-dark">{comment.author_name}</h5>
-                                <span className="text-xs text-brand-muted">{new Date(comment.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                <h5 className="font-bold text-ink">{comment.author_name}</h5>
+                                <span className="text-xs text-ink-muted">{formatDate(comment.created_at)}</span>
                             </div>
-                            <p className="text-brand-muted leading-relaxed">
+                            <p className="text-ink-muted leading-relaxed">
                                 {comment.content}
                             </p>
                         </div>
                     </div>
                 )) : (
-                    <p className="text-brand-muted italic py-6">No comments yet. Be the first to share your thoughts!</p>
+                    <p className="text-ink-muted italic py-6">No comments yet. Be the first to share your thoughts!</p>
                 )}
             </div>
         </div>
-    </motion.div>
+    </m.div>
 
-    <motion.section 
-        className="max-w-3xl mx-auto px-6 mb-24 reveal"
+    <m.section 
+        className="max-w-3xl mx-auto px-6 mb-24"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={fadeInUp}
     >
-        <div className="bg-[#f0f4f1] border border-brand-green/10 p-8 md:p-10 rounded-sharp flex flex-col md:flex-row gap-8 items-center md:items-start">
-            <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=200" alt="Nikola" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-sm shrink-0" />
+        <div className="bg-surface-alt border border-accent-green/10 p-8 md:p-10 rounded-sharp flex flex-col md:flex-row gap-8 items-center md:items-start">
+            <Image src={post.author?.avatar_url || "/nikola.jpeg"} alt={post.author?.name || "Nikola"} width={192} height={192} className="w-24 h-24 rounded-full object-cover border-4 border-surface shadow-sm shrink-0" />
             <div>
-                <h4 className="text-xl font-extrabold text-brand-dark mb-2">Written by Nikola.</h4>
-                <p className="text-brand-muted text-sm leading-relaxed mb-6">
+                <h4 className="text-xl font-extrabold text-ink mb-2">Written by Nikola.</h4>
+                <p className="text-ink-muted text-sm leading-relaxed mb-6">
                    Kotlin Multiplatform & Native Engineer based in Croatia. I help startups and enterprises build scalable, high-performance systems while eliminating critical engineering bottlenecks.
                 </p>
-                <Link href="/about" className="inline-flex items-center gap-2 text-sm font-bold text-brand-green hover:text-brand-orange transition-colors">
+                <Link href="/about" className="inline-flex items-center gap-2 text-sm font-bold text-accent-green hover:text-brand-orange transition-colors">
                     More about me <ArrowRight className="w-4 h-4" />
                 </Link>
             </div>
         </div>
-    </motion.section>
+    </m.section>
 
     {relatedPosts && relatedPosts.length > 0 && (
-    <motion.section 
-        className="py-24 bg-brand-offwhite border-t border-gray-200"
+    <m.section 
+        className="py-24 bg-surface-alt border-t border-line"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={staggerContainer}
     >
         <div className="max-w-7xl mx-auto px-6">
-            <motion.div variants={fadeInUp} className="flex justify-between items-end mb-10 reveal">
-                <h2 className="text-3xl font-extrabold tracking-tighter text-brand-dark">Keep Reading</h2>
+            <m.div variants={fadeInUp} className="flex justify-between items-end mb-10">
+                <h2 className="text-3xl font-extrabold tracking-tighter text-ink">Keep Reading</h2>
                 <Link href="/blog" className="text-sm font-bold text-brand-orange flex items-center gap-2 hover:gap-3 transition-all">
                     View all posts <ArrowRight className="w-4 h-4" />
                 </Link>
-            </motion.div>
+            </m.div>
             
-            <motion.div variants={fadeInUp} className="grid md:grid-cols-2 gap-8 reveal">
-                {relatedPosts.slice(0, 2).map((relPost: any) => (
-                    <Link href={`/blog/${relPost.slug}`} key={relPost.id} className="flex flex-col bg-white border border-gray-100 rounded-sharp overflow-hidden hover:shadow-xl transition-all group">
-                        <div className="aspect-[16/9] overflow-hidden relative bg-brand-offwhite">
-                            <Image src={relPost.cover_image_url || relPost.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} fill alt={relPost.title} className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 group-hover:scale-105 transition-transform duration-700" />
+            <m.div variants={fadeInUp} className="grid md:grid-cols-2 gap-8">
+                {relatedPosts.slice(0, 2).map((relPost) => (
+                    <Link href={`/blog/${relPost.slug}`} key={relPost.id} className="flex flex-col bg-surface border border-line rounded-sharp overflow-hidden hover:shadow-xl transition-all group">
+                        <div className="aspect-[16/9] overflow-hidden relative bg-surface-alt">
+                            <Image src={relPost.cover_image_url || relPost.image_url || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800"} fill sizes="(max-width: 768px) 100vw, 33vw" alt={relPost.title} className="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 group-hover:scale-105 transition-transform duration-700" />
                         </div>
                         <div className="p-8 flex-grow flex flex-col">
                             <div className="flex items-center justify-between mb-4">
                                 {relPost.category && (
-                                    <span className="text-[10px] font-bold text-brand-green border border-brand-green/20 px-2 py-1 rounded-full uppercase tracking-widest">{relPost.category}</span>
+                                    <span className="text-[10px] font-bold text-accent-green border border-accent-green/20 px-2 py-1 rounded-full uppercase tracking-widest">{relPost.category}</span>
                                 )}
-                                <span className="text-xs font-medium text-brand-muted">{new Date(relPost.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                <span className="text-xs font-medium text-ink-muted">{formatDate(relPost.created_at)}</span>
                             </div>
-                            <h3 className="text-xl font-bold text-brand-dark mb-4 group-hover:text-brand-green transition-colors">{relPost.title}</h3>
-                            <p className="text-brand-muted text-sm leading-relaxed flex-grow line-clamp-3">
+                            <h3 className="text-xl font-bold text-ink mb-4 group-hover:text-accent-green transition-colors">{relPost.title}</h3>
+                            <p className="text-ink-muted text-sm leading-relaxed flex-grow line-clamp-3">
                                 {relPost.excerpt}
                             </p>
                         </div>
                     </Link>
                 ))}
-            </motion.div>
+            </m.div>
         </div>
-    </motion.section>
+    </m.section>
     )}
 
-    <motion.section 
+    <m.section 
         className="py-24 bg-brand-green text-white"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-100px" }}
         variants={fadeInUp}
     >
-        <div className="max-w-4xl mx-auto px-6 text-center reveal">
+        <div className="max-w-4xl mx-auto px-6 text-center">
             <MailOpen className="w-12 h-12 text-brand-orange mx-auto mb-6" />
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tighter mb-6">Stay in the Loop</h2>
             <p className="text-gray-300 text-lg mb-10 max-w-xl mx-auto">
@@ -439,7 +442,7 @@ export default function BlogPostClient({
                 </button>
             </form>
         </div>
-    </motion.section>
+    </m.section>
     </>
   )
 }

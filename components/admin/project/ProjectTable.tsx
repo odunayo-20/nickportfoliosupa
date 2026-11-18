@@ -52,7 +52,7 @@ export function ProjectTable({
         return <EmptyState />;
     }
 
-    const allSelected = projects.length > 0 && selectedIds.size === projects.length;
+    const allSelected = projects.length > 0 && projects.every((p) => selectedIds.has(p.id));
 
     return (
         <div className="w-full overflow-x-auto scrollbar-hide">
@@ -64,6 +64,7 @@ export function ProjectTable({
                                 type="checkbox" 
                                 checked={allSelected}
                                 onChange={onSelectAll}
+                                aria-label="Select all projects on this page"
                                 className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/20 cursor-pointer"
                             />
                         </th>

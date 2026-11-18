@@ -1,32 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowRight } from 'lucide-react'
-import { motion, Variants } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
+import { EASE_OUT, fadeInUp, staggerContainer, scaleIn } from '@/lib/motion'
 import Image from 'next/image'
-import { getPublicProfile } from '@/actions/public_profile';
+import { Odometer } from '@/components/motion/Odometer'
+import { ScrollHighlight } from '@/components/motion/ScrollHighlight'
+import { SplitText } from '@/components/motion/SplitText'
+
+const DEFAULT_IMAGE = "/about/workspace.webp" // my desk; the topic pills swap in illustrations
+
+const TOPICS = [
+    { label: "Android App Development", image: "/about/android.png", position: "top-1/4 left-0 sm:-left-8", style: "bg-brand-dark text-brand-orange border-brand-green hover:bg-brand-orange hover:text-brand-dark" },
+    { label: "Kotlin Multiplatform", image: "/about/kmp.png", position: "top-1/2 left-0 sm:-left-12", style: "bg-brand-green text-white border-white/20 hover:bg-surface hover:text-accent-green" },
+    { label: "iOS App Development", image: "/about/ios.png", position: "bottom-1/4 left-0 sm:-left-4", style: "bg-brand-orange text-brand-dark border-brand-green hover:bg-brand-dark hover:text-brand-orange" },
+    { label: "Backend Dev", image: "/about/backend.png", position: "top-1/3 right-0 sm:-right-6", style: "bg-brand-orange text-brand-dark border-brand-green hover:bg-brand-dark hover:text-brand-orange" },
+    { label: "Mobile Apps UI/UX", image: "/about/ui.png", position: "bottom-1/3 right-0", style: "bg-brand-dark text-white border-brand-green hover:bg-surface hover:text-ink" },
+    { label: "Web Apps Development", image: "/about/web.png", position: "bottom-12 right-12", style: "bg-brand-green text-white border-white/20 hover:bg-surface hover:text-accent-green" },
+]
+
+const STATS = [
+    { value: "20+", label: "Project Completed" },
+    { value: "5+", label: "Industry Covered" },
+    { value: "5+", label: "Years of Experience" },
+]
 
 
 
-const fadeInUp: Variants = {
-    hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } }
-};
 
-const staggerContainer: Variants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.15
-        }
-    }
-};
 
-const scaleIn: Variants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1, transition: { duration: 0.8, ease: "easeOut" as const } }
-};
 
 interface AboutProps {
     profile?: {
@@ -37,13 +40,14 @@ interface AboutProps {
 
 const About = ({ profile }: AboutProps) => {
     const [isDownloading, setIsDownloading] = useState(false);
-    const [currentImage, setCurrentImage] = useState("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800");
+    const [currentImage, setCurrentImage] = useState(DEFAULT_IMAGE);
+    const activeLabel = TOPICS.find(t => t.image === currentImage)?.label;
     
     // Use profile data with fallbacks
     const name = profile?.name || "Nikola";
     const cvUrl = profile?.resume_url || "";
 
-    const handleDownload = (e: React.MouseEvent) => {
+    const handleDownload = () => {
         if (!cvUrl) return;
         setIsDownloading(true);
         
@@ -62,7 +66,7 @@ const About = ({ profile }: AboutProps) => {
   return (
     <>
     
-       <motion.section
+       <m.section
                 id="about"
                 className="bg-brand-green py-24 overflow-hidden text-white"
                 initial="hidden"
@@ -72,91 +76,89 @@ const About = ({ profile }: AboutProps) => {
             >
                 <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
 
-                    <motion.div variants={scaleIn} className="relative w-full max-w-md mx-auto aspect-square reveal">
-                        <div className="absolute inset-4 bg-brand-orange rounded-full -translate-x-6 -translate-y-6"></div>
+                    <m.div variants={scaleIn} className="relative w-full max-w-md mx-auto aspect-square">
+                        <div className="absolute inset-4 bg-brand-orange rounded-full -translate-x-6 -translate-y-6 blob-shape animate-blob"></div>
 
-                        <Image 
-                            key={currentImage}
-                            src={currentImage}
-                            alt={`${name} Working`}
-                            width={800}
-                            height={800}
-                            className="absolute inset-0 w-full h-full object-cover rounded-full z-10 border-8 border-brand-green grayscale" />
+                        {/* Crossfading image — the clicked topic's illustration blurs/zooms in over the old one */}
+                        <div className="absolute inset-0 z-10 rounded-full overflow-hidden border-8 border-brand-green bg-brand-green">
+                            <AnimatePresence initial={false}>
+                                <m.div
+                                    key={currentImage}
+                                    className="absolute inset-0"
+                                    initial={{ opacity: 0, scale: 1.12, filter: 'blur(8px)' }}
+                                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 0.6, ease: EASE_OUT } }}
+                                    exit={{ opacity: 0, transition: { duration: 0.4, delay: 0.15 } }}
+                                >
+                                    <Image
+                                        src={currentImage}
+                                        alt={`${name} — ${activeLabel ?? 'working'}`}
+                                        width={800}
+                                        height={800}
+                                        sizes="(min-width: 1024px) 448px, 90vw"
+                                        className={`w-full h-full object-cover ${currentImage === DEFAULT_IMAGE ? "" : "grayscale"}`}
+                                    />
+                                </m.div>
+                            </AnimatePresence>
+                        </div>
 
-                        <motion.div 
-                            variants={scaleIn} 
-                            onClick={() => setCurrentImage("/about/android.png")}
-                            className="absolute z-20 top-1/4 -left-8 bg-brand-dark text-brand-orange text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-orange hover:text-brand-dark transition-colors"
-                        >Android App Development</motion.div>
-                        
-                        <motion.div 
-                            variants={scaleIn} 
-                            onClick={() => setCurrentImage("/about/kmp.png")}
-                            className="absolute z-20 top-1/2 -left-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light cursor-pointer hover:bg-white hover:text-brand-green transition-colors"
-                        >Kotlin Multiplatform</motion.div>
-                        
-                        <motion.div 
-                            variants={scaleIn} 
-                            onClick={() => setCurrentImage("/about/ios.png")}
-                            className="absolute z-20 bottom-1/4 -left-4 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-dark hover:text-brand-orange transition-colors"
-                        >iOS App Development</motion.div>
+                        {/* Topic pills: float gently, the active one gets a ring */}
+                        {TOPICS.map((t, i) => {
+                            const active = currentImage === t.image
+                            return (
+                                <m.button
+                                    key={t.label}
+                                    type="button"
+                                    variants={scaleIn}
+                                    onClick={() => setCurrentImage(t.image)}
+                                    aria-pressed={active}
+                                    whileHover={{ scale: 1.06 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={`absolute z-20 ${t.position}`}
+                                >
+                                    <span
+                                        className={`animate-float block text-xs font-bold px-4 py-2 rounded-full border-2 cursor-pointer transition-[background-color,color,box-shadow] duration-300 ${t.style} ${active ? 'ring-4 ring-brand-orange/60 shadow-lg' : ''}`}
+                                        style={{ animationDelay: `${-i * 0.9}s`, animationDuration: `${4.5 + (i % 3)}s` }}
+                                    >
+                                        {t.label}
+                                    </span>
+                                </m.button>
+                            )
+                        })}
+                    </m.div>
 
-                        <motion.div 
-                            variants={scaleIn} 
-                            onClick={() => setCurrentImage("/about/backend.png")}
-                            className="absolute z-20 top-1/3 -right-6 bg-brand-orange text-brand-dark text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-brand-dark hover:text-brand-orange transition-colors"
-                        >Backend Dev</motion.div>
-                        
-                        <motion.div 
-                            variants={scaleIn} 
-                            onClick={() => setCurrentImage("/about/ui.png")}
-                            className="absolute z-20 bottom-1/3 right-0 bg-brand-dark text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-green cursor-pointer hover:bg-white hover:text-brand-dark transition-colors"
-                        >Mobile Apps UI/UX</motion.div>
-                        
-                        <motion.div 
-                            variants={scaleIn} 
-                            onClick={() => setCurrentImage("/about/web.png")}
-                            className="absolute z-20 bottom-12 right-12 bg-brand-green text-white text-xs font-bold px-4 py-2 rounded-full border-2 border-brand-light cursor-pointer hover:bg-white hover:text-brand-green transition-colors"
-                        >Web Apps Development</motion.div>
-                    </motion.div>
-
-                    <motion.div variants={fadeInUp} className="reveal">
+                    <m.div variants={fadeInUp}>
                         <span className="text-brand-orange font-semibold flex items-center gap-2 text-sm mb-4">
                             <span className="w-4 h-[2px] bg-brand-orange"></span> About Me
                         </span>
-                        <h2 className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-6">
-                            Who is <span 
+                        <SplitText className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-6">
+                            Who is <span
                                 className="text-brand-orange font-normal italic cursor-pointer hover:underline decoration-brand-light underline-offset-8"
-                                onClick={() => setCurrentImage("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800")}
+                                onClick={() => setCurrentImage(DEFAULT_IMAGE)}
                             >
                                 {name}?
                             </span>
-                        </h2>
+                        </SplitText>
 
-                        <p className="text-gray-300 text-base leading-relaxed mb-10 max-w-lg">
-                            I specialize in Kotlin Multiplatform (KMP) and high-performance native Android development. I help businesses ship one codebase to both Android and iOS, sharing up to 70% of logic while maintaining native speed. Expert in architecting real-time systems with Supabase, SQLDelight, and offline-first state management.
-                        </p>
+                        <ScrollHighlight
+                            className="text-white text-lg md:text-xl font-medium leading-relaxed mb-10 max-w-lg"
+                            text="I specialize in Kotlin Multiplatform (KMP) and high-performance native Android development. I help businesses ship one codebase to both Android and iOS, sharing up to 70% of logic while maintaining native speed. Expert in architecting real-time systems with Supabase, SQLDelight, and offline-first state management."
+                            highlight={['Kotlin', 'Multiplatform', 'Android', 'iOS', '70%', 'Supabase']}
+                        />
 
                         <div className="grid grid-cols-3 gap-6 mb-12 border-b border-gray-600/50 pb-10">
-                            <div>
-                                <div className="text-3xl font-bold text-brand-orange mb-1">20+</div>
-                                <div className="text-xs text-gray-400 font-medium">Project Completed</div>
-                            </div>
-                            <div>
-                                <div className="text-3xl font-bold text-brand-orange mb-1">5+</div>
-                                <div className="text-xs text-gray-400 font-medium">Industry Covered</div>
-                            </div>
-                            <div>
-                                <div className="text-3xl font-bold text-brand-orange mb-1">5+</div>
-                                <div className="text-xs text-gray-400 font-medium">Years of Experience</div>
-                            </div>
+                            {STATS.map(stat => (
+                                <div key={stat.label}>
+                                    <Odometer value={stat.value} suffixClassName="" className="block text-3xl md:text-4xl font-bold text-brand-orange mb-1" />
+                                    <div className="text-xs text-white/60 font-medium">{stat.label}</div>
+                                </div>
+                            ))}
                         </div>
 
                         <div className="flex flex-wrap items-center gap-8">
                             <button 
                                 onClick={handleDownload}
                                 disabled={isDownloading || !cvUrl}
-                                className="px-6 py-3 bg-brand-light text-brand-dark font-bold text-sm rounded-full flex items-center gap-3 hover:bg-brand-orange transition-all disabled:opacity-70 disabled:cursor-not-allowed group"
+                                className="px-6 py-3 bg-surface text-ink font-bold text-sm rounded-full flex items-center gap-3 hover:bg-brand-orange transition-all disabled:opacity-70 disabled:cursor-not-allowed group"
                             >
                                 {isDownloading ? "Downloading..." : "Download CV"} 
                                 <div className="w-6 h-6 bg-brand-dark rounded-full flex items-center justify-center transition-transform group-hover:translate-x-1">
@@ -167,9 +169,9 @@ const About = ({ profile }: AboutProps) => {
                                 {name}.
                             </div>
                         </div>
-                    </motion.div>
+                    </m.div>
                 </div>
-            </motion.section>
+            </m.section>
     
     </>
   )

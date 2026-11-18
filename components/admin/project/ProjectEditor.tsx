@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { format } from "date-fns";
+import { useAutosave } from "@/components/admin/useAutosave";
 
 // Form Schema
 const projectSchema = z.object({
@@ -86,8 +87,12 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
     // Form State
     const [isSaving, setIsSaving] = useState(false);
     const [currentId, setCurrentId] = useState<string | undefined>(id);
-    const [lastSaved, setLastSaved] = useState<Date | null>(initialData?.updated_at || initialData?.updatedAt ? new Date(initialData.updated_at || initialData.updatedAt) : null);
-    const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+    // Ref mirror so a save that started before the id was known still sees it (no duplicate creates).
+    const currentIdRef = useRef<string | undefined>(id);
+    const [savedStatus, setSavedStatus] = useState<"draft" | "published">(initialData?.status === "published" ? "published" : "draft");
+    const savedStatusRef = useRef(savedStatus);
+    savedStatusRef.current = savedStatus;
+    const initialSaved = initialData?.updated_at || initialData?.updatedAt ? new Date(initialData.updated_at || initialData.updatedAt) : null;
     const [activeMediaModal, setActiveMediaModal] = useState<"featured" | "gallery" | null>(null);
     const [tagInput, setTagInput] = useState("");
     const [isMounted, setIsMounted] = useState(false);
@@ -122,6 +127,10 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
         mediaIds: initialData?.media_ids || initialData?.mediaIds || [],
     };
 
+    const form = useForm<ProjectFormValues>({
+        resolver: zodResolver(projectSchema as any),
+        defaultValues,
+    });
     const {
         register,
         handleSubmit,
@@ -129,10 +138,7 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
         setValue,
         getValues,
         formState: { errors, dirtyFields },
-    } = useForm<ProjectFormValues>({
-        resolver: zodResolver(projectSchema as any),
-        defaultValues,
-    });
+    } = form;
 
     const values = watch();
     const techStack = watch("techStack");
@@ -185,60 +191,42 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
         }
     }, [values.title, isSlugCustomized, isEditing, dirtyFields.title, setValue, watch]);
 
-    // Auto-save logic
-    const [isFirstRender, setIsFirstRender] = useState(true);
+    // Cleared fields are sent as null: supabase-js drops `undefined` keys, so emptying a URL or
+    // removing the cover image used to leave the old value in the database.
+    const buildPayload = (data: ProjectFormValues) => ({
+        title: data.title,
+        slug: data.slug,
+        description: data.description,
+        content: data.content ?? "",
+        category: data.category || null,
+        tech_stack: data.techStack,
+        github_url: data.githubUrl || null,
+        live_url: data.liveUrl || null,
+        app_store_url: data.appStoreUrl || null,
+        play_store_url: data.playStoreUrl || null,
+        is_featured: data.isFeatured,
+        display_order: data.displayOrder,
+        featured_image: data.featuredImage || null,
+        media_ids: data.mediaIds,
+    });
 
-    const handleAutoSave = async (data: ProjectFormValues) => {
-        if (!data.title && !data.description) return;
-        
-        setSaveStatus("saving");
-        try {
-            const payload = {
-                title: data.title,
-                slug: data.slug,
-                description: data.description,
-                content: data.content,
-                category: data.category || undefined,
-                tech_stack: data.techStack,
-                github_url: data.githubUrl || undefined,
-                live_url: data.liveUrl || undefined,
-                app_store_url: data.appStoreUrl || undefined,
-                play_store_url: data.playStoreUrl || undefined,
-                status: data.status,
-                is_featured: data.isFeatured,
-                display_order: data.displayOrder,
-                featured_image: data.featuredImage || undefined,
-                media_ids: data.mediaIds,
-            };
-
-            if (currentId) {
-                await updateProject(currentId, payload);
-            } else {
-                const newProject = await createProject(payload);
-                setCurrentId(newProject.id);
-                // Update URL without full navigation
-                window.history.replaceState(null, "", `/admin/project/edit/${newProject.id}`);
-            }
-            setLastSaved(new Date());
-            setSaveStatus("saved");
-        } catch (error) {
-            console.error("Auto-save failed:", error);
-            setSaveStatus("error");
-        }
-    };
-
-    useEffect(() => {
-        if (isFirstRender) {
-            setIsFirstRender(false);
-            return;
-        }
-
-        const timer = setTimeout(() => {
-            handleAutoSave(values);
-        }, 5000); // 5 second debounce
-
-        return () => clearTimeout(timer);
-    }, [values]);
+    // Autosave: existing draft projects only, only when something changed and the form is valid,
+    // and never the publish status (that only changes when you click Publish/Update).
+    const autosave = useAutosave<ProjectFormValues>({
+        form,
+        schema: projectSchema,
+        delay: 5000,
+        ignore: ["status"],
+        save: async (data) => {
+            const existingId = currentIdRef.current;
+            if (!existingId) return; // new projects are created by the Publish button
+            // Published projects are live: edits wait for the Update button instead of going out every 5 s.
+            if (savedStatusRef.current !== "draft") return;
+            await updateProject(existingId, buildPayload(data));
+        },
+    });
+    const saveStatus = autosave.status;
+    const lastSaved = autosave.lastSaved ?? initialSaved;
 
     // Handlers
     const handleAddTag = (e: React.KeyboardEvent) => {
@@ -295,41 +283,27 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
 
     const onSubmit = async (data: ProjectFormValues) => {
         setIsSaving(true);
-        setSaveStatus("saving");
+        await autosave.settle();
+        autosave.setStatus("saving");
         try {
-            const payload = {
-                title: data.title,
-                slug: data.slug,
-                description: data.description,
-                content: data.content,
-                category: data.category || undefined,
-                tech_stack: data.techStack,
-                github_url: data.githubUrl || undefined,
-                live_url: data.liveUrl || undefined,
-                app_store_url: data.appStoreUrl || undefined,
-                play_store_url: data.playStoreUrl || undefined,
-                status: data.status,
-                is_featured: data.isFeatured,
-                display_order: data.displayOrder,
-                featured_image: data.featuredImage || undefined,
-                media_ids: data.mediaIds,
-            };
-
-            const finalId = currentId || id;
+            const payload = { ...buildPayload(data), status: data.status };
+            const finalId = currentIdRef.current;
 
             if (finalId) {
                 await updateProject(finalId, payload);
                 toast.success("Project updated successfully");
             } else {
                 const newProject = await createProject(payload);
+                currentIdRef.current = newProject.id;
+                setCurrentId(newProject.id);
                 toast.success("Project created successfully");
                 router.push(`/admin/project/edit/${newProject.id}`);
             }
-            setSaveStatus("saved");
-            setLastSaved(new Date());
+            setSavedStatus(data.status);
+            autosave.markSaved(data);
         } catch (error) {
             console.error(error);
-            setSaveStatus("error");
+            autosave.setStatus("error");
             toast.error(error instanceof Error ? error.message : "Failed to save project");
         } finally {
             setIsSaving(false);
@@ -413,7 +387,12 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                                                 className="bg-white border border-slate-200 rounded px-1 h-6 text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary w-40"
                                                 autoFocus
                                                 onBlur={() => setIsEditingSlug(false)}
-                                                onKeyDown={(e) => e.key === 'Enter' && setIsEditingSlug(false)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault(); // don't submit (publish) the whole form
+                                                        setIsEditingSlug(false);
+                                                    }
+                                                }}
                                             />
                                         </div>
                                     ) : (
@@ -574,10 +553,16 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                                     {saveStatus === "error" && (
                                         <AlertCircle size={12} className="text-red-500" />
                                     )}
+                                    {saveStatus === "dirty" && savedStatus === "published" && (
+                                        <span className="text-[10px] font-semibold text-amber-600">Unsaved — click Update</span>
+                                    )}
+                                    {saveStatus === "invalid" && (
+                                        <span className="text-[10px] font-semibold text-amber-600" title="Autosave is paused until the highlighted fields are valid">Fix errors to autosave</span>
+                                    )}
                                     <div className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                        status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                                        savedStatus === "published" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                                     }`}>
-                                        {status}
+                                        {savedStatus}
                                     </div>
                                 </div>
                             </div>
@@ -587,6 +572,9 @@ export function ProjectEditor({ initialData, id }: ProjectEditorProps) {
                                         <History size={16} className="text-slate-400" />
                                         <div className="text-[13px] font-medium">
                                             Status: <span className="font-bold text-slate-900 capitalize">{status}</span>
+                                            {status !== savedStatus && (
+                                                <span className="ml-1.5 text-[11px] font-semibold text-amber-600">(click {status === "published" ? "Publish" : "Update"} to apply)</span>
+                                            )}
                                         </div>
                                         <button 
                                             type="button" 

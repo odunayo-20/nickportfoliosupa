@@ -28,7 +28,8 @@ import { supabase } from "@/lib/supabaseClient";
 import { useRef } from "react";
 import { MediaLibrary } from "@/components/admin/media/MediaLibrary";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { getMediaByIds } from "@/actions/media";
+import { getMediaByIds, createMedia } from "@/actions/media";
+import { prepareUpload, randomId } from "@/lib/image-prep";
 import { formatDistanceToNow } from "date-fns";
 
 interface ProfileFormData {
@@ -115,19 +116,31 @@ export default function ProfilePage() {
 
         try {
             setIsUploading(true);
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Date.now()}.${fileExt}`;
-            const filePath = `avatars/${fileName}`;
+            // Same pipeline as the media library: resize to avatar size, convert, size-check.
+            const prepared = await prepareUpload(file, { maxWidth: 800, maxHeight: 800, quality: 0.88 });
+            const fileExt = prepared.file.name.split('.').pop()?.toLowerCase() || "img";
+            const filePath = `avatars/${randomId()}.${fileExt}`;
 
-            const { data, error } = await supabase.storage
+            const { error } = await supabase.storage
                 .from("media")
-                .upload(filePath, file);
+                .upload(filePath, prepared.file, { contentType: prepared.file.type, cacheControl: "31536000" });
 
             if (error) throw error;
 
             const { data: { publicUrl } } = supabase.storage
                 .from("media")
                 .getPublicUrl(filePath);
+
+            // Register it so it shows up in the media library too.
+            await createMedia({
+                name: prepared.file.name,
+                storage_path: filePath,
+                url: publicUrl,
+                type: prepared.kind,
+                size: prepared.file.size,
+                folder_id: null,
+                hash: prepared.hash,
+            }).catch((e) => console.error("Avatar uploaded but not added to the library:", e));
 
             setFormData((prev) => ({ ...prev, avatar_url: publicUrl }));
             toast.success("Image uploaded. Remember to save changes!");
@@ -360,7 +373,7 @@ export default function ProfilePage() {
                                         ref={fileInputRef} 
                                         onChange={handleImageUpload} 
                                         className="hidden" 
-                                        accept="image/*"
+                                        accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,.heic,.heif"
                                     />
                                 </div>
 

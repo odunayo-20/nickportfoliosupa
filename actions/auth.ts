@@ -11,24 +11,27 @@ export async function signOut() {
     redirect("/auth/login");
 }
 
+/**
+ * Used by the forgot-password form. Public endpoint, so it must not reveal whether an address is
+ * whitelisted or registered: callers get the same neutral answer either way, and a reset email is
+ * only actually sent (by the caller) when `exists` is true.
+ */
 export async function checkEmailExists(email: string) {
-    // 1. Check if they are in the whitelist
-    const allowed = await isEmailWhitelisted(email);
-    
-    if (!allowed) {
-        return { exists: false, error: "This email is not authorized to access this site." };
-    }
+    const neutral = { exists: false, error: undefined as string | undefined };
+    if (typeof email !== "string" || email.length > 254) return neutral;
 
-    // 2. Check if they actually have an account in Supabase Auth
+    if (!(await isEmailWhitelisted(email))) return neutral;
+
     const admin = createAdminClient();
-    const { data: { users }, error: authError } = await admin.auth.admin.listUsers();
-    const userInAuth = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
-    
-    if (!userInAuth) {
-        return { exists: false, error: "You are authorized, but haven't created an account yet. Please sign up first." };
+    const lower = email.toLowerCase();
+    // listUsers is paginated (50/page by default); walk the pages.
+    for (let page = 1; page <= 20; page++) {
+        const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 200 });
+        if (error || !data?.users?.length) break;
+        if (data.users.some((u) => u.email?.toLowerCase() === lower)) return { exists: true, error: undefined };
+        if (data.users.length < 200) break;
     }
-    
-    return { exists: true };
+    return neutral;
 }
 
 export async function changePassword(newPassword: string) {
