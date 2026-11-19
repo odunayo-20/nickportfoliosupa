@@ -27,6 +27,14 @@ export async function POST(req: Request) {
       headerList.get('x-real-ip') ||
       'Unknown';
 
+    // Geo comes from the host's edge headers (Vercel, or Cloudflare's cf-ipcountry). Locally
+    // there are none, so country/city stay empty. 'XX'/'T1' = unknown / Tor.
+    const rawCountry = (headerList.get('x-vercel-ip-country') || headerList.get('cf-ipcountry') || '').toUpperCase();
+    const country = /^[A-Z]{2}$/.test(rawCountry) && rawCountry !== 'XX' ? rawCountry : null;
+    const rawCity = headerList.get('x-vercel-ip-city');
+    let city: string | null = null;
+    if (rawCity) { try { city = decodeURIComponent(rawCity).slice(0, 120); } catch { city = null; } }
+
     console.log('Creating Supabase admin client...');
 
     const supabase = createAdminClient();
@@ -74,6 +82,9 @@ export async function POST(req: Request) {
         user_id: user_id || null,
         ip_address: ip,
         user_agent: userAgent,
+        // Only sent when known, so inserts keep working before the country migration is applied.
+        ...(country && { country }),
+        ...(country && city && { city }),
       });
 
     if (insertError) {

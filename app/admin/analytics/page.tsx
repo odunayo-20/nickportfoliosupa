@@ -2,6 +2,7 @@ import { createClient } from "@/lib/server";
 import { BarChart3, Users, MousePointer2, Clock, Globe, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Metadata } from "next";
+import { VisitorCountries, type CountryRow } from "@/components/admin/analytics/VisitorCountries";
 
 export const metadata: Metadata = {
     title: "Analytics | Nikola",
@@ -58,6 +59,15 @@ export default async function AnalyticsPage() {
     .sort((a,b) => b.visit_count - a.visit_count)
     .slice(0, 10);
 
+  // Visitor countries (visits_by_country RPC from the page_visits_country migration).
+  // If the migration isn't applied yet the RPC is missing: show the setup hint instead of failing.
+  const { data: countryData, error: countryError } = await supabase.rpc('visits_by_country' as never)
+  const countryRows: CountryRow[] = ((countryData as CountryRow[] | null) ?? []).map((r) => ({
+    country: r.country,
+    visits: Number(r.visits),
+    visitors: Number(r.visitors),
+  }))
+
   const stats = [
     { name: 'Total Visits', value: totalVisitsCount, icon: Eye, color: 'text-blue-600', bg: 'bg-blue-50' },
     { name: 'Unique Visitors', value: uniqueVisitorsCount, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
@@ -94,6 +104,9 @@ export default async function AnalyticsPage() {
           </div>
         ))}
       </div>
+
+      {/* Visitor countries: map + ranked list */}
+      <VisitorCountries rows={countryRows} available={!countryError} />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Top Pages */}
