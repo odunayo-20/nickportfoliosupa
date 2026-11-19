@@ -1,11 +1,9 @@
 "use client";
 import { Microscope, Code2, Gauge } from 'lucide-react'
 import { m } from 'motion/react'
-import Image from 'next/image'
-import workspace from '@/public/about/workspace.webp'
+import { WorkspaceShowcase } from '@/components/about/WorkspaceShowcase'
 import { fadeInUp, staggerContainer } from '@/lib/motion'
 import { SplitText } from '@/components/motion/SplitText'
-import { ClipReveal } from '@/components/motion/ClipReveal'
 import { ScrollHighlight } from '@/components/motion/ScrollHighlight'
 import { Timeline, TimelineItem } from '@/components/motion/Timeline'
 
@@ -39,16 +37,9 @@ const AboutClient = () => {
                     </a>
                 </div>
             </m.div>
-            <m.div variants={fadeInUp} className="relative">
-                <div className="absolute inset-0 bg-brand-orange -translate-x-4 translate-y-4 rounded-sharp -z-10"></div>
-                <ClipReveal delay={0.3} className="rounded-sharp border-4 border-brand-green overflow-hidden">
-                    <Image src={workspace}
-                         alt="My workspace: three monitors with code and an Android emulator, a mechanical keyboard, a desktop PC and a Mac mini"
-                         placeholder="blur"
-                         preload
-                         sizes="(min-width: 1280px) 600px, (min-width: 768px) 50vw, 100vw"
-                         className="w-full h-auto aspect-[4/3] object-cover" />
-                </ClipReveal>
+            <m.div variants={fadeInUp}>
+                {/* Workspace photo: depth parallax, LED glow and hotspots */}
+                <WorkspaceShowcase />
             </m.div>
         </div>
     </m.header>

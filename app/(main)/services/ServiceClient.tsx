@@ -1,5 +1,6 @@
 "use client";
-import { Smartphone, Globe, Database, Cpu, Layers, Check, ArrowRight } from 'lucide-react'
+import { Check, ArrowRight } from 'lucide-react'
+import { SystemDiagram } from '@/components/services/SystemDiagram'
 import { m } from 'motion/react'
 import { SplitText } from '@/components/motion/SplitText'
 import { StackCards } from '@/components/motion/StackCards'
@@ -31,29 +32,8 @@ const ServiceClient = () => {
                 </p>
             </m.div>
             <m.div variants={fadeInUp} className="hidden md:block relative">
-                <div className="absolute inset-0 bg-brand-orange/10 rounded-full blur-3xl"></div>
-                <div className="relative grid grid-cols-2 gap-4 opacity-80">
-                    <div className="h-32 border border-white/20 rounded-sharp flex flex-col items-center justify-center gap-2 bg-white/5 backdrop-blur-sm">
-                        <Smartphone className="w-8 h-8 text-brand-orange" />
-                        <span className="text-xs font-bold uppercase tracking-widest text-white/50">Native</span>
-                    </div>
-                    <div className="h-32 border border-white/20 rounded-sharp flex flex-col items-center justify-center gap-2 bg-white/5 backdrop-blur-sm translate-y-8">
-                        <Globe className="w-8 h-8 text-brand-orange" />
-                        <span className="text-xs font-bold uppercase tracking-widest text-white/50">Web</span>
-                    </div>
-                    <div className="h-32 border border-white/20 rounded-sharp flex flex-col items-center justify-center gap-2 bg-white/5 backdrop-blur-sm -translate-y-8">
-                        <Database className="w-8 h-8 text-brand-orange" />
-                        <span className="text-xs font-bold uppercase tracking-widest text-white/50">Data</span>
-                    </div>
-                    <div className="h-32 border border-white/20 rounded-sharp flex flex-col items-center justify-center gap-2 bg-white/5 backdrop-blur-sm">
-                        <Cpu className="w-8 h-8 text-brand-orange" />
-                        <span className="text-xs font-bold uppercase tracking-widest text-white/50">Logic</span>
-                    </div>
-                    <div className="h-32 border border-white/20 rounded-sharp flex flex-col items-center justify-center gap-2 bg-white/5 backdrop-blur-sm -translate-y-16">
-                        <Layers className="w-8 h-8 text-brand-orange" />
-                        <span className="text-xs font-bold uppercase tracking-widest text-white/50">Multiplatform</span>
-                    </div>
-                </div>
+                {/* Architecture map: Multiplatform core wired to the four disciplines */}
+                <SystemDiagram />
             </m.div>
         </div>
     </m.header>
