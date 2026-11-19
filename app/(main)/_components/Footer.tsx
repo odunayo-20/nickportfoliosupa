@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { ArrowUp, ArrowUpRight, Mail, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -16,27 +16,50 @@ import { myAppHook } from '@/context/AppUtils'
 import { useGDPR } from '@/context/GDPRContext'
 
 
-/** Oversized "let's work together" band whose two lines slide in opposite directions on scroll. */
+/**
+ * Oversized "let's build something great together" band. The two lines slide in from opposite
+ * sides and settle fully in view; the font size is fitted so the widest line always fits the
+ * container (no clipped letters at any viewport width).
+ */
 const FooterCta = () => {
   const ref = useRef<HTMLDivElement>(null)
+  const fitRef = useRef<HTMLDivElement>(null)
   const reduce = useHydratedReducedMotion()
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const x1 = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['8%', '-18%'])
-  const x2 = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['-18%', '6%'])
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'center center'] })
+  const x1 = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['12%', '0%'])
+  const x2 = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['-12%', '0%'])
+
+  useEffect(() => {
+    const box = fitRef.current
+    if (!box) return
+    const fit = () => {
+      // Measure each line's natural width at a known size, then scale to the container.
+      box.style.fontSize = '100px'
+      const widest = Math.max(...Array.from(box.children, (l) => (l as HTMLElement).scrollWidth))
+      if (!widest) return
+      box.style.fontSize = `${Math.min(160, (100 * box.clientWidth * 0.97) / widest)}px`
+    }
+    fit()
+    document.fonts?.ready.then(fit)
+    let lastW = box.clientWidth
+    const ro = new ResizeObserver(() => { if (box.clientWidth !== lastW) { lastW = box.clientWidth; fit() } })
+    ro.observe(box)
+    return () => ro.disconnect()
+  }, [])
 
   return (
     <div ref={ref} className="relative isolate border-b border-white/10 pb-16 mb-16 overflow-hidden">
-      {/* H1 flow field, faded toward the edges */}
-      <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-70 [mask-image:radial-gradient(ellipse_70%_80%_at_70%_50%,black_20%,transparent_80%)]">
-        <FlowField density={180} max={600} tone="dark" />
+      {/* Flow field streaming toward the "Get in touch" button, faded toward the edges */}
+      <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-80 [mask-image:radial-gradient(ellipse_75%_90%_at_75%_60%,black_30%,transparent_85%)]">
+        <FlowField density={180} max={600} tone="dark" target='[data-flow-target="footer"]' />
       </div>
       <p className="text-brand-orange font-semibold flex items-center gap-2 text-sm mb-6">
         <span className="w-4 h-[2px] bg-brand-orange"></span> Have a project in mind?
       </p>
-      <div aria-hidden="true" className="select-none font-extrabold tracking-tighter leading-[0.9] text-[clamp(3rem,11vw,10rem)] whitespace-nowrap">
-        <m.div style={{ x: x1 }}>Let&apos;s build something</m.div>
-        <m.div style={{ x: x2 }} className="text-transparent [-webkit-text-stroke:2px_var(--color-brand-orange)]">
-          great together — great together
+      <div ref={fitRef} aria-hidden="true" className="select-none font-extrabold tracking-tighter leading-[0.95] text-[clamp(2.5rem,8vw,7rem)] whitespace-nowrap">
+        <m.div style={{ x: x1 }} className="w-max">Let&apos;s build something</m.div>
+        <m.div style={{ x: x2 }} className="w-max pb-[0.08em] text-transparent [-webkit-text-stroke:2px_var(--color-brand-orange)]">
+          great together.
         </m.div>
       </div>
       <h2 className="sr-only">Let&apos;s build something great together</h2>
@@ -48,6 +71,7 @@ const FooterCta = () => {
         <Magnetic strength={0.4}>
           <Link
             href="/contact"
+            data-flow-target="footer"
             className="group relative w-36 h-36 rounded-full bg-brand-orange text-brand-dark font-extrabold flex flex-col items-center justify-center gap-1 shadow-2xl transition-[scale,background-color] duration-300 hover:scale-105 hover:bg-white"
           >
             <ArrowUpRight className="w-7 h-7 transition-transform duration-300 group-hover:rotate-45" />

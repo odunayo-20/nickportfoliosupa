@@ -106,8 +106,9 @@ const Hero = ({ profile }: HeroProps) => {
             className="relative isolate overflow-hidden"
         >
             {/* ── Background: flow field (H1) + soft glow ── */}
-            <div aria-hidden="true" className="absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_80%_70%_at_50%_45%,black_35%,transparent_85%)]">
-                <FlowField />
+            {/* z-[1]: under the text column and the photo column (both z-[2]) */}
+            <div aria-hidden="true" className="absolute inset-0 z-[1] pointer-events-none [mask-image:radial-gradient(ellipse_90%_85%_at_60%_45%,black_35%,transparent_90%)]">
+                <FlowField target='[data-flow-target="hero"]' />
             </div>
             <m.div
                 aria-hidden="true"
@@ -118,7 +119,7 @@ const Hero = ({ profile }: HeroProps) => {
             <header className="max-w-7xl mx-auto px-6 pt-16 pb-24 grid md:grid-cols-2 gap-12 items-center min-h-[85vh]">
 
                 {/* ── Text column ── */}
-                <m.div style={{ y: textY, opacity: textOpacity }}>
+                <m.div style={{ y: textY, opacity: textOpacity }} className="relative z-[2]">
                     <m.div initial="hidden" animate="visible" variants={textColumn}>
                         <m.div variants={fadeInUp} className="flex flex-wrap items-center gap-3 mb-6">
                             <span className="inline-flex items-center gap-2 px-4 py-1.5 border border-dashed border-ink-muted">
@@ -177,7 +178,8 @@ const Hero = ({ profile }: HeroProps) => {
                 </m.div>
 
                 {/* ── Visual column ── */}
-                <m.div style={{ y: visualY }} className="relative">
+                {/* z-[2]: photo, blob and badge sit above the particle layer; streams pass under the photo */}
+                <m.div style={{ y: visualY }} className="relative z-[2]">
                     <m.div
                         initial="hidden"
                         animate="visible"
@@ -204,7 +206,7 @@ const Hero = ({ profile }: HeroProps) => {
                         </m.div>
 
                         {/* Spinning "Hire me" badge with text on a circular path */}
-                        <Link href="/contact" aria-label="Hire me — get in touch" className="group absolute top-8 -right-2 md:-right-4 z-10">
+                        <Link href="/contact" aria-label="Hire me — get in touch" data-flow-target="hero" className="group absolute top-8 -right-2 md:-right-4 z-10">
                             <m.div variants={popIn} style={{ x: badgeX, y: badgeY }}>
                                 <div className="relative w-28 h-28 rounded-full bg-brand-green border-4 border-surface shadow-xl flex items-center justify-center transition-[scale] duration-300 group-hover:scale-110">
                                     <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-[spin_12s_linear_infinite]" aria-hidden="true">

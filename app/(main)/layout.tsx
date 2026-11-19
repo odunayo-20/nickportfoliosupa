@@ -4,7 +4,6 @@ import Footer from "./_components/Footer";
 import ScrollProgress from "@/components/motion/ScrollProgress";
 import PageTransition from "@/components/motion/PageTransition";
 import SmoothScroll from "@/components/motion/SmoothScroll";
-import { Cursor } from "@/components/motion/Cursor";
 import { PointerEffects } from "@/components/motion/PointerEffects";
 import { CommandPalette } from "@/components/CommandPalette";
 import { getSearchIndex } from "@/lib/search-index";
@@ -29,7 +28,6 @@ export default async function MainLayout({
       <Footer />
       <SiteMarker />
         <CommandPalette index={searchIndex} />
-      <Cursor />
       <PointerEffects />
     </div>
     </SmoothScroll>
