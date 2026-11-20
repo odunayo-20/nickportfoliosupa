@@ -41,7 +41,8 @@ export default function FeaturedWork({ projects }: { projects: FeaturedProject[]
             data-cursor="View"
             className="group snap-start shrink-0 w-[80vw] sm:w-[420px] lg:w-[520px] first:ml-0"
           >
-            <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-surface-alt">
+            {/* 16:9 to match the project cover images, so object-cover doesn't crop their sides */}
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-surface-alt">
               {p.image ? (
                 <Image src={p.image} alt={p.title} fill sizes="(min-width: 1024px) 520px, 80vw" className="object-cover transition-[scale,filter] duration-700 group-hover:scale-105 grayscale-[30%] group-hover:grayscale-0" />
               ) : (
