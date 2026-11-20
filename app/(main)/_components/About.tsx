@@ -106,7 +106,8 @@ const About = ({ profile }: AboutProps) => {
                         ref={stageRef}
                         variants={scaleIn}
                         className="relative w-full max-w-md mx-auto aspect-square mt-24 lg:mt-28"
-                        onFocus={() => setFocused(true)}
+                        // Only keyboard focus pauses; a mouse click on a tab also focuses it but shouldn't hold autoplay.
+                        onFocus={e => setFocused(e.target.matches(':focus-visible'))}
                         onBlur={() => setFocused(false)}
                     >
                         {/* The waiting pictures rise behind the frame like file dividers, each with its name on the tab.
@@ -123,7 +124,11 @@ const About = ({ profile }: AboutProps) => {
                                     data-front={depth === 0}
                                     tabIndex={depth === 0 ? -1 : 0}
                                     aria-label={`Show ${t.label}`}
-                                    onClick={() => setSlide(t.key)}
+                                    onClick={e => {
+                                        setSlide(t.key)
+                                        // This card now hides behind the frame, so drop focus from it (also resumes autoplay).
+                                        e.currentTarget.blur()
+                                    }}
                                 >
                                     <span className="about-deck-pic" aria-hidden="true">
                                         <TopicScene topic={t.key} label={t.label} still />
