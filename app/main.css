@@ -450,4 +450,88 @@ section[id] { scroll-margin-top: 88px; }
 .topic-still, .topic-still * { animation: none !important; }
 .topic-still .topic-layer { translate: none; transition: none; }
 
+/* Services: a small looping drawing on each card (components/skills/SkillMotif.tsx).
+   The panel's text colour draws the lines; .a / .as are the brand-orange accents. */
+.skill-motif {
+  position: relative; overflow: hidden; border-radius: var(--radius-sharp);
+  background-image: radial-gradient(color-mix(in srgb, currentColor 16%, transparent) 1px, transparent 1.2px);
+  background-size: 12px 12px;
+}
+.skill-motif svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.skill-motif svg * { transform-box: fill-box; }
+.skill-motif .s { fill: none; stroke: currentColor; stroke-opacity: 0.55; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.skill-motif .f { fill: currentColor; fill-opacity: 0.2; }
+.skill-motif .a { fill: var(--color-brand-orange); }
+.skill-motif .as { fill: none; stroke: var(--color-brand-orange); stroke-width: 2.2; stroke-linecap: round; }
+.skill-motif .c { fill: currentColor; }
+.skill-motif .m-scroll { animation: skill-scroll 4.8s linear infinite; }
+.skill-motif .m-build { transform-origin: left center; animation: skill-build 5.5s cubic-bezier(0.2, 0.8, 0.2, 1) infinite both; }
+.skill-motif .m-blink { animation: skill-blink 1.7s steps(2, jump-none) infinite; }
+.skill-motif .m-draw { stroke-dasharray: 1; animation: skill-draw 4.4s ease-in-out infinite; }
+.skill-motif .m-go { animation: skill-go 1.8s linear infinite both; }
+.skill-motif .m-pulse { transform-origin: center; animation: skill-pulse 1.8s ease-in-out infinite; }
+.skill-motif .m-bar { transform-origin: center bottom; animation: skill-bar 1.7s ease-in-out infinite alternate both; }
+@keyframes skill-scroll { to { transform: translateY(-64px); } }
+@keyframes skill-build { 0% { opacity: 0; transform: scaleX(0); } 10%, 82% { opacity: 1; transform: scaleX(1); } 92%, 100% { opacity: 0; transform: scaleX(1); } }
+@keyframes skill-go { 0% { transform: translate(0, 0); opacity: 0; } 15%, 85% { opacity: 1; } 100% { transform: translate(var(--dx, 0), var(--dy, 0)); opacity: 0; } }
+@keyframes skill-pulse { 50% { transform: scale(0.8); opacity: 0.65; } }
+@keyframes skill-bar { from { transform: scaleY(0.5); } to { transform: scaleY(1); } }
+@keyframes skill-blink { to { opacity: 0.25; } }
+@keyframes skill-draw { 0% { stroke-dashoffset: 1; opacity: 1; } 45% { stroke-dashoffset: 0; } 86% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .skill-motif svg * { animation: none !important; }
+}
 
+/* Skills: the skills written as code in a small editor window (app/(main)/_components/Skills.tsx).
+   Always dark, a shade deeper on the dark theme so it still reads as a window. */
+.sked {
+  --ed-bg: #131b17; --ed-side: #0f1613; --ed-line: #27332d; --ed-fg: #dfe7e2; --ed-dim: #7d8f86; --ed-key: #8cc5a2;
+  --ed-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  overflow: hidden; border-radius: 8px; border: 1px solid var(--ed-line);
+  background: var(--ed-bg); color: var(--ed-fg); box-shadow: 0 30px 60px -30px rgb(0 0 0 / 0.45);
+}
+:root.site[data-theme="dark"] .sked { --ed-bg: #0b100e; --ed-side: #080c0a; --ed-line: #222c27; }
+.sked-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--ed-line); font-family: var(--ed-mono); font-size: 12px; color: var(--ed-dim); }
+.sked-bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--ed-line); }
+.sked-bar i:first-child { background: var(--color-brand-orange); }
+.sked-bar span { margin-left: 10px; }
+.sked-main { display: grid; grid-template-columns: 220px minmax(0, 1fr); }
+.sked-side { display: flex; flex-direction: column; gap: 2px; padding: 14px 8px; background: var(--ed-side); border-right: 1px solid var(--ed-line); }
+.sked-side small { padding: 0 10px 8px; font-family: var(--ed-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ed-dim); }
+.sked-file {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 4px; cursor: pointer; text-align: left;
+  font-family: var(--ed-mono); font-size: 13px; color: var(--ed-dim); transition: background-color 0.2s, color 0.2s;
+}
+.sked-file svg { transition: scale 0.3s, rotate 0.3s; }
+.sked-file:hover { color: var(--ed-fg); }
+.sked-file:hover svg { scale: 1.15; rotate: -8deg; }
+.sked-file[data-active="true"] { background: rgb(255 184 0 / 0.12); color: var(--color-brand-orange); }
+.sked-file:focus-visible { outline: 2px solid var(--color-brand-orange); outline-offset: 1px; }
+.sked-scroll { min-width: 0; overflow-x: auto; }
+.sked-code {
+  width: max-content; min-width: 100%; min-height: 330px; margin: 0; padding: 22px 24px 22px 0; counter-reset: ln;
+  background: none; color: inherit; border: 0; border-radius: 0; overflow: visible; /* undo the global blog `pre` look */
+  font-family: var(--ed-mono); font-size: clamp(13px, 1.45vw, 16px); line-height: 1.85;
+}
+.sked-code .ln { display: block; white-space: pre; counter-increment: ln; }
+.sked-code .ln::before { content: counter(ln); display: inline-block; width: 3.2em; padding-right: 1.2em; text-align: right; color: var(--ed-dim); opacity: 0.6; }
+.sked-code .ln > span { display: inline-block; }
+/* Each line is uncovered left to right, one line after another (0.3s apart = LINE_MS in Skills.tsx). */
+.sked-code.type .ln > span { animation: sked-type 0.42s steps(24, end) both; animation-delay: calc(var(--i) * 0.3s); }
+@keyframes sked-type { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.sked-code .k { color: var(--ed-key); }
+.sked-code .s { color: var(--color-brand-orange); font-weight: 500; }
+.sked-code .d { color: var(--ed-dim); }
+.sked-code .caret { display: inline-block; width: 0.55em; height: 1.05em; margin-left: 2px; vertical-align: -0.18em; background: var(--color-brand-orange); animation: sked-caret 1s steps(2, jump-none) infinite; }
+@keyframes sked-caret { to { opacity: 0; } }
+.sked-foot { display: flex; flex-wrap: wrap; gap: 6px 20px; padding: 8px 16px; border-top: 1px solid var(--ed-line); font-family: var(--ed-mono); font-size: 11.5px; color: var(--ed-dim); }
+.sked-foot b { font-weight: 500; color: var(--color-brand-orange); }
+@media (max-width: 767px) {
+  .sked-main { grid-template-columns: minmax(0, 1fr); }
+  .sked-side { flex-direction: row; flex-wrap: wrap; padding: 8px; border-right: 0; border-bottom: 1px solid var(--ed-line); }
+  .sked-side small { display: none; }
+  .sked-code { min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sked-code.type .ln > span, .sked-code .caret { animation: none; }
+}

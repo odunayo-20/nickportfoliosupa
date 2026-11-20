@@ -1,37 +1,60 @@
 "use client"
 
-import { ArrowRight, ArrowUpRight, Smartphone, Cpu, Globe } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Smartphone, Cpu, Globe, CodeXml } from 'lucide-react'
 import { m } from 'motion/react'
 import Link from 'next/link'
 import { SplitText } from '@/components/motion/SplitText'
 import { TiltCard } from '@/components/motion/TiltCard'
+import { SkillMotif, type SkillMotifKey } from '@/components/skills/SkillMotif'
 import { fadeInUp, staggerContainer, VIEWPORT } from '@/lib/motion'
 
-const SERVICES = [
+type Service = {
+    n: string
+    icon: React.ComponentType<{ className?: string }>
+    motif: SkillMotifKey
+    title: string
+    text: string
+    tags?: string[]
+}
+
+// In reading order: the large mobile card, the wide web card, then the two small ones.
+const SERVICES: Service[] = [
     {
         n: '01',
         icon: Smartphone,
+        motif: 'mobile',
         title: 'Multiplatform Apps',
         text: 'Building high-performance Android and iOS apps from a single Kotlin codebase, sharing up to 70% of shared logic.',
         tags: ['Kotlin Multiplatform', 'Compose', 'SwiftUI interop'],
     },
     {
         n: '02',
+        icon: CodeXml,
+        motif: 'web',
+        title: 'Web Development',
+        text: 'Fast, search-friendly websites and web apps built with Next.js, React and TypeScript.',
+        tags: ['Next.js', 'React', 'TypeScript'],
+    },
+    {
+        n: '03',
         icon: Cpu,
+        motif: 'chip',
         title: 'Native Android',
         text: 'Hardware-level performance with real-time streaming, ARCore, and deep sensor integrations.',
     },
     {
-        n: '03',
+        n: '04',
         icon: Globe,
+        motif: 'chart',
         title: 'Web Dashboards',
         text: 'Backend-first admin panels powered by Supabase, PostGIS, and real-time data visualization.',
     },
 ]
 
 const Services = () => {
-    const [hero, ...rest] = SERVICES
+    const [hero, web, ...rest] = SERVICES
     const HeroIcon = hero.icon
+    const WebIcon = web.icon
 
     return (
         <m.section
@@ -57,22 +80,24 @@ const Services = () => {
                 </Link>
             </m.div>
 
-            {/* Bento: one large feature card + two stacked cards */}
-            <div className="glow-group grid md:grid-cols-3 md:grid-rows-2 gap-6 [perspective:1400px]">
+            {/* Bento: the large mobile card, a wide web card beside it and two small cards under that.
+                Every card carries a looping drawing of its service. */}
+            <div className="glow-group grid md:grid-cols-2 lg:grid-cols-4 gap-6 [perspective:1400px]">
                 <TiltCard
                     variants={fadeInUp}
                     max={4}
                     spotlight="rgba(255, 184, 0, 0.18)"
-                    className="glow-card md:col-span-2 md:row-span-2 rounded-sharp bg-brand-green text-white overflow-hidden hover:shadow-2xl transition-motion-safe duration-300"
+                    className="glow-card md:col-span-2 lg:row-span-2 rounded-sharp bg-brand-green text-white overflow-hidden hover:shadow-2xl transition-motion-safe duration-300"
                 >
-                    <Link href="/services" className="group relative flex flex-col h-full min-h-[340px] p-8 md:p-12">
+                    <Link href="/services" className="group relative flex flex-col h-full p-8 md:p-12">
                         <span aria-hidden="true" className="absolute -right-4 -top-10 text-[11rem] md:text-[16rem] font-black leading-none text-white/5 select-none transition-transform duration-700 group-hover:-translate-x-4">
                             {hero.n}
                         </span>
-                        <div className="w-14 h-14 bg-brand-orange rounded-md flex items-center justify-center mb-auto shadow-lg transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110">
+                        <div className="w-14 h-14 bg-brand-orange rounded-md flex items-center justify-center shadow-lg transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110">
                             <HeroIcon className="w-7 h-7 text-brand-dark" />
                         </div>
-                        <div className="relative mt-16">
+                        <SkillMotif motif={hero.motif} className="relative flex-1 min-h-44 my-8 bg-white/10 text-white" />
+                        <div className="relative">
                             <h3 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4">{hero.title}</h3>
                             <p className="text-gray-300 max-w-md mb-6 leading-relaxed">{hero.text}</p>
                             <div className="flex flex-wrap gap-2 mb-8">
@@ -88,17 +113,50 @@ const Services = () => {
                     </Link>
                 </TiltCard>
 
-                {rest.map(({ n, icon: Icon, title, text }) => (
+                <TiltCard
+                    variants={fadeInUp}
+                    max={5}
+                    spotlight="rgba(255, 184, 0, 0.18)"
+                    className="glow-card md:col-span-2 rounded-sharp bg-[#17201b] dark:bg-[#223129] text-white border border-transparent hover:border-brand-orange/30 hover:shadow-xl transition-motion-safe duration-300"
+                >
+                    <Link href="/services" className="group grid sm:grid-cols-2 gap-6 h-full p-8">
+                        <div className="flex flex-col">
+                            <div className="flex items-start justify-between mb-6">
+                                <div className="w-12 h-12 bg-brand-orange/15 rounded-md flex items-center justify-center transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110">
+                                    <WebIcon className="w-6 h-6 text-brand-orange" />
+                                </div>
+                                <span aria-hidden="true" className="text-5xl font-black leading-none text-white/5 select-none">{web.n}</span>
+                            </div>
+                            <h3 className="text-2xl font-extrabold tracking-tight mb-3">{web.title}</h3>
+                            <p className="text-gray-300 text-sm mb-5 leading-relaxed">{web.text}</p>
+                            <div className="flex flex-wrap gap-2 mb-6">
+                                {web.tags?.map(t => (
+                                    <span key={t} className="text-xs font-semibold px-3 py-1.5 rounded-full bg-white/10 border border-white/20">{t}</span>
+                                ))}
+                            </div>
+                            <span className="mt-auto inline-flex items-center gap-2 text-sm font-bold text-brand-orange">
+                                Learn more
+                                <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                            </span>
+                        </div>
+                        <SkillMotif motif={web.motif} className="min-h-40 bg-brand-orange/10 text-white max-sm:order-first" />
+                    </Link>
+                </TiltCard>
+
+                {rest.map(({ n, icon: Icon, motif, title, text }) => (
                     <TiltCard
                         key={title}
                         variants={fadeInUp}
                         max={6}
                         className="glow-card rounded-sharp bg-surface-alt border border-transparent hover:border-brand-orange/20 hover:shadow-xl transition-motion-safe duration-300"
                     >
-                        <Link href="/services" className="group relative flex flex-col h-full p-8">
-                            <span aria-hidden="true" className="absolute right-6 top-5 text-5xl font-black text-ink/5 select-none">{n}</span>
-                            <div className="w-12 h-12 bg-surface rounded-md flex items-center justify-center mb-6 shadow-sm transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110">
-                                <Icon className="w-6 h-6 text-accent-green" />
+                        <Link href="/services" className="group flex flex-col h-full p-8">
+                            <SkillMotif motif={motif} className="h-28 mb-6 bg-ink/5 text-ink" />
+                            <div className="flex items-start justify-between mb-6">
+                                <div className="w-12 h-12 bg-surface rounded-md flex items-center justify-center shadow-sm transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110">
+                                    <Icon className="w-6 h-6 text-accent-green" />
+                                </div>
+                                <span aria-hidden="true" className="text-5xl font-black leading-none text-ink/5 select-none">{n}</span>
                             </div>
                             <h3 className="text-xl font-bold mb-3 text-ink">{title}</h3>
                             <p className="text-ink-muted text-sm mb-6 leading-relaxed">{text}</p>

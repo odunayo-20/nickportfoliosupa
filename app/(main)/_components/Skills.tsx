@@ -1,74 +1,134 @@
 "use client"
 
-import { Database, Layers, Settings, Smartphone } from 'lucide-react'
-import { m } from 'motion/react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { Database, Globe, Layers, Settings, Smartphone } from 'lucide-react'
+import { m, useInView } from 'motion/react'
 import { SplitText } from '@/components/motion/SplitText'
 import { TiltCard } from '@/components/motion/TiltCard'
-import { fadeInUp, fadeInUpStagger, popIn, staggerContainer, VIEWPORT } from '@/lib/motion'
+import { useHydratedReducedMotion } from '@/components/motion/useHydratedReducedMotion'
+import { fadeInUp, staggerContainer, VIEWPORT } from '@/lib/motion'
 
-type SkillGroup = {
-    title: string
+const LINE_MS = 300 // delay between typed lines; keep in step with .sked-code.type in main.css
+const HOLD_MS = 3200 // how long a finished file stays before the editor opens the next one
+
+// Syntax colours: keyword, skill (the part worth reading) and dimmed punctuation.
+const K = ({ children }: { children: ReactNode }) => <span className="k">{children}</span>
+const S = ({ children }: { children: ReactNode }) => <span className="s">{children}</span>
+const D = ({ children }: { children: ReactNode }) => <span className="d">{children}</span>
+
+/** Skills joined by a dimmed separator; `wrap` puts each one in quotes, brackets and so on. */
+const list = (skills: string[], wrap: (s: string) => ReactNode, sep = ', ') =>
+    skills.map((s, i) => (
+        <span key={s}>
+            {i > 0 && <D>{sep}</D>}
+            {wrap(s)}
+        </span>
+    ))
+
+const quoted = (s: string) => <S>&quot;{s}&quot;</S>
+const sqlRow = (s: string) => <><D>(</D><S>&apos;{s}&apos;</S><D>)</D></>
+// Shell words only need quotes when they contain a space.
+const shellWord = (s: string) => <S>{s.includes(' ') ? `"${s}"` : s}</S>
+
+type SkillFile = {
+    file: string
+    lang: string
     icon: React.ComponentType<{ className?: string }>
-    skills: string[]
-    /** Tailwind classes per theme */
-    card: string
-    iconBox: string
-    iconColor: string
-    heading: string
-    chip: string
-    spotlight: string
+    /** Number of skills in the file, shown in the status bar */
+    count: number
+    /** One entry per line of code */
+    lines: ReactNode[]
 }
 
-const GROUPS: SkillGroup[] = [
+// One file per discipline, each written in the language that fits it.
+const FILES: SkillFile[] = [
     {
-        title: "Mobile",
+        file: 'Mobile.kt',
+        lang: 'Kotlin',
         icon: Smartphone,
-        skills: ["Kotlin", "Java", "Android SDK", "Jetpack Compose", "Compose Multiplatform", "Kotlin Multiplatform"],
-        card: "bg-surface hover:border-brand-orange/30",
-        iconBox: "bg-brand-orange/10 group-hover/tilt:bg-brand-orange/20",
-        iconColor: "text-brand-orange",
-        heading: "text-ink",
-        chip: "bg-brand-orange/10 text-brand-orange border-brand-orange/20",
-        spotlight: "rgba(255, 184, 0, 0.14)",
+        count: 8,
+        lines: [
+            <><K>val</K> mobile = listOf<D>(</D></>,
+            <>{'    '}{list(['Kotlin', 'Java', 'Swift'], quoted)}<D>,</D></>,
+            <>{'    '}{list(['Android SDK', 'Jetpack Compose'], quoted)}<D>,</D></>,
+            <>{'    '}{list(['Compose Multiplatform'], quoted)}<D>,</D></>,
+            <>{'    '}{list(['Kotlin Multiplatform', 'Xcode'], quoted)}<D>,</D></>,
+            <><D>)</D></>,
+        ],
     },
     {
-        title: "Architecture",
+        file: 'Web.tsx',
+        lang: 'TypeScript JSX',
+        icon: Globe,
+        count: 7,
+        lines: [
+            <><K>export const</K> web = <D>[</D></>,
+            <>{'  '}{list(['Next.js', 'React', 'TypeScript'], quoted)}<D>,</D></>,
+            <>{'  '}{list(['Tailwind CSS', 'Motion'], quoted)}<D>,</D></>,
+            <>{'  '}{list(['Server Actions', 'SEO & Web Vitals'], quoted)}<D>,</D></>,
+            <><D>] </D><K>as const</K></>,
+        ],
+    },
+    {
+        file: 'Architecture.kt',
+        lang: 'Kotlin',
         icon: Layers,
-        skills: ["MVVM", "Clean Architecture", "Coroutines", "SQLDelight", "Offline-First", "Repository Pattern"],
-        card: "bg-surface hover:border-accent-green/30",
-        iconBox: "bg-brand-green/10 group-hover/tilt:bg-brand-green/20",
-        iconColor: "text-accent-green",
-        heading: "text-ink",
-        chip: "bg-brand-green/10 text-accent-green border-accent-green/20",
-        spotlight: "rgba(42, 71, 54, 0.10)",
+        count: 6,
+        lines: [
+            <><K>sealed interface</K> Architecture <D>{'{'}</D></>,
+            ...['MVVM', 'CleanArchitecture', 'Coroutines', 'SQLDelight', 'OfflineFirst', 'RepositoryPattern'].map(name => (
+                <>{'    '}<K>object</K> <S>{name}</S></>
+            )),
+            <><D>{'}'}</D></>,
+        ],
     },
     {
-        title: "Backend / Services",
+        file: 'Backend.sql',
+        lang: 'PostgreSQL',
         icon: Database,
-        skills: ["Supabase", "Edge Functions", "PostgreSQL", "PostGIS", "pg_cron", "REST APIs", "WebSockets"],
-        card: "bg-surface hover:border-ink/20",
-        iconBox: "bg-ink/8 group-hover/tilt:bg-ink/15",
-        iconColor: "text-ink",
-        heading: "text-ink",
-        chip: "bg-ink/8 text-ink border-ink/15",
-        spotlight: "rgba(26, 26, 26, 0.07)",
+        count: 8,
+        lines: [
+            <><K>insert into</K> backend <D>(</D>skill<D>)</D> <K>values</K></>,
+            <>{'  '}{list(['Supabase', 'Edge Functions'], sqlRow)}<D>,</D></>,
+            <>{'  '}{list(['PostgreSQL', 'PostGIS', 'pg_cron'], sqlRow)}<D>,</D></>,
+            <>{'  '}{list(['Spring', 'REST APIs', 'WebSockets'], sqlRow)}<D>;</D></>,
+        ],
     },
     {
-        title: "Tools",
+        file: 'tools.sh',
+        lang: 'Shell',
         icon: Settings,
-        skills: ["Git", "Android Studio", "Xcode", "Figma", "Gradle"],
-        card: "bg-brand-green",
-        iconBox: "bg-white/15 group-hover/tilt:bg-white/25",
-        iconColor: "text-white",
-        heading: "text-white",
-        chip: "bg-white/15 text-white border-white/25",
-        spotlight: "rgba(255, 255, 255, 0.14)",
+        count: 7,
+        lines: [
+            <><D>#!/bin/sh</D></>,
+            <>tools=<D>(</D></>,
+            <>{'  '}{list(['Git', 'Android Studio', 'Xcode'], shellWord, ' ')}</>,
+            <>{'  '}{list(['VS Code', 'Postman', 'Figma', 'Gradle'], shellWord, ' ')}</>,
+            <><D>)</D></>,
+        ],
     },
 ]
 
-const cardVariants = fadeInUpStagger(0.05, 0.25)
-
 const Skills = () => {
+    const [active, setActive] = useState(0)
+    const [hovered, setHovered] = useState(false)
+    const editorRef = useRef<HTMLDivElement>(null)
+    const inView = useInView(editorRef, { amount: 0.4 })
+    const seen = useInView(editorRef, { amount: 0.4, once: true })
+    const reduceMotion = useHydratedReducedMotion()
+    const current = FILES[active]
+
+    // Autoplay: once a file has typed itself out and been read, open the next one.
+    // Waits while the pointer is over the editor or the section is off screen; off for reduced motion.
+    useEffect(() => {
+        if (reduceMotion || hovered || !inView) return
+        const t = setTimeout(
+            () => setActive(i => (i + 1) % FILES.length),
+            FILES[active].lines.length * LINE_MS + HOLD_MS,
+        )
+        return () => clearTimeout(t)
+    }, [active, hovered, inView, reduceMotion])
+
     return (
         <m.section
             id="skills"
@@ -94,34 +154,61 @@ const Skills = () => {
                     </p>
                 </m.div>
 
-                {/* grid of category cards — tilt toward the cursor, chips pop in after each card */}
-                <div className="glow-group grid sm:grid-cols-2 lg:grid-cols-4 gap-6 [perspective:1200px]">
-                    {GROUPS.map(({ title, icon: Icon, skills, ...t }) => (
-                        <TiltCard
-                            key={title}
-                            variants={cardVariants}
-                            spotlight={t.spotlight}
-                            className={`glow-card ${t.card} rounded-sharp p-8 border border-transparent hover:shadow-xl transition-motion-safe duration-300`}
-                        >
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className={`w-10 h-10 ${t.iconBox} rounded-md flex items-center justify-center transition-[background-color,scale,rotate] duration-300 group-hover/tilt:scale-110 group-hover/tilt:-rotate-6`}>
-                                    <Icon className={`w-5 h-5 ${t.iconColor}`} />
-                                </div>
-                                <h3 className={`text-lg font-bold ${t.heading}`}>{title}</h3>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {skills.map(s => (
-                                    <m.span
-                                        key={s}
-                                        variants={popIn}
-                                        className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${t.chip}`}
+                {/* The skills as code: a small editor with one file per discipline. Each file types itself out,
+                    then the editor opens the next. The window tilts toward the cursor like the cards elsewhere. */}
+                <div ref={editorRef} className="glow-group [perspective:1400px]">
+                    <TiltCard
+                        variants={fadeInUp}
+                        max={2.5}
+                        spotlight="rgba(255, 184, 0, 0.08)"
+                        className="glow-card sked"
+                        onPointerEnter={() => setHovered(true)}
+                        onPointerLeave={() => setHovered(false)}
+                    >
+                        <div className="sked-bar">
+                            <i /><i /><i />
+                            <span>skills / {current.file}</span>
+                        </div>
+
+                        <div className="sked-main">
+                            <div className="sked-side">
+                                <small>Explorer</small>
+                                {FILES.map(({ file, icon: Icon }, i) => (
+                                    <button
+                                        key={file}
+                                        type="button"
+                                        className="sked-file"
+                                        data-active={i === active}
+                                        aria-pressed={i === active}
+                                        onClick={() => setActive(i)}
                                     >
-                                        {s}
-                                    </m.span>
+                                        <Icon className="w-[15px] h-[15px] shrink-0" />
+                                        {file}
+                                    </button>
                                 ))}
                             </div>
-                        </TiltCard>
-                    ))}
+
+                            <div className="sked-scroll">
+                                {/* Keyed so the typing restarts for every file, and once more when the editor first scrolls into view. */}
+                                <pre key={`${active}-${seen}`} className={`sked-code ${seen ? 'type' : ''}`}>
+                                    {current.lines.map((line, n) => (
+                                        <span key={n} className="ln">
+                                            <span style={{ '--i': n } as CSSProperties}>
+                                                {line}
+                                                {n === current.lines.length - 1 && <span className="caret" aria-hidden="true" />}
+                                            </span>
+                                        </span>
+                                    ))}
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div className="sked-foot">
+                            <span>{current.lang}</span>
+                            <span>UTF-8</span>
+                            <b>{current.count} skills</b>
+                        </div>
+                    </TiltCard>
                 </div>
             </div>
         </m.section>
