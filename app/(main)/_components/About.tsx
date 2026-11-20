@@ -1,23 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { ArrowRight } from 'lucide-react'
-import { AnimatePresence, m } from 'motion/react'
-import { EASE_OUT, fadeInUp, staggerContainer, scaleIn } from '@/lib/motion'
-import Image from 'next/image'
+import { AnimatePresence, m, useInView } from 'motion/react'
+import { fadeInUp, staggerContainer, scaleIn } from '@/lib/motion'
 import { Odometer } from '@/components/motion/Odometer'
 import { ScrollHighlight } from '@/components/motion/ScrollHighlight'
 import { SplitText } from '@/components/motion/SplitText'
+import { TopicScene, sceneImages, type TopicKey } from '@/components/about/TopicScene'
+import { useHydratedReducedMotion } from '@/components/motion/useHydratedReducedMotion'
 
-const DEFAULT_IMAGE = "/about/workspace.webp" // my desk; the topic pills swap in illustrations
+const SLIDE_MS = 6000 // how long each picture stays before autoplay moves on
 
-const TOPICS = [
-    { label: "Android App Development", image: "/about/android.png", position: "top-1/4 left-0 sm:-left-8", style: "bg-brand-dark text-brand-orange border-brand-green hover:bg-brand-orange hover:text-brand-dark" },
-    { label: "Kotlin Multiplatform", image: "/about/kmp.png", position: "top-1/2 left-0 sm:-left-12", style: "bg-brand-green text-white border-white/20 hover:bg-surface hover:text-accent-green" },
-    { label: "iOS App Development", image: "/about/ios.png", position: "bottom-1/4 left-0 sm:-left-4", style: "bg-brand-orange text-brand-dark border-brand-green hover:bg-brand-dark hover:text-brand-orange" },
-    { label: "Backend Dev", image: "/about/backend.png", position: "top-1/3 right-0 sm:-right-6", style: "bg-brand-orange text-brand-dark border-brand-green hover:bg-brand-dark hover:text-brand-orange" },
-    { label: "Mobile Apps UI/UX", image: "/about/ui.png", position: "bottom-1/3 right-0", style: "bg-brand-dark text-white border-brand-green hover:bg-surface hover:text-ink" },
-    { label: "Web Apps Development", image: "/about/web.png", position: "bottom-12 right-12", style: "bg-brand-green text-white border-white/20 hover:bg-surface hover:text-accent-green" },
+// Topics in autoplay order. `tab` is the short name on the card's index tab, `color` its text colour.
+const TOPICS: { key: TopicKey; label: string; tab: string; color: string }[] = [
+    { key: "android", label: "Android App Development", tab: "Android", color: "#3ddc84" },
+    { key: "kmp", label: "Kotlin Multiplatform", tab: "Kotlin Multiplatform", color: "#a97bff" },
+    { key: "ios", label: "iOS App Development", tab: "iOS", color: "#4aa3ff" },
+    { key: "backend", label: "Backend Dev", tab: "Backend", color: "#8f9bff" },
+    { key: "ui", label: "Mobile Apps UI/UX", tab: "UI/UX", color: "#d06bff" },
+    { key: "web", label: "Web Apps Development", tab: "Web", color: "#ff9d3b" },
 ]
 
 const STATS = [
@@ -40,8 +42,32 @@ interface AboutProps {
 
 const About = ({ profile }: AboutProps) => {
     const [isDownloading, setIsDownloading] = useState(false);
-    const [currentImage, setCurrentImage] = useState(DEFAULT_IMAGE);
-    const activeLabel = TOPICS.find(t => t.image === currentImage)?.label;
+    const [slide, setSlide] = useState<TopicKey>(TOPICS[0].key);
+    const [hovered, setHovered] = useState(false);
+    const [focused, setFocused] = useState(false);
+    const stageRef = useRef<HTMLDivElement>(null);
+    const inView = useInView(stageRef, { amount: 0.4 });
+    const reduceMotion = useHydratedReducedMotion();
+    const index = TOPICS.findIndex(t => t.key === slide);
+    const activeTopic = TOPICS[index];
+    const nextSlide = TOPICS[(index + 1) % TOPICS.length].key;
+
+    // Warm the cache for the upcoming scene so its layers don't pop in mid-animation.
+    useEffect(() => {
+        sceneImages(nextSlide).forEach(src => { new window.Image().src = src; });
+    }, [nextSlide]);
+
+    // Hovering the square pauses autoplay; the pointer position (-1..1) drives the layers' parallax.
+    const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty('--px', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3));
+        e.currentTarget.style.setProperty('--py', (((e.clientY - r.top) / r.height) * 2 - 1).toFixed(3));
+    };
+    const handlePointerLeave = (e: PointerEvent<HTMLDivElement>) => {
+        e.currentTarget.style.setProperty('--px', '0');
+        e.currentTarget.style.setProperty('--py', '0');
+        setHovered(false);
+    };
     
     // Use profile data with fallbacks
     const name = profile?.name || "Nikola";
@@ -76,54 +102,73 @@ const About = ({ profile }: AboutProps) => {
             >
                 <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
 
-                    <m.div variants={scaleIn} className="relative w-full max-w-md mx-auto aspect-square">
-                        <div className="absolute inset-4 bg-brand-orange rounded-full -translate-x-6 -translate-y-6 blob-shape animate-blob"></div>
+                    <m.div
+                        ref={stageRef}
+                        variants={scaleIn}
+                        className="relative w-full max-w-md mx-auto aspect-square mt-24 lg:mt-28"
+                        onFocus={() => setFocused(true)}
+                        onBlur={() => setFocused(false)}
+                    >
+                        {/* The waiting pictures rise behind the frame like file dividers, each with its name on the tab.
+                            A card's depth is how many steps it is from being shown, so the next picture sits right behind
+                            the frame; cards slide to their new place on every change. Click a tab to jump to it. */}
+                        {TOPICS.map((t, i) => {
+                            const depth = (i - index + TOPICS.length) % TOPICS.length
+                            return (
+                                <button
+                                    key={t.key}
+                                    type="button"
+                                    className="about-deck-card"
+                                    style={{ '--d': depth, '--tab': t.color, zIndex: TOPICS.length - depth } as CSSProperties}
+                                    data-front={depth === 0}
+                                    tabIndex={depth === 0 ? -1 : 0}
+                                    aria-label={`Show ${t.label}`}
+                                    onClick={() => setSlide(t.key)}
+                                >
+                                    <span className="about-deck-pic" aria-hidden="true">
+                                        <TopicScene topic={t.key} label={t.label} still />
+                                    </span>
+                                    <span className="about-deck-tab" aria-hidden="true">{t.tab}</span>
+                                </button>
+                            )
+                        })}
 
-                        {/* Crossfading image — the clicked topic's illustration blurs/zooms in over the old one */}
-                        <div className="absolute inset-0 z-10 rounded-full overflow-hidden border-8 border-brand-green bg-brand-green">
+                        {/* The current topic's layered illustration; the old one shrinks away as the new one assembles.
+                            Hovering it pauses autoplay. */}
+                        <div
+                            className="absolute inset-0 z-10 rounded-[9%] overflow-hidden border-8 border-brand-green bg-brand-green"
+                            onPointerEnter={() => setHovered(true)}
+                            onPointerMove={handlePointerMove}
+                            onPointerLeave={handlePointerLeave}
+                        >
                             <AnimatePresence initial={false}>
                                 <m.div
-                                    key={currentImage}
+                                    key={activeTopic.key}
                                     className="absolute inset-0"
-                                    initial={{ opacity: 0, scale: 1.12, filter: 'blur(8px)' }}
-                                    animate={{ opacity: 1, scale: 1, filter: 'blur(0px)', transition: { duration: 0.6, ease: EASE_OUT } }}
-                                    exit={{ opacity: 0, transition: { duration: 0.4, delay: 0.15 } }}
+                                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.45 } }}
                                 >
-                                    <Image
-                                        src={currentImage}
-                                        alt={`${name} — ${activeLabel ?? 'working'}`}
-                                        width={800}
-                                        height={800}
-                                        sizes="(min-width: 1024px) 448px, 90vw"
-                                        className={`w-full h-full object-cover ${currentImage === DEFAULT_IMAGE ? "" : "grayscale"}`}
-                                    />
+                                    <TopicScene topic={activeTopic.key} label={activeTopic.label} />
                                 </m.div>
                             </AnimatePresence>
                         </div>
 
-                        {/* Topic pills: float gently, the active one gets a ring */}
-                        {TOPICS.map((t, i) => {
-                            const active = currentImage === t.image
-                            return (
-                                <m.button
-                                    key={t.label}
-                                    type="button"
-                                    variants={scaleIn}
-                                    onClick={() => setCurrentImage(t.image)}
-                                    aria-pressed={active}
-                                    whileHover={{ scale: 1.06 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className={`absolute z-20 ${t.position}`}
-                                >
-                                    <span
-                                        className={`animate-float block text-xs font-bold px-4 py-2 rounded-full border-2 cursor-pointer transition-[background-color,color,box-shadow] duration-300 ${t.style} ${active ? 'ring-4 ring-brand-orange/60 shadow-lg' : ''}`}
-                                        style={{ animationDelay: `${-i * 0.9}s`, animationDuration: `${4.5 + (i % 3)}s` }}
-                                    >
-                                        {t.label}
-                                    </span>
-                                </m.button>
-                            )
-                        })}
+                        {/* Autoplay progress: an orange line runs around the frame, then the next picture starts.
+                            Paused while the square is hovered, a tab has keyboard focus or the section is off screen;
+                            off entirely for reduced motion. */}
+                        {!reduceMotion && (
+                            <svg
+                                key={slide}
+                                viewBox="0 0 100 100"
+                                className="about-ring z-[11]"
+                                style={{ '--ring-ms': `${SLIDE_MS}ms` } as CSSProperties}
+                                data-paused={hovered || focused || !inView}
+                                aria-hidden="true"
+                            >
+                                <rect className="track" x="0.9" y="0.9" width="98.2" height="98.2" rx="8.1" />
+                                <rect className="fill" x="0.9" y="0.9" width="98.2" height="98.2" rx="8.1" pathLength={100} onAnimationEnd={() => setSlide(nextSlide)} />
+                                <rect className="head" x="0.9" y="0.9" width="98.2" height="98.2" rx="8.1" pathLength={100} />
+                            </svg>
+                        )}
                     </m.div>
 
                     <m.div variants={fadeInUp}>
@@ -133,7 +178,7 @@ const About = ({ profile }: AboutProps) => {
                         <SplitText className="text-4xl md:text-5xl font-extrabold tracking-tighter mb-6">
                             Who is <span
                                 className="text-brand-orange font-normal italic cursor-pointer hover:underline decoration-brand-light underline-offset-8"
-                                onClick={() => setCurrentImage(DEFAULT_IMAGE)}
+                                onClick={() => setSlide(TOPICS[0].key)}
                             >
                                 {name}?
                             </span>
