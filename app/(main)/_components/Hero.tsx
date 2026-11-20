@@ -4,11 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, Play } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { m, useMotionValue, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
+import { m, useMotionTemplate, useMotionValue, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
 import { useHydratedReducedMotion } from '@/components/motion/useHydratedReducedMotion'
 import { Magnetic } from '@/components/motion/Magnetic'
 import { ScrambleText } from '@/components/motion/ScrambleText'
-import { FlowField } from '@/components/motion/FlowField'
 import { AVAILABILITY } from '@/lib/content'
 import { fadeInUp, popIn, scaleIn, slideInRight, stagger, wordReveal } from '@/lib/motion'
 
@@ -53,6 +52,10 @@ function ScrambleRotate({ phrases, interval = 3200 }: { phrases: string[]; inter
     )
 }
 
+/** Hero background dots: a neutral grid, and an orange copy shown only inside the cursor spotlight. */
+const DOTS_BASE = 'radial-gradient(circle, color-mix(in srgb, var(--ink) 24%, transparent) 1.2px, transparent 1.7px)'
+const DOTS_HOT = 'radial-gradient(circle, var(--color-brand-orange) 1.6px, transparent 2.1px)'
+
 /** Maps a -0.5…0.5 pointer value to a pixel offset for parallax layers. */
 const useLayer = (v: MotionValue<number>, px: number) => useTransform(v, (n) => n * px)
 
@@ -80,6 +83,11 @@ const Hero = ({ profile }: HeroProps) => {
     const chipX = useLayer(sx, 36), chipY = useLayer(sy, 36)
     const badgeX = useLayer(sx, -32), badgeY = useLayer(sy, -32)
 
+    // Spotlight follows the same sprung pointer, as a percentage of the hero box
+    const spotX = useTransform(sx, (n) => (n + 0.5) * 100)
+    const spotY = useTransform(sy, (n) => (n + 0.5) * 100)
+    const spotlight = useMotionTemplate`radial-gradient(circle 240px at ${spotX}% ${spotY}%, black, transparent)`
+
     const onPointerMove = (e: React.PointerEvent) => {
         if (reduce || e.pointerType !== 'mouse' || !ref.current) return
         const r = ref.current.getBoundingClientRect()
@@ -105,11 +113,19 @@ const Hero = ({ profile }: HeroProps) => {
             onPointerLeave={onPointerLeave}
             className="relative isolate overflow-hidden"
         >
-            {/* ── Background: flow field (H1) + soft glow ── */}
+            {/* ── Background: dot grid + cursor spotlight + soft glow ── */}
             {/* z-[1]: under the text column and the photo column (both z-[2]) */}
-            <div aria-hidden="true" className="absolute inset-0 z-[1] pointer-events-none [mask-image:radial-gradient(ellipse_90%_85%_at_60%_45%,black_35%,transparent_90%)]">
-                <FlowField target='[data-flow-target="hero"]' />
-            </div>
+            <div
+                aria-hidden="true"
+                style={{ backgroundImage: DOTS_BASE }}
+                className="absolute inset-0 z-[1] pointer-events-none bg-[length:28px_28px] [mask-image:radial-gradient(ellipse_90%_85%_at_60%_45%,black_30%,transparent_88%)]"
+            />
+            {/* Orange dots revealed around the pointer (mouse only; rests at the hero's centre) */}
+            <m.div
+                aria-hidden="true"
+                style={{ backgroundImage: DOTS_HOT, maskImage: spotlight, WebkitMaskImage: spotlight }}
+                className="hidden md:block absolute inset-0 z-[1] pointer-events-none bg-[length:28px_28px]"
+            />
             <m.div
                 aria-hidden="true"
                 style={{ x: glowX, y: glowY }}
@@ -178,7 +194,7 @@ const Hero = ({ profile }: HeroProps) => {
                 </m.div>
 
                 {/* ── Visual column ── */}
-                {/* z-[2]: photo, blob and badge sit above the particle layer; streams pass under the photo */}
+                {/* z-[2]: photo, blob and badge sit above the dot grid */}
                 <m.div style={{ y: visualY }} className="relative z-[2]">
                     <m.div
                         initial="hidden"
@@ -206,7 +222,7 @@ const Hero = ({ profile }: HeroProps) => {
                         </m.div>
 
                         {/* Spinning "Hire me" badge with text on a circular path */}
-                        <Link href="/contact" aria-label="Hire me — get in touch" data-flow-target="hero" className="group absolute top-8 -right-2 md:-right-4 z-10">
+                        <Link href="/contact" aria-label="Hire me — get in touch" className="group absolute top-8 -right-2 md:-right-4 z-10">
                             <m.div variants={popIn} style={{ x: badgeX, y: badgeY }}>
                                 <div className="relative w-28 h-28 rounded-full bg-brand-green border-4 border-surface shadow-xl flex items-center justify-center transition-[scale] duration-300 group-hover:scale-110">
                                     <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-[spin_12s_linear_infinite]" aria-hidden="true">
